@@ -1,0 +1,17 @@
+{
+  "name": "war-of-gods",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel --filter @war-of-gods/client --filter @war-of-gods/server dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "better-sqlite3"]
+  },
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
+  }
+}

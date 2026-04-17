@@ -1,0 +1,267 @@
+{
+  "version": "1.0.0",
+  "description": "World Cards for Era I. One is revealed at the start of the game, affecting all players during Era I.",
+  "cards": [
+    {
+      "id": "world_era1_01",
+      "name": "El Cielo Partido",
+      "name_en": "The Shattered Sky",
+      "type": "world_era1",
+      "flavorText": "El cataclismo dejó el cielo marcado.",
+      "flavorText_en": "The cataclysm left scars across the sky.",
+      "mechanicalText": "Cada jugador descarta 2 fichas de su robo inicial y roba 2 nuevas.",
+      "mechanicalText_en": "Each player discards 2 tiles from their initial draw and draws 2 new ones.",
+      "effects": [
+        { "type": "discard_and_redraw", "trigger": "on_draw", "maxDiscard": 2, "forced": true }
+      ]
+    },
+    {
+      "id": "world_era1_02",
+      "name": "La Tierra Generosa",
+      "name_en": "The Bountiful Land",
+      "type": "world_era1",
+      "flavorText": "Vali despierta con vigor inesperado.",
+      "flavorText_en": "Vali awakens with unexpected vigor.",
+      "mechanicalText": "Cada jugador roba 20 fichas en vez de 18.",
+      "mechanicalText_en": "Each player draws 20 tiles instead of 18.",
+      "effects": [
+        { "type": "modify_draw_count", "trigger": "on_draw", "delta": 2 }
+      ]
+    },
+    {
+      "id": "world_era1_03",
+      "name": "El Invierno Largo",
+      "name_en": "The Long Winter",
+      "type": "world_era1",
+      "flavorText": "El sol se esconde durante el reformado.",
+      "flavorText_en": "The sun hides during the reshaping.",
+      "mechanicalText": "Cada jugador roba 16 fichas en vez de 18.",
+      "mechanicalText_en": "Each player draws 16 tiles instead of 18.",
+      "effects": [
+        { "type": "modify_draw_count", "trigger": "on_draw", "delta": -2 }
+      ]
+    },
+    {
+      "id": "world_era1_04",
+      "name": "Los Ríos Cambiantes",
+      "name_en": "The Shifting Rivers",
+      "type": "world_era1",
+      "flavorText": "Las aguas no saben aún dónde quieren correr.",
+      "flavorText_en": "The waters don't yet know where they want to flow.",
+      "mechanicalText": "Durante la fase de intercambio, cada jugador puede dar y recibir hasta 2 fichas en vez de 1.",
+      "mechanicalText_en": "During the trade phase, each player can give and receive up to 2 tiles instead of 1.",
+      "effects": [
+        { "type": "modify_trade_limit", "trigger": "on_trade", "newLimit": 2 }
+      ]
+    },
+    {
+      "id": "world_era1_05",
+      "name": "Las Montañas Despiertan",
+      "name_en": "The Mountains Awaken",
+      "type": "world_era1",
+      "flavorText": "Las piedras recuerdan ser vivas.",
+      "flavorText_en": "The stones remember being alive.",
+      "mechanicalText": "Las fichas de Montaña otorgan +1 punto de construcción adicional para cualquier raza.",
+      "mechanicalText_en": "Mountain tiles grant +1 additional construction point for any race.",
+      "effects": [
+        { "type": "bonus_per_terrain", "trigger": "on_era1_close", "terrain": "mountain", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "world_era1_06",
+      "name": "Los Bosques Crecen Rápido",
+      "name_en": "The Forests Grow Fast",
+      "type": "world_era1",
+      "flavorText": "Raíces ansiosas trepan sobre las ruinas.",
+      "flavorText_en": "Eager roots climb over the ruins.",
+      "mechanicalText": "Las fichas de Bosque otorgan +1 punto adicional para cualquier raza.",
+      "mechanicalText_en": "Forest tiles grant +1 additional point for any race.",
+      "effects": [
+        { "type": "bonus_per_terrain", "trigger": "on_era1_close", "terrain": "forest", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "world_era1_07",
+      "name": "Las Llanuras se Extienden",
+      "name_en": "The Plains Stretch Wide",
+      "type": "world_era1",
+      "flavorText": "El viento dibuja mares de pasto sobre los campos de batalla.",
+      "flavorText_en": "The wind paints seas of grass over the battlefields.",
+      "mechanicalText": "Las fichas de Llanura otorgan +1 punto adicional para cualquier raza.",
+      "mechanicalText_en": "Plain tiles grant +1 additional point for any race.",
+      "effects": [
+        { "type": "bonus_per_terrain", "trigger": "on_era1_close", "terrain": "plain", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "world_era1_08",
+      "name": "Los Pantanos Hierven",
+      "name_en": "The Swamps Boil",
+      "type": "world_era1",
+      "flavorText": "El agua recuerda la sangre derramada y la convierte en barro fértil.",
+      "flavorText_en": "The water remembers the spilled blood and turns it into fertile mud.",
+      "mechanicalText": "Las fichas de Pantano otorgan +1 punto adicional para cualquier raza.",
+      "mechanicalText_en": "Swamp tiles grant +1 additional point for any race.",
+      "effects": [
+        { "type": "bonus_per_terrain", "trigger": "on_era1_close", "terrain": "swamp", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "world_era1_09",
+      "name": "Las Viejas Rutas Recuerdan",
+      "name_en": "The Old Roads Remember",
+      "type": "world_era1",
+      "flavorText": "Los caminos antiguos aún laten bajo tierra.",
+      "flavorText_en": "The ancient roads still pulse beneath the earth.",
+      "mechanicalText": "La ruta al borde requiere solo 2 fichas de Ruta en vez de 3.",
+      "mechanicalText_en": "Road connections require only 2 Road tiles instead of 3.",
+      "effects": [
+        { "type": "modify_road_requirement", "trigger": "on_era1_close", "newRequirement": 2 }
+      ]
+    },
+    {
+      "id": "world_era1_10",
+      "name": "El Silencio del Caos",
+      "name_en": "The Silence of Chaos",
+      "type": "world_era1",
+      "flavorText": "Nadie habla durante el reformado. Cada reino se hace solo.",
+      "flavorText_en": "No one speaks during the reshaping. Each kingdom stands alone.",
+      "mechanicalText": "No hay fase de intercambio. En compensación, cada jugador roba 19 fichas.",
+      "mechanicalText_en": "No trade phase. As compensation, each player draws 19 tiles.",
+      "effects": [
+        { "type": "skip_trade_phase", "trigger": "on_trade" },
+        { "type": "modify_draw_count", "trigger": "on_draw", "delta": 1 }
+      ]
+    },
+    {
+      "id": "world_era1_11",
+      "name": "Los Errantes de Vali",
+      "name_en": "The Wanderers of Vali",
+      "type": "world_era1",
+      "flavorText": "Pueblos sin hogar vagan entre los reinos.",
+      "flavorText_en": "Homeless peoples wander between the kingdoms.",
+      "mechanicalText": "Si algún jugador tiene una Reliquia, todos los jugadores reciben +3 puntos de construcción al final de la Era I.",
+      "mechanicalText_en": "If any player has a Relic, all players receive +3 construction points at the end of Era I.",
+      "effects": [
+        { "type": "all_players_bonus", "trigger": "on_era1_close", "bonus": 3, "condition": "any_player_has_relic" }
+      ]
+    },
+    {
+      "id": "world_era1_12",
+      "name": "El Eco del Primer Cataclismo",
+      "name_en": "Echo of the First Cataclysm",
+      "type": "world_era1",
+      "flavorText": "La tierra tiembla todavía.",
+      "flavorText_en": "The earth still trembles.",
+      "mechanicalText": "Después de la fase de intercambio, cada jugador puede descartar 1 ficha y robar 2 nuevas.",
+      "mechanicalText_en": "After the trade phase, each player may discard 1 tile and draw 2 new ones.",
+      "effects": [
+        { "type": "discard_and_redraw", "trigger": "on_placement", "maxDiscard": 1, "forced": false }
+      ]
+    },
+    {
+      "id": "world_era1_13",
+      "name": "La Paz de Dhakhan",
+      "name_en": "Dhakhan's Peace",
+      "type": "world_era1",
+      "flavorText": "El tirano, en su soberbia, permite que los pueblos florezcan. Piensa que serán presa más rica.",
+      "flavorText_en": "The tyrant, in his arrogance, lets the peoples flourish. He thinks they'll make richer prey.",
+      "mechanicalText": "Cada jugador roba 2 Cartas de Era I y elige quedarse con 1.",
+      "mechanicalText_en": "Each player draws 2 Era I Cards and chooses to keep 1.",
+      "effects": [
+        { "type": "draw_two_era_cards_keep_one", "trigger": "on_reveal" }
+      ]
+    },
+    {
+      "id": "world_era1_14",
+      "name": "Los Cantos de los Caídos",
+      "name_en": "Songs of the Fallen",
+      "type": "world_era1",
+      "flavorText": "Las voces de los pueblos exterminados bendicen a los sobrevivientes.",
+      "flavorText_en": "The voices of the exterminated peoples bless the survivors.",
+      "mechanicalText": "Cada jugador, aunque sean 5 o 6 en la partida, recibe 1 Reliquia de los Caídos.",
+      "mechanicalText_en": "Each player, even with 5 or 6 in the game, receives 1 Relic of the Fallen.",
+      "effects": [
+        { "type": "grant_relic_to_all", "trigger": "on_reveal" }
+      ]
+    },
+    {
+      "id": "world_era1_15",
+      "name": "La Sombra se Acerca",
+      "name_en": "The Shadow Approaches",
+      "type": "world_era1",
+      "flavorText": "Dhakhan envía avanzadas.",
+      "flavorText_en": "Dhakhan sends his vanguard.",
+      "mechanicalText": "Cada jugador pierde 2 fichas al azar después del robo. Sin compensación.",
+      "mechanicalText_en": "Each player loses 2 random tiles after drawing. No compensation.",
+      "effects": [
+        { "type": "return_tiles_to_pile", "trigger": "on_draw", "count": 2, "random": true }
+      ]
+    },
+    {
+      "id": "world_era1_16",
+      "name": "La Bendición de los Ancestros",
+      "name_en": "The Ancestors' Blessing",
+      "type": "world_era1",
+      "flavorText": "Los espíritus de los antiguos reyes derraman su sabiduría sobre la tierra nueva.",
+      "flavorText_en": "The spirits of ancient kings pour their wisdom upon the new land.",
+      "mechanicalText": "Cada jugador recibe +5 puntos de construcción al final de la Era I.",
+      "mechanicalText_en": "Each player receives +5 construction points at the end of Era I.",
+      "effects": [
+        { "type": "flat_bonus", "trigger": "on_era1_close", "bonus": 5 }
+      ]
+    },
+    {
+      "id": "world_era1_17",
+      "name": "Los Caminos de Cristal",
+      "name_en": "The Crystal Roads",
+      "type": "world_era1",
+      "flavorText": "Rutas brillantes emergen del suelo, conectando reinos olvidados.",
+      "flavorText_en": "Gleaming routes emerge from the ground, connecting forgotten kingdoms.",
+      "mechanicalText": "Las fichas de Ruta otorgan +2 puntos adicionales cada una al final de la Era I.",
+      "mechanicalText_en": "Road tiles grant +2 additional points each at the end of Era I.",
+      "effects": [
+        { "type": "bonus_per_road", "trigger": "on_era1_close", "bonus": 2 }
+      ]
+    },
+    {
+      "id": "world_era1_18",
+      "name": "La Tierra Dividida",
+      "name_en": "The Divided Land",
+      "type": "world_era1",
+      "flavorText": "Grietas profundas fragmentan los territorios, forzando a cada reino a adaptarse.",
+      "flavorText_en": "Deep cracks fragment the territories, forcing each kingdom to adapt.",
+      "mechanicalText": "El bono de diversidad se duplica: 4 tipos = +10, 3 tipos = +4.",
+      "mechanicalText_en": "Diversity bonus is doubled: 4 types = +10, 3 types = +4.",
+      "effects": [
+        { "type": "bonus_for_all_terrains", "trigger": "on_era1_close", "minPerTerrain": 1, "bonus": 5 }
+      ]
+    },
+    {
+      "id": "world_era1_19",
+      "name": "El Pacto de Sangre",
+      "name_en": "The Blood Pact",
+      "type": "world_era1",
+      "flavorText": "Los reinos juran lealtad temporal. El comercio fluye con libertad inusitada.",
+      "flavorText_en": "The kingdoms swear temporary loyalty. Trade flows with unusual freedom.",
+      "mechanicalText": "Durante la fase de intercambio, cada jugador puede realizar hasta 3 intercambios.",
+      "mechanicalText_en": "During the trade phase, each player can make up to 3 trades.",
+      "effects": [
+        { "type": "modify_trade_limit", "trigger": "on_trade", "newLimit": 3 }
+      ]
+    },
+    {
+      "id": "world_era1_20",
+      "name": "La Cosecha Temprana",
+      "name_en": "The Early Harvest",
+      "type": "world_era1",
+      "flavorText": "Los campos dan fruto antes de tiempo, como si la tierra supiera lo que viene.",
+      "flavorText_en": "The fields bear fruit ahead of time, as if the land knows what is coming.",
+      "mechanicalText": "Cada jugador recibe +1 punto por cada ficha de su terreno favorable al final de la Era I.",
+      "mechanicalText_en": "Each player receives +1 point per favorable terrain tile at the end of Era I.",
+      "effects": [
+        { "type": "bonus_per_favorable", "trigger": "on_era1_close", "bonus": 1 }
+      ]
+    }
+  ]
+}

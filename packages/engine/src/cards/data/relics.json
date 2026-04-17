@@ -1,0 +1,246 @@
+{
+  "version": "1.0.0",
+  "description": "Relics of the Fallen. Each player receives 1 at the start (1-4 players only).",
+  "relics": [
+    {
+      "id": "relic_01",
+      "name": "Los Últimos Herreros Enanos",
+      "name_en": "The Last Dwarven Smiths",
+      "flavorText": "Un puñado de maestros forjadores sobrevivió al saqueo de su montaña.",
+      "flavorText_en": "A handful of master smiths survived the plundering of their mountain.",
+      "mechanicalText": "Una vez por partida, forjás 3 unidades al costo de 1.",
+      "mechanicalText_en": "Once per game, forge 3 units at the cost of 1.",
+      "effects": [
+        { "type": "free_unit", "trigger": "on_era3_start", "unit": "forge_discount_3for1", "count": 1 }
+      ]
+    },
+    {
+      "id": "relic_02",
+      "name": "El Archivo Elfo Perdido",
+      "name_en": "The Lost Elven Archive",
+      "flavorText": "Pergaminos que enseñan lo que el mundo olvidó.",
+      "flavorText_en": "Scrolls that teach what the world forgot.",
+      "mechanicalText": "Empezás la Era II con 1 nivel de Ciencia gratis.",
+      "mechanicalText_en": "Start Era II with 1 free Science level.",
+      "effects": [
+        { "type": "free_tech_level", "trigger": "on_era2_start", "tech": "science", "level": 1 }
+      ]
+    },
+    {
+      "id": "relic_03",
+      "name": "Los Refugiados Goblin",
+      "name_en": "The Goblin Refugees",
+      "flavorText": "Pequeños y ágiles, se unen a tu causa con sus bestias aladas.",
+      "flavorText_en": "Small and nimble, they join your cause with their winged beasts.",
+      "mechanicalText": "Empezás la Era III con 2 Unidades Voladoras gratis.",
+      "mechanicalText_en": "Start Era III with 2 free Flying Units.",
+      "effects": [
+        { "type": "free_unit", "trigger": "on_era3_start", "unit": "flying", "count": 2 }
+      ]
+    },
+    {
+      "id": "relic_04",
+      "name": "El Tesoro de los Gigantes",
+      "name_en": "The Giants' Treasure",
+      "flavorText": "Un cofre de oro forjado antes del primer cataclismo.",
+      "flavorText_en": "A chest of gold forged before the first cataclysm.",
+      "mechanicalText": "Empezás la Era III con 15 monedas extra.",
+      "mechanicalText_en": "Start Era III with 15 extra coins.",
+      "effects": [
+        { "type": "flat_bonus", "trigger": "on_era3_start", "bonus": 15 }
+      ]
+    },
+    {
+      "id": "relic_05",
+      "name": "Los Cantos de los Semiorcos",
+      "name_en": "Songs of the Half-Orcs",
+      "flavorText": "Canciones que recuerdan a los Wrought quiénes fueron.",
+      "flavorText_en": "Songs that remind the Wrought who they once were.",
+      "mechanicalText": "Una vez por partida, un Wrought recuerda su nombre y deserta (eliminás 1 Wrought sin combate).",
+      "mechanicalText_en": "Once per game, a Wrought remembers its name and deserts (remove 1 Wrought without combat).",
+      "effects": [
+        { "type": "free_unit", "trigger": "on_era3_start", "unit": "wrought_desertion", "count": 1 }
+      ]
+    },
+    {
+      "id": "relic_06",
+      "name": "Las Raíces Élficas",
+      "name_en": "The Elven Roots",
+      "flavorText": "Un esqueje del Árbol Blanco sigue vivo en tu capital.",
+      "flavorText_en": "A cutting of the White Tree still lives in your capital.",
+      "mechanicalText": "Cada ficha de Bosque en tu reino otorga +1 punto de construcción adicional al cerrar la Era I.",
+      "mechanicalText_en": "Each Forest tile in your kingdom grants +1 additional construction point at the end of Era I.",
+      "effects": [
+        { "type": "bonus_per_terrain", "trigger": "on_era1_close", "terrain": "forest", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "relic_07",
+      "name": "Las Forjas Orcas",
+      "name_en": "The Orcish Forges",
+      "flavorText": "Hornos alimentados con fuego de pantano.",
+      "flavorText_en": "Furnaces fed with swamp fire.",
+      "mechanicalText": "Una vez por partida, tus unidades de Infantería duplican su ataque durante un combate.",
+      "mechanicalText_en": "Once per game, your Infantry units double their attack during a battle.",
+      "effects": [
+        { "type": "free_unit", "trigger": "on_era3_start", "unit": "infantry_double_attack", "count": 1 }
+      ]
+    },
+    {
+      "id": "relic_08",
+      "name": "Las Piedras Humanas",
+      "name_en": "The Human Stones",
+      "flavorText": "Murallas recicladas de ciudades caídas.",
+      "flavorText_en": "Walls recycled from fallen cities.",
+      "mechanicalText": "Cada ficha de Montaña en tu reino otorga +1 punto adicional al cerrar la Era I.",
+      "mechanicalText_en": "Each Mountain tile in your kingdom grants +1 additional point at the end of Era I.",
+      "effects": [
+        { "type": "bonus_per_terrain", "trigger": "on_era1_close", "terrain": "mountain", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "relic_09",
+      "name": "El Mapa Perdido de los Semielfos",
+      "name_en": "The Half-Elves' Lost Map",
+      "flavorText": "Las rutas secretas de un pueblo que ya no existe.",
+      "flavorText_en": "The secret routes of a people who no longer exist.",
+      "mechanicalText": "Tus rutas requieren 1 ficha menos para conectarse.",
+      "mechanicalText_en": "Your roads require 1 fewer tile to connect.",
+      "effects": [
+        { "type": "modify_road_requirement", "trigger": "on_era1_close", "newRequirement": 2 }
+      ]
+    },
+    {
+      "id": "relic_10",
+      "name": "El Estandarte de los Gigantes",
+      "name_en": "The Giants' Banner",
+      "flavorText": "Una bandera bordada con cabellos de un rey caído.",
+      "flavorText_en": "A banner woven with the hair of a fallen king.",
+      "mechanicalText": "Empezás la Era III con 1 Unidad de Asedio gratis.",
+      "mechanicalText_en": "Start Era III with 1 free Siege Unit.",
+      "effects": [
+        { "type": "free_unit", "trigger": "on_era3_start", "unit": "siege", "count": 1 }
+      ]
+    },
+    {
+      "id": "relic_11",
+      "name": "El Tratado Semiorco",
+      "name_en": "The Half-Orc Treaty",
+      "flavorText": "Un pacto sangriento que promete ayuda en tiempos de guerra.",
+      "flavorText_en": "A blood pact that promises aid in times of war.",
+      "mechanicalText": "Empezás la Era II con nivel 1 de Guerra gratis.",
+      "mechanicalText_en": "Start Era II with War level 1 for free.",
+      "effects": [
+        { "type": "free_tech_level", "trigger": "on_era2_start", "tech": "war", "level": 1 }
+      ]
+    },
+    {
+      "id": "relic_12",
+      "name": "El Libro de los Últimos Días",
+      "name_en": "Book of the Last Days",
+      "flavorText": "Crónicas escritas por los últimos sobrevivientes de una raza.",
+      "flavorText_en": "Chronicles written by the last survivors of a race.",
+      "mechanicalText": "Al comenzar la Era I, robás 2 Cartas de Era I y elegís quedarte con 1.",
+      "mechanicalText_en": "At the start of Era I, draw 2 Era I Cards and choose to keep 1.",
+      "effects": [
+        { "type": "draw_two_era_cards_keep_one", "trigger": "on_reveal" }
+      ]
+    },
+    {
+      "id": "relic_13",
+      "name": "La Corona de Cenizas",
+      "name_en": "The Crown of Ashes",
+      "flavorText": "Forjada en la destrucción del viejo mundo, aún arde con poder.",
+      "flavorText_en": "Forged in the destruction of the old world, it still burns with power.",
+      "mechanicalText": "+7 puntos de construcción al final de la Era I.",
+      "mechanicalText_en": "+7 construction points at the end of Era I.",
+      "effects": [
+        { "type": "flat_bonus", "trigger": "on_era1_close", "bonus": 7 }
+      ]
+    },
+    {
+      "id": "relic_14",
+      "name": "El Amuleto del Pantano",
+      "name_en": "The Swamp Amulet",
+      "flavorText": "Un talismán de jade tallado por chamanes de las ciénagas.",
+      "flavorText_en": "A jade talisman carved by swamp shamans.",
+      "mechanicalText": "+1 punto por cada ficha de Pantano al final de la Era I.",
+      "mechanicalText_en": "+1 point per Swamp tile at the end of Era I.",
+      "effects": [
+        { "type": "bonus_per_terrain", "trigger": "on_era1_close", "terrain": "swamp", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "relic_15",
+      "name": "El Cuerno de la Llanura",
+      "name_en": "The Horn of the Plains",
+      "flavorText": "Su sonido resuena por campos infinitos, llamando a los guerreros.",
+      "flavorText_en": "Its sound echoes across infinite fields, calling warriors home.",
+      "mechanicalText": "+1 punto por cada ficha de Llanura al final de la Era I.",
+      "mechanicalText_en": "+1 point per Plain tile at the end of Era I.",
+      "effects": [
+        { "type": "bonus_per_terrain", "trigger": "on_era1_close", "terrain": "plain", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "relic_16",
+      "name": "La Brújula del Explorador",
+      "name_en": "The Explorer's Compass",
+      "flavorText": "Siempre señala hacia la tierra más rica.",
+      "flavorText_en": "It always points toward the richest land.",
+      "mechanicalText": "Robás 19 fichas en vez de 18.",
+      "mechanicalText_en": "Draw 19 tiles instead of 18.",
+      "effects": [
+        { "type": "modify_draw_count", "trigger": "on_draw", "delta": 1 }
+      ]
+    },
+    {
+      "id": "relic_17",
+      "name": "El Sello de los Comerciantes",
+      "name_en": "The Merchants' Seal",
+      "flavorText": "Un sello de obsidiana que abre las puertas de cualquier mercado.",
+      "flavorText_en": "An obsidian seal that opens the doors of any market.",
+      "mechanicalText": "Podés intercambiar hasta 2 fichas en vez de 1 durante la fase de intercambio.",
+      "mechanicalText_en": "You can trade up to 2 tiles instead of 1 during the trade phase.",
+      "effects": [
+        { "type": "modify_trade_limit", "trigger": "on_trade", "newLimit": 2 }
+      ]
+    },
+    {
+      "id": "relic_18",
+      "name": "La Piedra de la Armonía",
+      "name_en": "The Harmony Stone",
+      "flavorText": "Un cristal que vibra con la energía de la tierra equilibrada.",
+      "flavorText_en": "A crystal that resonates with the energy of balanced earth.",
+      "mechanicalText": "Si los 4 terrenos productivos tienen al menos 2 fichas, ganás +6 puntos adicionales.",
+      "mechanicalText_en": "If all 4 productive terrains have at least 2 tiles, gain +6 bonus points.",
+      "effects": [
+        { "type": "bonus_for_all_terrains", "trigger": "on_era1_close", "minPerTerrain": 2, "bonus": 6 }
+      ]
+    },
+    {
+      "id": "relic_19",
+      "name": "El Pergamino del Sabio",
+      "name_en": "The Sage's Scroll",
+      "flavorText": "Conocimiento ancestral que otorga ventaja en la era por venir.",
+      "flavorText_en": "Ancestral knowledge that grants an advantage in the era to come.",
+      "mechanicalText": "Empezás la Era II con nivel 1 de Recursos gratis.",
+      "mechanicalText_en": "Start Era II with Resources level 1 for free.",
+      "effects": [
+        { "type": "free_tech_level", "trigger": "on_era2_start", "tech": "resources", "level": 1 }
+      ]
+    },
+    {
+      "id": "relic_20",
+      "name": "La Llama Eterna",
+      "name_en": "The Eternal Flame",
+      "flavorText": "Un fuego que nunca se apaga, símbolo del espíritu indomable.",
+      "flavorText_en": "A fire that never goes out, symbol of the indomitable spirit.",
+      "mechanicalText": "+1 punto por cada ficha de tu terreno favorable al final de la Era I.",
+      "mechanicalText_en": "+1 point per favorable terrain tile at the end of Era I.",
+      "effects": [
+        { "type": "bonus_per_favorable", "trigger": "on_era1_close", "bonus": 1 }
+      ]
+    }
+  ]
+}

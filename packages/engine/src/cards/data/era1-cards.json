@@ -1,0 +1,528 @@
+{
+  "version": "1.0.0",
+  "description": "Era I personal cards. Each player draws 1 at the beginning of Era I.",
+  "cards": [
+    {
+      "id": "era1_01",
+      "name": "El Geómante Ancestral",
+      "name_en": "The Ancestral Geomancer",
+      "type": "era1",
+      "flavorText": "Un sabio lee la tierra como si fuera un libro.",
+      "flavorText_en": "A sage reads the earth like an open book.",
+      "mechanicalText": "Después de robar tus 18 fichas, descartá hasta 5 y robá las mismas nuevas.",
+      "mechanicalText_en": "After drawing your 18 tiles, discard up to 5 and draw the same number of new ones.",
+      "effects": [
+        { "type": "discard_and_redraw", "trigger": "on_draw", "maxDiscard": 5, "forced": false }
+      ]
+    },
+    {
+      "id": "era1_02",
+      "name": "La Mano del Topógrafo",
+      "name_en": "The Surveyor's Hand",
+      "type": "era1",
+      "flavorText": "Los primeros mapas de Vali son trazados por tu pueblo.",
+      "flavorText_en": "The first maps of Vali are drawn by your people.",
+      "mechanicalText": "En vez de robar al azar, elegís manualmente 5 fichas de la pila. Las otras 13 se roban al azar.",
+      "mechanicalText_en": "Instead of drawing randomly, you manually pick 5 tiles from the pile. The other 13 are drawn randomly.",
+      "effects": [
+        { "type": "manual_pick", "trigger": "on_draw", "count": 5 }
+      ]
+    },
+    {
+      "id": "era1_03",
+      "name": "La Migración Antigua",
+      "name_en": "The Ancient Migration",
+      "type": "era1",
+      "flavorText": "Caravanas de supervivientes llegan a tu reino.",
+      "flavorText_en": "Caravans of survivors arrive at your kingdom.",
+      "mechanicalText": "Durante la fase de intercambio, podés dar hasta 3 fichas y recibir hasta 3.",
+      "mechanicalText_en": "During the trade phase, you can give up to 3 tiles and receive up to 3.",
+      "effects": [
+        { "type": "modify_trade_limit", "trigger": "on_trade", "newLimit": 3 }
+      ]
+    },
+    {
+      "id": "era1_04",
+      "name": "El Refugio Oculto",
+      "name_en": "The Hidden Refuge",
+      "type": "era1",
+      "flavorText": "Tu pueblo guardó semillas y piedras en cuevas secretas.",
+      "flavorText_en": "Your people hid seeds and stones in secret caves.",
+      "mechanicalText": "Robás 20 fichas en vez de 18. Descartá 2 a tu elección antes de colocar.",
+      "mechanicalText_en": "Draw 20 tiles instead of 18. Discard 2 of your choice before placing.",
+      "effects": [
+        { "type": "modify_draw_count", "trigger": "on_draw", "delta": 2 },
+        { "type": "discard_and_redraw", "trigger": "on_placement", "maxDiscard": 2, "forced": true }
+      ]
+    },
+    {
+      "id": "era1_05",
+      "name": "El Eco del Cataclismo",
+      "name_en": "Echo of the Cataclysm",
+      "type": "era1",
+      "flavorText": "El temblor continúa en los huesos de tu reino.",
+      "flavorText_en": "The tremor continues in the bones of your kingdom.",
+      "mechanicalText": "Tras ver tus fichas, descartá hasta 6 y robá las mismas nuevas.",
+      "mechanicalText_en": "After seeing your tiles, discard up to 6 and draw the same number of new ones.",
+      "effects": [
+        { "type": "discard_and_redraw", "trigger": "on_draw", "maxDiscard": 6, "forced": false }
+      ]
+    },
+    {
+      "id": "era1_06",
+      "name": "El Pacto con los Elementales",
+      "name_en": "Pact of the Elementals",
+      "type": "era1",
+      "flavorText": "Los espíritus primordiales aceptan a tu reino.",
+      "flavorText_en": "The primordial spirits accept your kingdom.",
+      "mechanicalText": "Dos fichas de tu terreno favorable cuentan doble para puntos al cerrar la Era I.",
+      "mechanicalText_en": "Two of your favorable terrain tiles count double for points at the end of Era I.",
+      "effects": [
+        { "type": "double_favorable_tiles", "trigger": "on_era1_close", "count": 2 }
+      ]
+    },
+    {
+      "id": "era1_07",
+      "name": "La Visión del Druida",
+      "name_en": "The Druid's Vision",
+      "type": "era1",
+      "flavorText": "Un oráculo viaja entre los reinos y ve lo que otros esconden.",
+      "flavorText_en": "An oracle travels between kingdoms and sees what others hide.",
+      "mechanicalText": "Antes de la fase de intercambio, mirá las fichas de todos los demás jugadores.",
+      "mechanicalText_en": "Before the trade phase, view all other players' tiles.",
+      "effects": [
+        { "type": "view_opponents_tiles", "trigger": "on_trade" }
+      ]
+    },
+    {
+      "id": "era1_08",
+      "name": "Las Ruinas del Caos",
+      "name_en": "Ruins of Chaos",
+      "type": "era1",
+      "flavorText": "Tu pueblo encuentra sentido en los escombros.",
+      "flavorText_en": "Your people find meaning in the rubble.",
+      "mechanicalText": "Después de la fase de intercambio, descartá 2 fichas y robá 2 nuevas de la pila.",
+      "mechanicalText_en": "After the trade phase, discard 2 tiles and draw 2 new ones from the pile.",
+      "effects": [
+        { "type": "discard_and_redraw", "trigger": "on_placement", "maxDiscard": 2, "forced": true }
+      ]
+    },
+    {
+      "id": "era1_09",
+      "name": "La Bendición del Bosque",
+      "name_en": "Blessing of the Forest",
+      "type": "era1",
+      "flavorText": "Los árboles hablan en tu idioma.",
+      "flavorText_en": "The trees speak your language.",
+      "mechanicalText": "Cada ficha de Bosque en tu reino da +1 punto adicional.",
+      "mechanicalText_en": "Each Forest tile in your kingdom grants +1 additional point.",
+      "effects": [
+        { "type": "bonus_per_terrain", "trigger": "on_era1_close", "terrain": "forest", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "era1_10",
+      "name": "Las Venas de Piedra",
+      "name_en": "Veins of Stone",
+      "type": "era1",
+      "flavorText": "Los metales encuentran tus manos.",
+      "flavorText_en": "The metals find your hands.",
+      "mechanicalText": "Cada ficha de Montaña en tu reino da +1 punto adicional.",
+      "mechanicalText_en": "Each Mountain tile in your kingdom grants +1 additional point.",
+      "effects": [
+        { "type": "bonus_per_terrain", "trigger": "on_era1_close", "terrain": "mountain", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "era1_11",
+      "name": "Llanuras Fértiles",
+      "name_en": "Fertile Plains",
+      "type": "era1",
+      "flavorText": "La tierra da dos cosechas por estación.",
+      "flavorText_en": "The land yields two harvests per season.",
+      "mechanicalText": "Cada ficha de Llanura en tu reino da +1 punto adicional.",
+      "mechanicalText_en": "Each Plain tile in your kingdom grants +1 additional point.",
+      "effects": [
+        { "type": "bonus_per_terrain", "trigger": "on_era1_close", "terrain": "plain", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "era1_12",
+      "name": "Los Pantanos Sagrados",
+      "name_en": "The Sacred Swamps",
+      "type": "era1",
+      "flavorText": "Las aguas muertas esconden dones olvidados.",
+      "flavorText_en": "The dead waters hide forgotten gifts.",
+      "mechanicalText": "Cada ficha de Pantano en tu reino da +1 punto adicional.",
+      "mechanicalText_en": "Each Swamp tile in your kingdom grants +1 additional point.",
+      "effects": [
+        { "type": "bonus_per_terrain", "trigger": "on_era1_close", "terrain": "swamp", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "era1_13",
+      "name": "La Tierra Responde al Justo",
+      "name_en": "The Land Answers the Just",
+      "type": "era1",
+      "flavorText": "Vali reconoce a quien la ama.",
+      "flavorText_en": "Vali recognizes those who love her.",
+      "mechanicalText": "Si tu bono de terrenos es positivo, duplicalo. Si es negativo, se vuelve 0.",
+      "mechanicalText_en": "If your terrain bonus is positive, double it. If negative, it becomes 0.",
+      "effects": [
+        { "type": "double_if_positive", "trigger": "on_era1_close", "clampNegativeToZero": true }
+      ]
+    },
+    {
+      "id": "era1_14",
+      "name": "La Ira de los Pantanos",
+      "name_en": "Wrath of the Swamps",
+      "type": "era1",
+      "flavorText": "Las criaturas del barro aceptan servir a tu reino.",
+      "flavorText_en": "The creatures of the mud agree to serve your kingdom.",
+      "mechanicalText": "Si tenés 4 o más fichas de Pantano, empezás la Era III con 2 Unidades de Distancia gratis.",
+      "mechanicalText_en": "If you have 4+ Swamp tiles, start Era III with 2 free Ranged Units.",
+      "effects": [
+        { "type": "free_unit", "trigger": "on_era3_start", "unit": "ranged", "count": 2, "conditionTerrain": "swamp", "conditionCount": 4 }
+      ]
+    },
+    {
+      "id": "era1_15",
+      "name": "El Grito de las Montañas",
+      "name_en": "Cry of the Mountains",
+      "type": "era1",
+      "flavorText": "Las cumbres despiertan y envían sus guardianes.",
+      "flavorText_en": "The peaks awaken and send their guardians.",
+      "mechanicalText": "Si tenés 4 o más fichas de Montaña, empezás la Era III con 1 Unidad de Asedio gratis.",
+      "mechanicalText_en": "If you have 4+ Mountain tiles, start Era III with 1 free Siege Unit.",
+      "effects": [
+        { "type": "free_unit", "trigger": "on_era3_start", "unit": "siege", "count": 1, "conditionTerrain": "mountain", "conditionCount": 4 }
+      ]
+    },
+    {
+      "id": "era1_16",
+      "name": "El Silencio de los Bosques",
+      "name_en": "Silence of the Forests",
+      "type": "era1",
+      "flavorText": "Las sombras verdes esconden espías alados.",
+      "flavorText_en": "The green shadows hide winged spies.",
+      "mechanicalText": "Si tenés 4 o más fichas de Bosque, empezás la Era III con 1 Unidad Voladora gratis.",
+      "mechanicalText_en": "If you have 4+ Forest tiles, start Era III with 1 free Flying Unit.",
+      "effects": [
+        { "type": "free_unit", "trigger": "on_era3_start", "unit": "flying", "count": 1, "conditionTerrain": "forest", "conditionCount": 4 }
+      ]
+    },
+    {
+      "id": "era1_17",
+      "name": "La Promesa de las Llanuras",
+      "name_en": "Promise of the Plains",
+      "type": "era1",
+      "flavorText": "Los jinetes de tu pueblo galopan hacia la guerra.",
+      "flavorText_en": "Your people's riders gallop toward war.",
+      "mechanicalText": "Si tenés 4 o más fichas de Llanura, empezás la Era III con 2 Unidades Montadas gratis.",
+      "mechanicalText_en": "If you have 4+ Plain tiles, start Era III with 2 free Mounted Units.",
+      "effects": [
+        { "type": "free_unit", "trigger": "on_era3_start", "unit": "mounted", "count": 2, "conditionTerrain": "plain", "conditionCount": 4 }
+      ]
+    },
+    {
+      "id": "era1_18",
+      "name": "El Don de los Exiliados",
+      "name_en": "Gift of the Exiles",
+      "type": "era1",
+      "flavorText": "Guerreros sin hogar juran lealtad a tu rey.",
+      "flavorText_en": "Homeless warriors swear loyalty to your king.",
+      "mechanicalText": "Empezás la Era III con 3 Unidades de Infantería gratis, sin condición.",
+      "mechanicalText_en": "Start Era III with 3 free Infantry Units, no conditions.",
+      "effects": [
+        { "type": "free_unit", "trigger": "on_era3_start", "unit": "infantry", "count": 3 }
+      ]
+    },
+    {
+      "id": "era1_19",
+      "name": "El Sabio de la Capital",
+      "name_en": "The Capital's Sage",
+      "type": "era1",
+      "flavorText": "Un maestro antiguo elige tu corte como refugio.",
+      "flavorText_en": "An ancient master chooses your court as refuge.",
+      "mechanicalText": "Empezás la Era II con nivel 1 de Ciencia activo y +3 puntos adicionales.",
+      "mechanicalText_en": "Start Era II with Science level 1 active and +3 bonus points.",
+      "effects": [
+        { "type": "free_tech_level", "trigger": "on_era2_start", "tech": "science", "level": 1, "bonusPoints": 3 }
+      ]
+    },
+    {
+      "id": "era1_20",
+      "name": "El Guardián de los Mercados",
+      "name_en": "Guardian of the Markets",
+      "type": "era1",
+      "flavorText": "Los mercaderes del mundo roto reconstruyen sus rutas bajo tu bandera.",
+      "flavorText_en": "The merchants of the broken world rebuild their routes under your banner.",
+      "mechanicalText": "Empezás la Era II con nivel 1 de Economía activo y +3 puntos adicionales.",
+      "mechanicalText_en": "Start Era II with Economy level 1 active and +3 bonus points.",
+      "effects": [
+        { "type": "free_tech_level", "trigger": "on_era2_start", "tech": "economy", "level": 1, "bonusPoints": 3 }
+      ]
+    },
+    {
+      "id": "era1_21",
+      "name": "La Fundición Bendita",
+      "name_en": "The Blessed Foundry",
+      "type": "era1",
+      "flavorText": "Los herreros forjan armas con fuego de las estrellas caídas.",
+      "flavorText_en": "Blacksmiths forge weapons with fire from fallen stars.",
+      "mechanicalText": "Empezás la Era II con nivel 1 de Guerra activo y +3 puntos adicionales.",
+      "mechanicalText_en": "Start Era II with War level 1 active and +3 bonus points.",
+      "effects": [
+        { "type": "free_tech_level", "trigger": "on_era2_start", "tech": "war", "level": 1, "bonusPoints": 3 }
+      ]
+    },
+    {
+      "id": "era1_22",
+      "name": "El Jardín Eterno",
+      "name_en": "The Eternal Garden",
+      "type": "era1",
+      "flavorText": "Un huerto sagrado da frutos todo el año.",
+      "flavorText_en": "A sacred orchard bears fruit all year round.",
+      "mechanicalText": "Empezás la Era II con nivel 1 de Recursos activo y +3 puntos adicionales.",
+      "mechanicalText_en": "Start Era II with Resources level 1 active and +3 bonus points.",
+      "effects": [
+        { "type": "free_tech_level", "trigger": "on_era2_start", "tech": "resources", "level": 1, "bonusPoints": 3 }
+      ]
+    },
+    {
+      "id": "era1_23",
+      "name": "El Pacto Fronterizo",
+      "name_en": "The Border Pact",
+      "type": "era1",
+      "flavorText": "Tus reinos vecinos prometen paso libre a tus mensajeros.",
+      "flavorText_en": "Your neighboring kingdoms promise free passage to your messengers.",
+      "mechanicalText": "Tu reino no necesita rutas esta partida. Las fichas de Ruta que hayas robado se descartan y robás la misma cantidad de fichas nuevas de la pila.",
+      "mechanicalText_en": "Your kingdom doesn't need roads this game. Road tiles you drew are discarded and you draw the same number of new tiles.",
+      "effects": [
+        { "type": "waive_road_requirement", "trigger": "on_era1_close" }
+      ]
+    },
+    {
+      "id": "era1_24",
+      "name": "El Camino Corto",
+      "name_en": "The Short Path",
+      "type": "era1",
+      "flavorText": "Un atajo antiguo emerge del bosque.",
+      "flavorText_en": "An ancient shortcut emerges from the forest.",
+      "mechanicalText": "El mínimo de rutas requeridas baja de 3 a 1. Los bonos se aplican a partir de 2 rutas.",
+      "mechanicalText_en": "Minimum required roads drops from 3 to 1. Bonuses apply starting from 2 roads.",
+      "effects": [
+        { "type": "modify_road_requirement", "trigger": "on_era1_close", "newRequirement": 1 }
+      ]
+    },
+    {
+      "id": "era1_25",
+      "name": "Los Cuatro Elementos",
+      "name_en": "The Four Elements",
+      "type": "era1",
+      "flavorText": "Tu reino abraza la diversidad de Vali.",
+      "flavorText_en": "Your kingdom embraces Vali's diversity.",
+      "mechanicalText": "Si tenés al menos 3 fichas de cada uno de los cuatro terrenos productivos, ganás +10 puntos adicionales.",
+      "mechanicalText_en": "If you have at least 3 tiles of each of the four productive terrains, gain +10 bonus points.",
+      "effects": [
+        { "type": "bonus_for_all_terrains", "trigger": "on_era1_close", "minPerTerrain": 3, "bonus": 10 }
+      ]
+    },
+    {
+      "id": "era1_26",
+      "name": "Los Puentes del Reformado",
+      "name_en": "Bridges of the Reshaping",
+      "type": "era1",
+      "flavorText": "Ingenieros de todos los reinos colaboran en tu tierra.",
+      "flavorText_en": "Engineers from all kingdoms collaborate in your land.",
+      "mechanicalText": "Cada ficha de Ruta en tu reino otorga +2 puntos adicionales, además del bono de rutas normal.",
+      "mechanicalText_en": "Each Road tile in your kingdom grants +2 additional points, on top of the normal road bonus.",
+      "effects": [
+        { "type": "bonus_per_road", "trigger": "on_era1_close", "bonus": 2 }
+      ]
+    },
+    {
+      "id": "era1_27",
+      "name": "La Cosecha del Primer Año",
+      "name_en": "The First Year's Harvest",
+      "type": "era1",
+      "flavorText": "Los primeros frutos de la tierra renacida son abundantes.",
+      "flavorText_en": "The first fruits of the reborn land are bountiful.",
+      "mechanicalText": "+8 puntos de construcción al final de la Era I, sin condiciones.",
+      "mechanicalText_en": "+8 construction points at the end of Era I, no conditions.",
+      "effects": [
+        { "type": "flat_bonus", "trigger": "on_era1_close", "bonus": 8 }
+      ]
+    },
+    {
+      "id": "era1_28",
+      "name": "El Jardín de los Guerreros",
+      "name_en": "The Warriors' Garden",
+      "type": "era1",
+      "flavorText": "Los campos de entrenamiento reciben a los primeros reclutas.",
+      "flavorText_en": "The training grounds receive their first recruits.",
+      "mechanicalText": "Empezás la Era III con 1 Unidad de Asedio O 1 Voladora O 2 de Distancia, a elección.",
+      "mechanicalText_en": "Start Era III with 1 Siege Unit OR 1 Flying Unit OR 2 Ranged Units, your choice.",
+      "effects": [
+        { "type": "free_unit", "trigger": "on_era3_start", "unit": "player_choice_special", "count": 1 }
+      ]
+    },
+    {
+      "id": "era1_29",
+      "name": "El Oráculo Local",
+      "name_en": "The Local Oracle",
+      "type": "era1",
+      "flavorText": "Una profetisa ciega lee el futuro en los huesos.",
+      "flavorText_en": "A blind prophetess reads the future in bones.",
+      "mechanicalText": "Al final de la Era I, mirá las primeras 3 cartas del Mazo de Era II personal. Elegís cuál te llevás.",
+      "mechanicalText_en": "At the end of Era I, look at the top 3 cards of your Era II deck. Choose which one to keep.",
+      "effects": [
+        { "type": "preview_next_era_deck", "trigger": "on_era1_close", "count": 3, "keepOne": true }
+      ]
+    },
+    {
+      "id": "era1_30",
+      "name": "El Don del Viajero",
+      "name_en": "The Traveler's Gift",
+      "type": "era1",
+      "flavorText": "Un extraño llega a tu corte con regalos de reinos muertos.",
+      "flavorText_en": "A stranger arrives at your court with gifts from dead kingdoms.",
+      "mechanicalText": "Podés intercambiar tu Reliquia por otra: mirás 3 Reliquias del mazo y elegís cuál te quedás. (Si no tenés Reliquia, esta carta se descarta y robás otra.)",
+      "mechanicalText_en": "You may swap your Relic for another: view 3 Relics from the deck and choose which to keep. (If you have no Relic, this card is discarded and you draw another.)",
+      "effects": [
+        { "type": "swap_relic", "trigger": "on_reveal", "choices": 3 }
+      ]
+    },
+    {
+      "id": "era1_31",
+      "name": "El Muro de Espinas",
+      "name_en": "The Wall of Thorns",
+      "type": "era1",
+      "flavorText": "Un bosque impenetrable protege tus fronteras.",
+      "flavorText_en": "An impenetrable forest protects your borders.",
+      "mechanicalText": "+2 puntos por cada ficha de Bosque en tu reino al final de la Era I.",
+      "mechanicalText_en": "+2 points per Forest tile in your kingdom at the end of Era I.",
+      "effects": [
+        { "type": "bonus_per_terrain", "trigger": "on_era1_close", "terrain": "forest", "bonus": 2 }
+      ]
+    },
+    {
+      "id": "era1_32",
+      "name": "La Fortaleza de Piedra",
+      "name_en": "The Stone Fortress",
+      "type": "era1",
+      "flavorText": "Tus constructores tallan una ciudadela directamente en la roca viva.",
+      "flavorText_en": "Your builders carve a citadel directly into the living rock.",
+      "mechanicalText": "+2 puntos por cada ficha de Montaña en tu reino al final de la Era I.",
+      "mechanicalText_en": "+2 points per Mountain tile in your kingdom at the end of Era I.",
+      "effects": [
+        { "type": "bonus_per_terrain", "trigger": "on_era1_close", "terrain": "mountain", "bonus": 2 }
+      ]
+    },
+    {
+      "id": "era1_33",
+      "name": "Los Graneros del Rey",
+      "name_en": "The King's Granaries",
+      "type": "era1",
+      "flavorText": "Reservas abundantes aseguran la prosperidad del reino.",
+      "flavorText_en": "Abundant reserves ensure the kingdom's prosperity.",
+      "mechanicalText": "+2 puntos por cada ficha de Llanura en tu reino al final de la Era I.",
+      "mechanicalText_en": "+2 points per Plain tile in your kingdom at the end of Era I.",
+      "effects": [
+        { "type": "bonus_per_terrain", "trigger": "on_era1_close", "terrain": "plain", "bonus": 2 }
+      ]
+    },
+    {
+      "id": "era1_34",
+      "name": "El Alquimista del Barro",
+      "name_en": "The Mud Alchemist",
+      "type": "era1",
+      "flavorText": "Lo que otros ven como ciénaga, él ve como oro líquido.",
+      "flavorText_en": "What others see as swamp, he sees as liquid gold.",
+      "mechanicalText": "+2 puntos por cada ficha de Pantano en tu reino al final de la Era I.",
+      "mechanicalText_en": "+2 points per Swamp tile in your kingdom at the end of Era I.",
+      "effects": [
+        { "type": "bonus_per_terrain", "trigger": "on_era1_close", "terrain": "swamp", "bonus": 2 }
+      ]
+    },
+    {
+      "id": "era1_35",
+      "name": "El Mercader Errante",
+      "name_en": "The Wandering Merchant",
+      "type": "era1",
+      "flavorText": "Un comerciante con conexiones en todos los reinos te ofrece sus servicios.",
+      "flavorText_en": "A merchant with connections in every kingdom offers you his services.",
+      "mechanicalText": "Robás 21 fichas en vez de 18. Elegí tus mejores terrenos.",
+      "mechanicalText_en": "Draw 21 tiles instead of 18. Choose your best terrains.",
+      "effects": [
+        { "type": "modify_draw_count", "trigger": "on_draw", "delta": 3 }
+      ]
+    },
+    {
+      "id": "era1_36",
+      "name": "La Marca del Equilibrio",
+      "name_en": "The Mark of Balance",
+      "type": "era1",
+      "flavorText": "Los antiguos sabios enseñaron que la armonía es la clave de todo poder.",
+      "flavorText_en": "The ancient sages taught that harmony is the key to all power.",
+      "mechanicalText": "Si los 4 terrenos productivos tienen al menos 3 fichas cada uno, ganás +12 puntos.",
+      "mechanicalText_en": "If all 4 productive terrains have at least 3 tiles each, gain +12 points.",
+      "effects": [
+        { "type": "bonus_for_all_terrains", "trigger": "on_era1_close", "minPerTerrain": 3, "bonus": 12 }
+      ]
+    },
+    {
+      "id": "era1_37",
+      "name": "El Heraldo del Amanecer",
+      "name_en": "The Herald of Dawn",
+      "type": "era1",
+      "flavorText": "Un mensajero de luz anuncia una nueva era de prosperidad.",
+      "flavorText_en": "A messenger of light heralds a new era of prosperity.",
+      "mechanicalText": "Si tu bono de terreno es positivo, se duplica. Si es negativo, se anula a 0.",
+      "mechanicalText_en": "If your terrain bonus is positive, it doubles. If negative, it becomes 0.",
+      "effects": [
+        { "type": "double_if_positive", "trigger": "on_era1_close", "clampNegativeToZero": true }
+      ]
+    },
+    {
+      "id": "era1_38",
+      "name": "El Puente de los Titanes",
+      "name_en": "The Titans' Bridge",
+      "type": "era1",
+      "flavorText": "Estructuras colosales facilitan el paso entre territorios.",
+      "flavorText_en": "Colossal structures ease passage between territories.",
+      "mechanicalText": "No necesitás rutas. Las rutas que coloques igual cuentan para puntos de conexión.",
+      "mechanicalText_en": "You don't need roads. Roads you place still count for connection points.",
+      "effects": [
+        { "type": "waive_road_requirement", "trigger": "on_era1_close" }
+      ]
+    },
+    {
+      "id": "era1_39",
+      "name": "Los Exploradores Reales",
+      "name_en": "The Royal Explorers",
+      "type": "era1",
+      "flavorText": "Tus exploradores cartografían territorios inexplorados.",
+      "flavorText_en": "Your explorers chart uncharted territories.",
+      "mechanicalText": "+1 punto por cada ficha de tu terreno favorable al final de la Era I.",
+      "mechanicalText_en": "+1 point per favorable terrain tile at the end of Era I.",
+      "effects": [
+        { "type": "bonus_per_favorable", "trigger": "on_era1_close", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "era1_40",
+      "name": "El Tributo de las Ruinas",
+      "name_en": "The Tribute of Ruins",
+      "type": "era1",
+      "flavorText": "Entre los escombros del viejo mundo, tus obreros encuentran tesoros olvidados.",
+      "flavorText_en": "Among the rubble of the old world, your workers find forgotten treasures.",
+      "mechanicalText": "+6 puntos de construcción al final de la Era I. Además, empezás la Era II con nivel 1 de Economía.",
+      "mechanicalText_en": "+6 construction points at end of Era I. Also, start Era II with Economy level 1.",
+      "effects": [
+        { "type": "flat_bonus", "trigger": "on_era1_close", "bonus": 6 },
+        { "type": "free_tech_level", "trigger": "on_era2_start", "tech": "economy", "level": 1 }
+      ]
+    }
+  ]
+}

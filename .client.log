@@ -1,0 +1,20 @@
+
+> @war-of-gods/client@0.1.0 dev /Users/guidoalloatti/projects/war-of-gods/packages/client
+> vite
+
+
+  VITE v5.4.21  ready in 148 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+11:25:43 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+11:26:17 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+11:30:21 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+11:31:18 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+11:31:25 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+11:31:42 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+11:31:54 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+11:32:01 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+11:33:20 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+11:33:39 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+11:34:21 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
