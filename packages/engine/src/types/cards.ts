@@ -6,7 +6,7 @@ export type WorldCard = {
   id: string;
   name: string;
   name_en: string;
-  type: 'world_era1';
+  type: 'world_era1' | 'world_era2';
   flavorText: string;
   flavorText_en: string;
   mechanicalText: string;
@@ -18,7 +18,7 @@ export type EraCard = {
   id: string;
   name: string;
   name_en: string;
-  type: 'era1';
+  type: 'era1' | 'era2';
   flavorText: string;
   flavorText_en: string;
   mechanicalText: string;

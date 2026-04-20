@@ -87,12 +87,40 @@ export function applyEffect(
     case 'return_tiles_to_pile':
       return applyReturnTilesToPile(state, effect, ctx);
 
-    // ── Stubs — effects for Era II/III ──
+    // ── Stubs — Era I effects to be completed in Era II iteration ──
     case 'free_unit':
     case 'scry_pile':
     case 'extra_relic':
     case 'preview_next_era_deck':
-      // These effects are silently skipped (Era II/III not yet implemented).
+      // Completed in Phase E of Era II implementation.
+      return state;
+
+    // ── Era II effects (stubs — implemented in Phase E) ──
+    case 'allow_tech_level_6':
+    case 'modify_tech_cost':
+    case 'modify_tech_cost_flat':
+    case 'player_choice_free_tech':
+    case 'player_choice_tech_discount':
+    case 'bonus_to_weakest':
+    case 'allow_reallocation':
+    case 'limit_tech_count':
+    case 'bonus_to_highest_tech':
+    case 'modify_transfer_ratio':
+    case 'modify_give_ratio':
+    case 'modify_receive_ratio':
+    case 'modify_surplus_ratio':
+    case 'modify_doom_clock':
+    case 'all_techs_min_level':
+    case 'shared_bonus':
+    case 'trade_tech_with_player':
+    case 'allow_point_transfer':
+    case 'view_opponents_cards':
+    case 'bonus_per_high_tech':
+    case 'bonus_per_unfavorable':
+    case 'bonus_per_favorable_ratio':
+    case 'bonus_for_max_tech':
+    case 'free_unit_per_high_tech':
+      // Implemented in Phase E.
       return state;
 
     default: {

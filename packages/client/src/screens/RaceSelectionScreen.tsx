@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useMediaQuery } from '../hooks/useMediaQuery.js';
 import { getAllRaces, generateFullName } from '@war-of-gods/engine';
 import type { RaceId, Race } from '@war-of-gods/engine';
 import { useGameStore } from '../stores/gameStore.js';
@@ -35,6 +36,8 @@ export function RaceSelectionScreen() {
   const error = useGameStore(s => s.error);
   const t = useI18n(s => s.t);
   const locale = useI18n(s => s.locale);
+
+  const isMobile = useMediaQuery('(max-width: 639px)');
 
   const isJoining = useGameStore(s => s.isJoining);
   const pendingJoinCode = useGameStore(s => s.pendingJoinCode);
@@ -178,7 +181,7 @@ export function RaceSelectionScreen() {
       {/* ── Top panel: name + config + start ── */}
       <div className="relative z-10 px-4 mb-2 animate-fade-in shrink-0">
         <div className="max-w-xl mx-auto">
-          <div className="flex gap-2 items-end">
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
             <label className="flex-1 block">
               <span className="text-text-primary text-[10px] uppercase tracking-wider font-semibold">{t.raceSelection.name}</span>
               <div className="flex gap-1.5 mt-1">
@@ -222,7 +225,7 @@ export function RaceSelectionScreen() {
             <button
               type="button"
               onClick={handleStart}
-              className="relative overflow-hidden font-bold py-2 px-6 rounded-xl transition-all duration-300 text-sm uppercase tracking-wider bg-gradient-to-r from-game-accent to-game-ember text-text-primary shadow-accent hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 shrink-0 h-9"
+              className="relative overflow-hidden font-bold py-2.5 px-6 rounded-xl transition-all duration-300 text-sm uppercase tracking-wider bg-gradient-to-r from-game-accent to-game-ember text-text-primary shadow-accent hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto sm:shrink-0 min-h-[44px]"
             >
               <div className="absolute inset-0 animate-shimmer pointer-events-none" />
               <span className="relative">{t.actions.start}</span>
@@ -237,59 +240,78 @@ export function RaceSelectionScreen() {
         </div>
       )}
 
-      {/* ── Carousel: centered perspective ── */}
+      {/* ── Carousel ── */}
       <div id="race-carousel" className="relative z-10 shrink-0 py-2">
-        {/* Nav arrows */}
-        <button
-          type="button"
-          onClick={() => handleSelectRace(selectedIndex - 1)}
-          className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 flex items-center justify-center rounded-full bg-game-surface/60 border border-border-subtle hover:border-game-gold/40 text-text-secondary hover:text-game-gold transition-all backdrop-blur-sm"
-          aria-label="Previous race"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          onClick={() => handleSelectRace(selectedIndex + 1)}
-          className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 flex items-center justify-center rounded-full bg-game-surface/60 border border-border-subtle hover:border-game-gold/40 text-text-secondary hover:text-game-gold transition-all backdrop-blur-sm"
-          aria-label="Next race"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-
-        <div className="flex items-center justify-center gap-0 h-[420px] sm:h-[480px] px-12 sm:px-20">
-          {carouselOrder.map(({ race, originalIndex, offset }) => {
-            const isCenter = offset === 0;
-            const absOffset = Math.abs(offset);
-            const scale = isCenter ? 1.08 : Math.max(0.45, 0.88 - absOffset * 0.13);
-            const opacity = isCenter ? 1 : Math.max(0.2, 1 - absOffset * 0.22);
-            const zIndex = 20 - absOffset;
-            const translateX = offset * (isCenter ? 0 : 90 + absOffset * 6);
-
-            return (
-              <div
-                key={race.id}
-                className="absolute transition-all duration-500 ease-out"
-                style={{
-                  transform: `translateX(${translateX}px) scale(${scale})`,
-                  opacity,
-                  zIndex,
-                }}
-              >
+        {isMobile ? (
+          /* Mobile: horizontal scroll list */
+          <div className="flex gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory scrollbar-hide"
+            style={{ scrollbarWidth: 'none' }}>
+            {races.map((race, index) => (
+              <div key={race.id} className="snap-center shrink-0">
                 <CarouselCard
                   race={race}
-                  isCenter={isCenter}
-                  onClick={() => handleSelectRace(originalIndex)}
+                  isCenter={index === selectedIndex}
+                  onClick={() => handleSelectRace(index)}
                   t={t}
                 />
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        ) : (
+          /* Desktop: 3D perspective carousel */
+          <>
+            <button
+              type="button"
+              onClick={() => handleSelectRace(selectedIndex - 1)}
+              className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 flex items-center justify-center rounded-full bg-game-surface/60 border border-border-subtle hover:border-game-gold/40 text-text-secondary hover:text-game-gold transition-all backdrop-blur-sm"
+              aria-label="Previous race"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSelectRace(selectedIndex + 1)}
+              className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 flex items-center justify-center rounded-full bg-game-surface/60 border border-border-subtle hover:border-game-gold/40 text-text-secondary hover:text-game-gold transition-all backdrop-blur-sm"
+              aria-label="Next race"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <div className="flex items-center justify-center gap-0 h-[420px] sm:h-[480px] px-12 sm:px-20">
+              {carouselOrder.map(({ race, originalIndex, offset }) => {
+                const isCenter = offset === 0;
+                const absOffset = Math.abs(offset);
+                const scale = isCenter ? 1.08 : Math.max(0.45, 0.88 - absOffset * 0.13);
+                const opacity = isCenter ? 1 : Math.max(0.2, 1 - absOffset * 0.22);
+                const zIndex = 20 - absOffset;
+                const translateX = offset * (isCenter ? 0 : 90 + absOffset * 6);
+
+                return (
+                  <div
+                    key={race.id}
+                    className="absolute transition-all duration-500 ease-out"
+                    style={{
+                      transform: `translateX(${translateX}px) scale(${scale})`,
+                      opacity,
+                      zIndex,
+                    }}
+                  >
+                    <CarouselCard
+                      race={race}
+                      isCenter={isCenter}
+                      onClick={() => handleSelectRace(originalIndex)}
+                      t={t}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
 
       {/* ── Race detail panel below carousel ── */}
@@ -320,7 +342,7 @@ function CarouselCard({
     <button
       type="button"
       onClick={onClick}
-      className={`w-[180px] sm:w-[210px] rounded-2xl text-left transition-all duration-500 overflow-hidden group relative flex flex-col ${
+      className={`w-[150px] sm:w-[210px] rounded-2xl text-left transition-all duration-500 overflow-hidden group relative flex flex-col ${
         isCenter
           ? 'shadow-gold-lg'
           : 'hover:brightness-110'

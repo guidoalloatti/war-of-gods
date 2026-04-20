@@ -129,26 +129,6 @@ body {
   to { opacity: 1; transform: scale(1); }
 }
 
-@keyframes slide-in-left {
-  from { opacity: 0; transform: translateX(-40px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(40px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes glow-pulse {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.1); }
-}
-
-@keyframes rotate-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
 @keyframes title-glow {
   0%, 100% { text-shadow: 0 0 20px rgba(245, 197, 24, 0.3), 0 0 40px rgba(245, 197, 24, 0.1); }
   50% { text-shadow: 0 0 30px rgba(245, 197, 24, 0.6), 0 0 60px rgba(245, 197, 24, 0.2), 0 0 80px rgba(245, 197, 24, 0.1); }
@@ -179,37 +159,11 @@ body {
   animation: border-glow 2s ease-in-out infinite;
 }
 
-.animate-slide-in-left {
-  animation: slide-in-left 0.7s ease-out both;
-}
-
-.animate-slide-in-right {
-  animation: slide-in-right 0.7s ease-out both;
-}
-
-.animate-glow-pulse {
-  animation: glow-pulse 4s ease-in-out infinite;
-}
-
-.animate-rotate-slow {
-  animation: rotate-slow 30s linear infinite;
-}
-
 .animate-shimmer {
   background: linear-gradient(90deg, transparent 0%, rgba(245, 197, 24, 0.15) 50%, transparent 100%);
   background-size: 200% 100%;
   animation: shimmer 3s linear infinite;
 }
-
-/* Stagger children animations */
-.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
-.stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
-.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
-.stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
-.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
-.stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
-.stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
-.stagger-children > *:nth-child(8) { animation-delay: 0.4s; }
 
 /* ── Custom scrollbar ──────────────────────────────────────────── */
 ::-webkit-scrollbar {

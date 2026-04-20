@@ -1,5 +1,4 @@
-import { Component, useEffect, useState } from 'react';
-import type { ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useGameStore } from './stores/gameStore.js';
 import { useAuth } from './stores/authStore.js';
@@ -11,43 +10,15 @@ import { RaceSelectionScreen } from './screens/RaceSelectionScreen.js';
 import { LobbyScreen } from './screens/LobbyScreen.js';
 import { Era1Screen } from './screens/Era1Screen.js';
 import { ScoringScreen } from './screens/ScoringScreen.js';
-import { AdminLayout } from './screens/admin/AdminLayout.js';
 import { SettingsSidebar } from './components/SettingsSidebar.js';
+import { ScreenErrorBoundary } from './components/ScreenErrorBoundary.js';
 import { useI18n } from './i18n/index.js';
 
+const AdminLayout = lazy(() =>
+  import('./screens/admin/AdminLayout.js').then(m => ({ default: m.AdminLayout })),
+);
+
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '';
-
-class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
-  state: { error: Error | null } = { error: null };
-
-  static getDerivedStateFromError(error: Error) {
-    return { error };
-  }
-
-  render() {
-    if (this.state.error) {
-      return (
-        <div className="min-h-screen bg-game-bg flex items-center justify-center p-8">
-          <div className="bg-game-surface border border-red-500/30 rounded-xl p-8 max-w-md text-center">
-            <h1 className="text-xl font-bold text-red-400 mb-3">Something went wrong</h1>
-            <p className="text-text-secondary text-sm mb-4">{this.state.error.message}</p>
-            <button
-              type="button"
-              onClick={() => {
-                this.setState({ error: null });
-                window.location.reload();
-              }}
-              className="bg-game-gold text-game-bg font-bold px-6 py-2 rounded-lg hover:brightness-110 transition-all"
-            >
-              Reload
-            </button>
-          </div>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
 
 type AuthScreen = 'landing' | 'login' | 'register';
 
@@ -89,17 +60,27 @@ function CurrentScreen() {
 
   switch (screen) {
     case 'menu':
-      return <MenuScreen />;
+      return <ScreenErrorBoundary screenName="Menu"><MenuScreen /></ScreenErrorBoundary>;
     case 'race_selection':
-      return <RaceSelectionScreen />;
+      return <ScreenErrorBoundary screenName="Selección de raza"><RaceSelectionScreen /></ScreenErrorBoundary>;
     case 'lobby':
-      return <LobbyScreen />;
+      return <ScreenErrorBoundary screenName="Sala de espera"><LobbyScreen /></ScreenErrorBoundary>;
     case 'era1':
-      return <Era1Screen />;
+      return (
+        <ScreenErrorBoundary screenName="Era I" onReset={() => useGameStore.getState().setScreen('menu')}>
+          <Era1Screen />
+        </ScreenErrorBoundary>
+      );
     case 'scoring':
-      return <ScoringScreen />;
+      return <ScreenErrorBoundary screenName="Puntuación"><ScoringScreen /></ScreenErrorBoundary>;
     case 'admin':
-      return <AdminLayout />;
+      return (
+        <ScreenErrorBoundary screenName="Admin">
+          <Suspense fallback={<div className="min-h-screen bg-game-bg flex items-center justify-center"><div className="w-8 h-8 border-2 border-game-gold/30 border-t-game-gold rounded-full animate-spin" /></div>}>
+            <AdminLayout />
+          </Suspense>
+        </ScreenErrorBoundary>
+      );
   }
 }
 
@@ -117,7 +98,7 @@ export function App() {
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <ErrorBoundary>
+      <ScreenErrorBoundary screenName="App">
         {/* Settings gear button — fixed top-left */}
         <button
           id="settings-button"
@@ -138,7 +119,7 @@ export function App() {
           open={settingsOpen}
           onClose={() => setSettingsOpen(false)}
         />
-      </ErrorBoundary>
+      </ScreenErrorBoundary>
     </GoogleOAuthProvider>
   );
 }

@@ -48,10 +48,13 @@ type GameStore = {
   currentSaveId: string | null;
   saves: SaveSummary[];
   savesLoading: boolean;
+  localAutosaveExists: boolean;
   autoSave: () => Promise<void>;
   fetchSaves: () => Promise<void>;
   loadGame: (saveId: string) => Promise<void>;
   deleteGame: (saveId: string) => Promise<void>;
+  restoreLocalSave: () => boolean;
+  clearLocalSave: () => void;
 
   // Shared setters
   setGameState: (state: GameState) => void;
@@ -75,17 +78,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
   currentSaveId: null,
   saves: [],
   savesLoading: false,
+  localAutosaveExists: !!localStorage.getItem('wog-local-autosave'),
 
   setScreen: (screen) => set({ screen }),
   setGameMode: (mode) => set({ gameMode: mode }),
 
   startLocalGame: (config) => {
     const state = createGame(config);
+    localStorage.removeItem('wog-local-autosave');
     set({
       gameState: state,
       localPlayerId: state.players[0].id,
       screen: 'era1',
       currentSaveId: null,
+      localAutosaveExists: false,
       error: null,
     });
   },
@@ -282,15 +288,23 @@ export const useGameStore = create<GameStore>((set, get) => ({
   autoSave: async () => {
     const { gameState, gameMode, currentSaveId } = get();
     if (!gameState || !gameMode) return;
-    // Only auto-save local games for logged-in users
     if (gameMode === 'multiplayer') return;
+
     const token = localStorage.getItem('wog-token');
-    if (!token) return;
+    if (token) {
+      // Logged-in: persist to server
+      try {
+        const id = await apiSaveGame(gameState, gameMode, currentSaveId ?? undefined);
+        set({ currentSaveId: id });
+      } catch {
+        // Silent fail — fall through to localStorage backup
+      }
+    }
+    // Always keep a local snapshot so guest sessions survive refresh
     try {
-      const id = await apiSaveGame(gameState, gameMode, currentSaveId ?? undefined);
-      set({ currentSaveId: id });
+      localStorage.setItem('wog-local-autosave', JSON.stringify({ gameState, gameMode, savedAt: Date.now() }));
     } catch {
-      // Silent fail for auto-save
+      // Quota exceeded — ignore
     }
   },
 
@@ -333,6 +347,32 @@ export const useGameStore = create<GameStore>((set, get) => ({
     } catch {
       // Silent fail
     }
+  },
+
+  restoreLocalSave: () => {
+    try {
+      const raw = localStorage.getItem('wog-local-autosave');
+      if (!raw) return false;
+      const { gameState, gameMode } = JSON.parse(raw) as { gameState: GameState; gameMode: GameMode; savedAt: number };
+      if (!gameState || !gameMode) return false;
+      set({
+        gameState,
+        localPlayerId: gameState.players[0].id,
+        gameMode: gameMode as GameMode,
+        currentSaveId: null,
+        screen: 'era1',
+        error: null,
+      });
+      return true;
+    } catch {
+      localStorage.removeItem('wog-local-autosave');
+      return false;
+    }
+  },
+
+  clearLocalSave: () => {
+    localStorage.removeItem('wog-local-autosave');
+    set({ localAutosaveExists: false });
   },
 
   setGameState: (state) => set({ gameState: state }),

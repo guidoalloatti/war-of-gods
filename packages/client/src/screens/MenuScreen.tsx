@@ -15,6 +15,9 @@ export function MenuScreen() {
   const fetchSaves = useGameStore(s => s.fetchSaves);
   const loadGame = useGameStore(s => s.loadGame);
   const deleteGame = useGameStore(s => s.deleteGame);
+  const localAutosaveExists = useGameStore(s => s.localAutosaveExists);
+  const restoreLocalSave = useGameStore(s => s.restoreLocalSave);
+  const clearLocalSave = useGameStore(s => s.clearLocalSave);
   const user = useAuth(s => s.user);
   const t = useI18n(s => s.t);
 
@@ -68,6 +71,32 @@ export function MenuScreen() {
           </div>
         )}
 
+        {/* Local autosave banner — shown to guests and logged-in users */}
+        {localAutosaveExists && !user && (
+          <div className="mb-4 animate-fade-in-up flex items-center gap-3 bg-game-surface/80 border border-game-gold/20 rounded-xl px-4 py-3">
+            <svg className="w-5 h-5 text-game-gold shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+            </svg>
+            <span className="flex-1 text-sm text-text-primary">{t.menu.continueLocal}</span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => restoreLocalSave()}
+                className="text-xs font-bold px-3 py-1.5 rounded-lg bg-game-gold text-game-bg hover:brightness-110 transition-all"
+              >
+                {t.menu.continueBtn}
+              </button>
+              <button
+                type="button"
+                onClick={clearLocalSave}
+                className="text-xs text-text-muted hover:text-text-secondary px-2 py-1.5 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Saved games */}
         {user && saves.length > 0 && (
           <div className="mb-6 animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
@@ -94,7 +123,7 @@ export function MenuScreen() {
                   <button
                     type="button"
                     onClick={() => deleteGame(save.id)}
-                    className="text-text-faint hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                    className="text-text-faint hover:text-red-400 active:text-red-400 transition-colors sm:opacity-0 sm:group-hover:opacity-100 opacity-100 p-1"
                     aria-label="Delete"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

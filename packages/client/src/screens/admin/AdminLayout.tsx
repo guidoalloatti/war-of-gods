@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useGameStore } from '../../stores/gameStore.js';
 import { useAdminStore } from '../../stores/adminStore.js';
 import { useI18n } from '../../i18n/index.js';
@@ -11,6 +11,7 @@ export function AdminLayout() {
   const view = useAdminStore(s => s.view);
   const setView = useAdminStore(s => s.setView);
   const t = useI18n(s => s.t);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     useAdminStore.getState().loadCards();
@@ -22,10 +23,28 @@ export function AdminLayout() {
     { key: 'list' as const, label: t.admin.cards, icon: CardsIcon },
   ];
 
+  function handleNav(key: 'dashboard' | 'list') {
+    setView(key);
+    setSidebarOpen(false);
+  }
+
   return (
-    <div className="min-h-screen bg-game-bg flex">
+    <div className="min-h-screen bg-game-bg flex relative">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-sm"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-56 bg-game-surface/50 border-r border-border-subtle flex flex-col shrink-0">
+      <aside className={`
+        fixed md:static inset-y-0 left-0 z-40 md:z-auto
+        w-56 bg-game-surface/95 md:bg-game-surface/50 border-r border-border-subtle flex flex-col shrink-0
+        transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
         {/* Logo area */}
         <div className="px-4 py-5 border-b border-border-subtle">
           <div className="flex items-center gap-2">
@@ -47,8 +66,8 @@ export function AdminLayout() {
             <button
               key={item.key}
               type="button"
-              onClick={() => setView(item.key)}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              onClick={() => handleNav(item.key)}
+              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 view === item.key || (view === 'editor' && item.key === 'list')
                   ? 'bg-game-gold/10 text-game-gold'
                   : 'text-text-secondary hover:text-text-primary hover:bg-game-surface'
@@ -65,7 +84,7 @@ export function AdminLayout() {
           <button
             type="button"
             onClick={() => setScreen('menu')}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-text-muted hover:text-text-primary hover:bg-game-surface transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-text-muted hover:text-text-primary hover:bg-game-surface transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
@@ -76,7 +95,24 @@ export function AdminLayout() {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto min-w-0">
+        {/* Mobile top bar */}
+        <div className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-border-subtle bg-game-surface/50">
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            className="w-10 h-10 flex items-center justify-center rounded-lg bg-game-surface border border-border-subtle text-text-secondary"
+            aria-label="Open menu"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <span className="text-text-primary font-bold text-sm">
+            {navItems.find(n => n.key === view || (view === 'editor' && n.key === 'list'))?.label ?? t.admin.title}
+          </span>
+        </div>
+
         {view === 'dashboard' && <AdminDashboard />}
         {view === 'list' && <AdminCardList />}
         {view === 'editor' && <AdminCardEditor />}

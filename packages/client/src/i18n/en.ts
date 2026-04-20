@@ -20,6 +20,8 @@ export const en: Translations = {
     joinSubtitle: 'Enter a friend\'s room',
     era: 'ERA',
     theWorldAwaits: 'The world of Vali awaits',
+    continueLocal: 'You have a locally saved game',
+    continueBtn: 'Continue',
   },
   races: {
     elf: 'Elf King',
@@ -147,6 +149,7 @@ export const en: Translations = {
     yourCards: 'Your cards',
     effect: 'Effect',
     bot: 'Bot',
+    thinking: 'thinking...',
     you: 'you',
     rerollName: 'Generate another name',
     drawing: 'Drawing tiles...',
@@ -236,6 +239,7 @@ export const en: Translations = {
     resetBoard: 'Reset board',
     autoAssign: 'Auto-assign',
     autoAssignHint: 'Distribute tiles to maximize points',
+    undo: 'Undo',
   },
   auth: {
     login: 'Sign in',

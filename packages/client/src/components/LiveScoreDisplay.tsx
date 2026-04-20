@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
-import { getRaceById, getRoadBonus } from '@war-of-gods/engine';
-import type { TerrainType, RaceId } from '@war-of-gods/engine';
+import { getRaceById, getRoadBonus, calculateScoreBreakdown } from '@war-of-gods/engine';
+import type { TerrainType, RaceId, GameState } from '@war-of-gods/engine';
 import { useI18n } from '../i18n/index.js';
 import type { HexCell } from './HexBoard.js';
 
-/** Axial hex neighbors (pointy-top): the 6 adjacent directions */
+/** Axial hex neighbors (pointy-top) */
 const HEX_DIRECTIONS = [
   { q: 1, r: 0 }, { q: 1, r: -1 }, { q: 0, r: -1 },
   { q: -1, r: 0 }, { q: -1, r: 1 }, { q: 0, r: 1 },
@@ -14,7 +14,7 @@ const HEX_DIRECTIONS = [
  * Calculate adjacency bonus from hex board positions.
  * +1 for each pair of adjacent favorable terrain tiles.
  * -1 for each pair of adjacent unfavorable terrain tiles.
- * Each edge is counted once (not double-counted).
+ * Each edge counted once.
  */
 export function calculateAdjacencyBonus(
   board: HexCell[],
@@ -50,88 +50,6 @@ export function calculateAdjacencyBonus(
   return bonus;
 }
 
-/**
- * Calculate road connection bonus.
- * Uses BFS to find how many distinct continuous road paths connect
- * the center hex (0,0) to any border hex (level 3).
- * Each path reaching the border gives +3 points.
- */
-export function calculateRoadConnectionBonus(board: HexCell[]): number {
-  const cellMap = new Map<string, HexCell>();
-  for (const cell of board) {
-    cellMap.set(`${cell.coord.q},${cell.coord.r}`, cell);
-  }
-
-  // BFS from road tiles adjacent to center (0,0) through connected road tiles.
-  // The center hex is the village — roads connecting to it count as center-connected.
-  const visited = new Set<string>();
-  const queue: string[] = [];
-
-  // Seed BFS with road tiles adjacent to center
-  for (const dir of HEX_DIRECTIONS) {
-    const nk = `${dir.q},${dir.r}`;
-    const neighbor = cellMap.get(nk);
-    if (neighbor?.terrain === 'road' && !visited.has(nk)) {
-      visited.add(nk);
-      queue.push(nk);
-    }
-  }
-
-  // Also allow center itself if it happens to be a road
-  const center = cellMap.get('0,0');
-  if (center?.terrain === 'road' && !visited.has('0,0')) {
-    visited.add('0,0');
-    queue.push('0,0');
-  }
-
-  if (queue.length === 0) return 0;
-
-  let borderRoadsReached = 0;
-
-  while (queue.length > 0) {
-    const key = queue.shift()!;
-    const [q, r] = key.split(',').map(Number);
-
-    // Check if this road cell is on the border
-    const s = -q - r;
-    const level = Math.max(Math.abs(q), Math.abs(r), Math.abs(s));
-    if (level === 3) {
-      borderRoadsReached++;
-    }
-
-    // Explore road neighbors
-    for (const dir of HEX_DIRECTIONS) {
-      const nk = `${q + dir.q},${r + dir.r}`;
-      if (visited.has(nk)) continue;
-      const neighbor = cellMap.get(nk);
-      if (!neighbor || neighbor.terrain !== 'road') continue;
-      visited.add(nk);
-      queue.push(nk);
-    }
-  }
-
-  return borderRoadsReached * 3;
-}
-
-/**
- * Calculate ring completion bonus.
- * Ring 1 (level 1, 6 hexes around center): +4 if all filled.
- * Ring 2 (level 2, 12 hexes): +6 if all filled.
- * Center hex (level 0) is the village and is excluded.
- */
-export function calculateRingBonus(board: HexCell[]): { ring1: number; ring2: number; total: number } {
-  const ring1Cells = board.filter(c => c.level === 1);
-  const ring2Cells = board.filter(c => c.level === 2);
-
-  const ring1Complete = ring1Cells.length === 6 && ring1Cells.every(c => c.terrain !== null);
-  const ring2Complete = ring2Cells.length === 12 && ring2Cells.every(c => c.terrain !== null);
-
-  const ring1Bonus = ring1Complete ? 4 : 0;
-  const ring2Bonus = ring2Complete ? 6 : 0;
-
-  return { ring1: ring1Bonus, ring2: ring2Bonus, total: ring1Bonus + ring2Bonus };
-}
-
 // ── Scoring hint tooltips ────────────────────────────────────────
 
 const SCORE_HINTS: Record<string, { en: string; es: string }> = {
@@ -163,17 +81,13 @@ const SCORE_HINTS: Record<string, { en: string; es: string }> = {
     en: '+1 per pair of adjacent favorable tiles, -1 per pair of adjacent unfavorable tiles.',
     es: '+1 por par de fichas favorables adyacentes, -1 por par de fichas desfavorables adyacentes.',
   },
-  roadConnectionBonus: {
-    en: '+3 for each road path connecting center to border. Build trade routes!',
-    es: '+3 por cada camino de rutas conectando el centro al borde. ¡Construye rutas comerciales!',
-  },
-  ringBonus: {
-    en: '+4 for completing ring 1 (6 tiles around village), +6 for ring 2 (12 tiles). Surround your village!',
-    es: '+4 por completar anillo 1 (6 fichas alrededor de la aldea), +6 por anillo 2 (12 fichas). ¡Rodea tu aldea!',
-  },
   cardEffects: {
     en: 'Bonus points from world cards, era cards, and relics applied at scoring.',
     es: 'Puntos bonus de cartas de mundo, era y reliquias aplicados al puntuar.',
+  },
+  raceAbilityBonus: {
+    en: 'Bonus from your race\'s special ability (e.g. Dwarf mountain groups, Giant terrain bonus).',
+    es: 'Bonus de la habilidad especial de tu raza (ej. grupos de montaña Enano, bonus de terreno Gigante).',
   },
 };
 
@@ -188,7 +102,7 @@ function InfoTooltip({ hintKey }: { hintKey: string }) {
     <span className="relative inline-flex">
       <button
         type="button"
-        className="w-4 h-4 flex items-center justify-center rounded-full text-[10px] font-bold text-text-muted hover:text-text-secondary border border-border-medium hover:border-text-muted transition-colors leading-none"
+        className="w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold text-text-muted hover:text-text-secondary border border-border-medium hover:border-text-muted transition-colors leading-none"
         onMouseEnter={() => setShow(true)}
         onMouseLeave={() => setShow(false)}
         onClick={() => setShow(!show)}
@@ -212,67 +126,160 @@ type Props = {
   placedCounts: Record<TerrainType, number>;
   cardBonusPoints: number;
   board?: HexCell[];
+  gameState?: GameState;
+  playerId?: string;
 };
 
-export function LiveScoreDisplay({ raceId, placedCounts, cardBonusPoints, board }: Props) {
+export function LiveScoreDisplay({ raceId, placedCounts, cardBonusPoints, board, gameState, playerId }: Props) {
   const t = useI18n(s => s.t);
   const race = getRaceById(raceId);
 
   const breakdown = useMemo(() => {
-    const base =
-      placedCounts.plain * race.terrainValues.plain +
-      placedCounts.mountain * race.terrainValues.mountain +
-      placedCounts.forest * race.terrainValues.forest +
-      placedCounts.swamp * race.terrainValues.swamp;
+    // If we have gameState + playerId, build a synthetic state with the current board placement counts
+    // so that the engine formula is used exactly (race abilities, card modifiers, etc.)
+    if (gameState && playerId) {
+      // Clone state with current tile counts from board (placed tiles during live preview)
+      const syntheticState: GameState = {
+        ...gameState,
+        players: gameState.players.map(p =>
+          p.id === playerId
+            ? { ...p, tiles: { ...placedCounts } }
+            : p,
+        ),
+      };
 
-    const favorableCount = placedCounts[race.favorableTerrain as TerrainType] ?? 0;
+      // Get engine breakdown (without adjacency — that's board-position only)
+      const engineBreakdown = calculateScoreBreakdown(syntheticState, playerId);
+
+      // Compute adjacency from actual board layout
+      const adjacencyBonus = board
+        ? calculateAdjacencyBonus(board, race.favorableTerrain, race.unfavorableTerrain)
+        : 0;
+
+      const total = engineBreakdown.total + adjacencyBonus;
+
+      return {
+        base: engineBreakdown.base,
+        terrainBonus: engineBreakdown.terrainBonus,
+        roadBonus: engineBreakdown.roadBonus,
+        diversityBonus: engineBreakdown.diversityBonus,
+        concentrationPenalty: engineBreakdown.concentrationPenalty,
+        balanceBonus: engineBreakdown.balanceBonus,
+        adjacencyBonus,
+        cardEffects: engineBreakdown.cardEffects,
+        raceAbilityBonus: engineBreakdown.raceAbilityBonus,
+        total,
+      };
+    }
+
+    // Fallback: compute manually (same formula as engine, but without race ability edge cases)
+    const TERRAIN_TYPES = ['plain', 'mountain', 'forest', 'swamp'] as const;
+
+    // Base — apply terrain_value_bonus (Giant) and terrain_value_override (Half-orc)
+    let base = 0;
+    for (const tt of TERRAIN_TYPES) {
+      let value = race.terrainValues[tt];
+      if (race.era1Advantage.effectType === 'terrain_value_bonus' &&
+          race.era1Advantage.params.terrain === tt) {
+        value += race.era1Advantage.params.bonus as number;
+      }
+      if (race.era1Disadvantage.effectType === 'terrain_value_override' &&
+          race.era1Disadvantage.params.terrain === tt) {
+        value = race.era1Disadvantage.params.value as number;
+      }
+      base += placedCounts[tt] * value;
+    }
+
+    // Terrain bonus — half-elf dual_favorable
+    let favorableCount = placedCounts[race.favorableTerrain as TerrainType] ?? 0;
+    if (race.era1Advantage.effectType === 'dual_favorable') {
+      const secondFav = race.era1Advantage.params.secondFavorable as string;
+      if (secondFav !== race.favorableTerrain) {
+        favorableCount += placedCounts[secondFav as TerrainType] ?? 0;
+      }
+    }
     const unfavorableCount = placedCounts[race.unfavorableTerrain as TerrainType] ?? 0;
     const terrainBonus = favorableCount - unfavorableCount;
 
-    const roadBonus = getRoadBonus(placedCounts.road);
-
-    const terrainTypes = ['plain', 'mountain', 'forest', 'swamp'] as const;
-    const typesPresent = terrainTypes.filter(t => placedCounts[t] > 0).length;
-    const diversityBonus = typesPresent >= 4 ? 5 : typesPresent >= 3 ? 2 : 0;
-
-    let concentrationPenalty = 0;
-    for (const t of terrainTypes) {
-      if (placedCounts[t] > 8) concentrationPenalty -= (placedCounts[t] - 8);
+    // Road bonus — orc halved
+    let roadBonus = getRoadBonus(placedCounts.road);
+    if (race.era1Disadvantage.effectType === 'halved_road_bonus') {
+      roadBonus = Math.floor(roadBonus / 2);
     }
 
-    const allBalanced = terrainTypes.every(t => placedCounts[t] >= 2);
-    const balanceBonus = allBalanced ? 3 : 0;
+    // Diversity — terrain_ignores_diversity, double_diversity_bonus
+    const ignoredTerrain = race.era1Disadvantage.effectType === 'terrain_ignores_diversity'
+      ? race.era1Disadvantage.params.terrain as string
+      : null;
+    const typesPresent = TERRAIN_TYPES.filter(tt => tt !== ignoredTerrain && placedCounts[tt] > 0).length;
+    let diversityBonus = typesPresent >= 4 ? 5 : typesPresent >= 3 ? 2 : 0;
+    if (race.era1Advantage.effectType === 'double_diversity_bonus') diversityBonus *= 2;
 
+    // Concentration — concentration_threshold_reduction, no_concentration_penalty
+    const threshold = race.era1Disadvantage.effectType === 'concentration_threshold_reduction'
+      ? (race.era1Disadvantage.params.threshold as number)
+      : 8;
+    const exemptTerrain = race.era1Advantage.effectType === 'no_concentration_penalty'
+      ? race.era1Advantage.params.terrain as string
+      : null;
+    let concentrationPenalty = 0;
+    for (const tt of TERRAIN_TYPES) {
+      if (tt === exemptTerrain) continue;
+      if (placedCounts[tt] > threshold) concentrationPenalty -= (placedCounts[tt] - threshold);
+    }
+
+    // Balance — no_balance_bonus, enhanced_balance_bonus
+    let balanceBonus = 0;
+    if (race.era1Disadvantage.effectType !== 'no_balance_bonus') {
+      const allBalanced = TERRAIN_TYPES.every(tt => placedCounts[tt] >= 2);
+      if (allBalanced) {
+        balanceBonus = race.era1Advantage.effectType === 'enhanced_balance_bonus'
+          ? (race.era1Advantage.params.bonus as number)
+          : 3;
+      }
+    }
+
+    // Adjacency (board-position)
     const adjacencyBonus = board
       ? calculateAdjacencyBonus(board, race.favorableTerrain, race.unfavorableTerrain)
       : 0;
 
-    const roadConnectionBonus = board
-      ? calculateRoadConnectionBonus(board)
-      : 0;
+    // Card effects
+    const cardEffects = cardBonusPoints;
 
-    const ringBonus = board
-      ? calculateRingBonus(board).total
-      : 0;
+    // Race ability bonus
+    let raceAbilityBonus = 0;
+    if (race.era1Advantage.effectType === 'group_bonus') {
+      const terrain = race.era1Advantage.params.terrain as string;
+      const groupSize = race.era1Advantage.params.groupSize as number;
+      const bonusPerGroup = race.era1Advantage.params.bonusPerGroup as number;
+      const count = placedCounts[terrain as TerrainType] ?? 0;
+      raceAbilityBonus += Math.floor(count / groupSize) * bonusPerGroup;
+    }
+    if (race.era1Disadvantage.effectType === 'terrain_penalty') {
+      const terrain = race.era1Disadvantage.params.terrain as string;
+      const penaltyPerTile = race.era1Disadvantage.params.penaltyPerTile as number;
+      const count = placedCounts[terrain as TerrainType] ?? 0;
+      raceAbilityBonus += count * penaltyPerTile;
+    }
 
-    const total = base + terrainBonus + roadBonus + diversityBonus + concentrationPenalty + balanceBonus + adjacencyBonus + roadConnectionBonus + ringBonus + cardBonusPoints;
+    const total = base + terrainBonus + roadBonus + diversityBonus + concentrationPenalty + balanceBonus + adjacencyBonus + cardEffects + raceAbilityBonus;
 
-    return { base, terrainBonus, roadBonus, diversityBonus, concentrationPenalty, balanceBonus, adjacencyBonus, roadConnectionBonus, ringBonus, cardEffects: cardBonusPoints, total };
-  }, [placedCounts, race, cardBonusPoints, board]);
+    return { base, terrainBonus, roadBonus, diversityBonus, concentrationPenalty, balanceBonus, adjacencyBonus, cardEffects, raceAbilityBonus, total };
+  }, [placedCounts, race, cardBonusPoints, board, gameState, playerId]);
 
   const totalPlaced = Object.values(placedCounts).reduce((a, b) => a + b, 0);
 
   const rows = [
-    { label: t.scoring.base, value: breakdown.base, color: 'text-blue-400', hintKey: 'base' },
-    { label: t.scoring.terrainBonus, value: breakdown.terrainBonus, color: 'text-green-400', hintKey: 'terrainBonus' },
-    { label: t.scoring.roadBonus, value: breakdown.roadBonus, color: 'text-amber-400', hintKey: 'roadBonus' },
-    { label: t.scoring.diversityBonus, value: breakdown.diversityBonus, color: 'text-purple-400', hintKey: 'diversityBonus' },
-    { label: t.scoring.concentrationPenalty, value: breakdown.concentrationPenalty, color: 'text-red-400', hintKey: 'concentrationPenalty' },
-    { label: t.scoring.balanceBonus, value: breakdown.balanceBonus, color: 'text-teal-400', hintKey: 'balanceBonus' },
-    { label: t.scoring.adjacencyBonus, value: breakdown.adjacencyBonus, color: 'text-cyan-400', hintKey: 'adjacencyBonus' },
-    { label: t.scoring.roadConnectionBonus, value: breakdown.roadConnectionBonus, color: 'text-orange-400', hintKey: 'roadConnectionBonus' },
-    { label: t.scoring.ringBonus, value: breakdown.ringBonus, color: 'text-rose-400', hintKey: 'ringBonus' },
-    { label: t.scoring.cardEffects, value: breakdown.cardEffects, color: 'text-yellow-400', hintKey: 'cardEffects' },
+    { label: t.scoring.base, value: breakdown.base, hintKey: 'base' },
+    { label: t.scoring.terrainBonus, value: breakdown.terrainBonus, hintKey: 'terrainBonus' },
+    { label: t.scoring.roadBonus, value: breakdown.roadBonus, hintKey: 'roadBonus' },
+    { label: t.scoring.diversityBonus, value: breakdown.diversityBonus, hintKey: 'diversityBonus' },
+    { label: t.scoring.concentrationPenalty, value: breakdown.concentrationPenalty, hintKey: 'concentrationPenalty' },
+    { label: t.scoring.balanceBonus, value: breakdown.balanceBonus, hintKey: 'balanceBonus' },
+    { label: t.scoring.adjacencyBonus, value: breakdown.adjacencyBonus, hintKey: 'adjacencyBonus' },
+    { label: t.scoring.cardEffects, value: breakdown.cardEffects, hintKey: 'cardEffects' },
+    { label: t.scoring.raceAbilityBonus, value: breakdown.raceAbilityBonus, hintKey: 'raceAbilityBonus' },
   ];
 
   return (

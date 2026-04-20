@@ -1,11 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { getRaceById, calculateScoreBreakdown } from '@war-of-gods/engine';
 import type { TerrainType, GameAction, GameState, WorldCard, EraCard, RelicCard } from '@war-of-gods/engine';
 import type { Translations } from '../i18n/es.js';
 import { useGameStore } from '../stores/gameStore.js';
+import { useShallow } from 'zustand/react/shallow';
 import { GameCard } from '../components/GameCard.js';
 import { TradeModal } from '../components/TradeModal.js';
 import { HexBoard, TileHand, useHexBoard } from '../components/HexBoard.js';
+import { HexTile } from '../components/HexTile.js';
 import { LiveScoreDisplay } from '../components/LiveScoreDisplay.js';
 import { ScoreBreakdown } from '../components/ScoreBreakdown.js';
 import { EffectModal } from '../components/EffectModal.js';
@@ -38,20 +40,27 @@ const PHASE_ICONS: Record<string, string> = {
 };
 
 export function Era1Screen() {
-  const gameState = useGameStore(s => s.gameState);
-  const localPlayerId = useGameStore(s => s.localPlayerId);
-  const dispatch = useGameStore(s => s.dispatch);
-  const runBots = useGameStore(s => s.runBots);
-  const setScreen = useGameStore(s => s.setScreen);
-  const error = useGameStore(s => s.error);
+  const { gameState, localPlayerId, dispatch, runBots, setScreen, error, gameMode } = useGameStore(
+    useShallow(s => ({
+      gameState: s.gameState,
+      localPlayerId: s.localPlayerId,
+      dispatch: s.dispatch,
+      runBots: s.runBots,
+      setScreen: s.setScreen,
+      error: s.error,
+      gameMode: s.gameMode,
+    })),
+  );
   const t = useI18n(s => s.t);
 
   const [showTradeModal, setShowTradeModal] = useState(false);
   const [showScoringModal, setShowScoringModal] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
   const [selectedTerrain, setSelectedTerrain] = useState<TerrainType | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [drawnTiles, setDrawnTiles] = useState<TerrainType[]>([]);
+  const [drawnTiles, setDrawnTiles] = useState<{ terrain: TerrainType; key: string }[]>([]);
   const [drawComplete, setDrawComplete] = useState(false);
+  const tileKeyCounterRef = useRef(0);
   const autoAdvancedRef = useRef(false);
   const gameIdRef = useRef(gameState?.id);
   const drawIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -62,12 +71,20 @@ export function Era1Screen() {
     autoAdvancedRef.current = false;
   }
 
-  const tileInventory = gameState?.players.find(p => p.id === localPlayerId)?.tiles;
+  const tileInventory = useMemo(
+    () => gameState?.players.find(p => p.id === localPlayerId)?.tiles,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [gameState?.players, localPlayerId],
+  );
 
-  const { board, placeTile, removeTile, resetBoard, autoAssign, placedCounts, totalPlaced } = useHexBoard(tileInventory);
+  const { board, placeTile, removeTile, resetBoard, autoAssign, undoLastTile, canUndo, placedCounts, totalPlaced } = useHexBoard(tileInventory);
 
   // Derive these values before hooks so they can be used in useEffect dependencies
-  const player = gameState?.players.find(p => p.id === localPlayerId);
+  const player = useMemo(
+    () => gameState?.players.find(p => p.id === localPlayerId),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [gameState?.players, localPlayerId],
+  );
   const phase = gameState?.era1Phase;
   const pendingEra = gameState?.pendingEraCards?.[localPlayerId ?? ''] ?? null;
   const pendingRelic = gameState?.pendingRelics?.[localPlayerId ?? ''] ?? null;
@@ -115,6 +132,54 @@ export function Era1Screen() {
     }
   }, [phase, hasPendingEraChoices, hasPendingRelicChoices, dispatch]);
 
+  const handleFinishDraw = useCallback(() => {
+    setIsDrawing(false);
+    setDrawnTiles([]);
+    setDrawComplete(false);
+  }, []);
+
+  const handleProposeTrade = useCallback((toPlayerId: string, offered: TerrainType, requested: TerrainType) => {
+    dispatch({
+      type: 'PROPOSE_TRADE',
+      fromPlayerId: localPlayerId!,
+      toPlayerId,
+      tileOffered: offered,
+      tileRequested: requested,
+    });
+    setShowTradeModal(false);
+  }, [dispatch, localPlayerId]);
+
+  const handlePlaceTiles = useCallback(() => {
+    dispatch({ type: 'PLACE_TILES', playerId: localPlayerId! });
+    runBots();
+  }, [dispatch, localPlayerId, runBots]);
+
+  const handleEndTrade = useCallback(() => {
+    dispatch({ type: 'END_TRADE_PHASE' });
+  }, [dispatch]);
+
+  const handleAdvanceToTrade = useCallback(() => {
+    dispatch({ type: 'ADVANCE_PHASE' });
+  }, [dispatch]);
+
+  const handleAdvanceToScoring = useCallback(() => {
+    dispatch({ type: 'ADVANCE_PHASE' });
+  }, [dispatch]);
+
+  const handleScoring = useCallback(() => {
+    dispatch({ type: 'CALCULATE_SCORES' });
+    setShowScoringModal(true);
+  }, [dispatch]);
+
+  const playerTileCount = useMemo(
+    () => Object.values(player?.tiles ?? {}).reduce((a, b) => a + b, 0),
+    [player?.tiles],
+  );
+
+  const handleResolveEffect = useCallback((resolution: Record<string, unknown>) => {
+    dispatch({ type: 'RESOLVE_EFFECT', playerId: localPlayerId!, resolution });
+  }, [dispatch, localPlayerId]);
+
   if (!gameState || !localPlayerId || !player) return null;
 
   const race = getRaceById(player.raceId);
@@ -160,7 +225,8 @@ export function Era1Screen() {
       if (i < allTiles.length) {
         const tile = allTiles[i];
         i++;
-        setDrawnTiles(prev => [...prev, tile]);
+        const key = `tile-${tileKeyCounterRef.current++}`;
+        setDrawnTiles(prev => [...prev, { terrain: tile, key }]);
       } else {
         if (drawIntervalRef.current) clearInterval(drawIntervalRef.current);
         drawIntervalRef.current = null;
@@ -182,57 +248,12 @@ export function Era1Screen() {
     for (const [terrain, count] of Object.entries(updatedPlayer.tiles)) {
       for (let i = 0; i < count; i++) allTiles.push(terrain as TerrainType);
     }
-    setDrawnTiles(allTiles);
+    setDrawnTiles(allTiles.map(terrain => ({ terrain, key: `tile-${tileKeyCounterRef.current++}` })));
     setDrawComplete(true);
   }
 
-  function handleFinishDraw() {
-    setIsDrawing(false);
-    setDrawnTiles([]);
-    setDrawComplete(false);
-  }
-
-  function handleProposeTrade(toPlayerId: string, offered: TerrainType, requested: TerrainType) {
-    dispatch({
-      type: 'PROPOSE_TRADE',
-      fromPlayerId: localPlayerId!,
-      toPlayerId,
-      tileOffered: offered,
-      tileRequested: requested,
-    });
-    setShowTradeModal(false);
-  }
-
-  function handlePlaceTiles() {
-    dispatch({ type: 'PLACE_TILES', playerId: localPlayerId! });
-    runBots();
-  }
-
-  function handleEndTrade() {
-    dispatch({ type: 'END_TRADE_PHASE' });
-  }
-
-  function handleAdvanceToTrade() {
-    dispatch({ type: 'ADVANCE_PHASE' });
-  }
-
-  function handleAdvanceToScoring() {
-    dispatch({ type: 'ADVANCE_PHASE' });
-  }
-
-  function handleScoring() {
-    dispatch({ type: 'CALCULATE_SCORES' });
-    setShowScoringModal(true);
-  }
-
-  const playerTileCount = Object.values(player.tiles).reduce((a, b) => a + b, 0);
   const isSoloNoOpponents = gameState.mode === 'solo' && gameState.players.length === 1;
   const showHexBoard = phase === 'placement' || phase === 'scoring';
-
-  // Handle pending interactive effects (discard_and_redraw, manual_pick, view_opponents_tiles)
-  function handleResolveEffect(resolution: Record<string, unknown>) {
-    dispatch({ type: 'RESOLVE_EFFECT', playerId: localPlayerId!, resolution });
-  }
 
   return (
     <div id="era1-screen" className="min-h-screen bg-game-bg bg-radial-theme relative overflow-hidden">
@@ -246,9 +267,36 @@ export function Era1Screen() {
       {/* Era Timeline Wizard */}
       <EraTimeline currentPhase={phase!} t={t} />
 
-      <div className="flex flex-col lg:flex-row min-h-screen relative z-10 pt-14">
-        {/* LEFT SIDEBAR — Cards & Info (pl-14 avoids gear icon overlap) */}
-        <div className="lg:w-80 xl:w-[22rem] shrink-0 border-r border-border-subtle p-4 pl-14 space-y-4 overflow-y-auto max-h-[calc(100vh-3.5rem)]">
+      {/* Mobile sidebar toggle button */}
+      <button
+        type="button"
+        onClick={() => setShowSidebar(s => !s)}
+        className="lg:hidden fixed bottom-4 right-4 z-50 w-12 h-12 flex items-center justify-center rounded-full bg-game-surface border border-border-medium text-text-primary shadow-lg backdrop-blur-sm"
+        aria-label="Toggle info panel"
+      >
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </button>
+
+      {/* Mobile sidebar overlay */}
+      {showSidebar && (
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+          onClick={() => setShowSidebar(false)}
+        />
+      )}
+
+      <div className="flex flex-row min-h-screen relative z-10 pt-14">
+        {/* LEFT SIDEBAR — Cards & Info */}
+        <div className={`
+          fixed lg:static inset-y-0 left-0 z-40 lg:z-auto
+          lg:w-80 xl:w-[22rem] w-72 shrink-0 border-r border-border-subtle p-4 pl-14 space-y-4 overflow-y-auto
+          h-screen lg:max-h-[calc(100vh-3.5rem)] lg:h-auto
+          bg-game-bg lg:bg-transparent
+          transition-transform duration-300 ease-in-out
+          ${showSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}>
           {/* Header */}
           <div className="flex items-center justify-between animate-fade-in">
             <div className="flex items-center gap-2">
@@ -264,18 +312,18 @@ export function Era1Screen() {
             </div>
           )}
 
-          {/* Cards section */}
+          {/* Cards section — stacked vertical cards */}
           <div className="animate-fade-in-up">
             <div className="text-text-secondary text-xs uppercase tracking-wider font-semibold mb-2">{t.era1.yourCards}</div>
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
               {gameState.worldCard && (
-                <GameCard card={gameState.worldCard} label={t.era1.worldCardTitle} accentColor="#8b5cf6" compact />
+                <GameCard card={gameState.worldCard} label={t.era1.worldCardTitle} accentColor="#8b5cf6" dense />
               )}
               {player.eraCards[0] && (
-                <GameCard card={player.eraCards[0]} label={t.era1.eraCardTitle} accentColor="#3b82f6" compact />
+                <GameCard card={player.eraCards[0]} label={t.era1.eraCardTitle} accentColor="#3b82f6" dense />
               )}
               {player.relic && (
-                <GameCard card={player.relic} label={t.era1.relicTitle} accentColor="#f59e0b" compact />
+                <GameCard card={player.relic} label={t.era1.relicTitle} accentColor="#f59e0b" dense />
               )}
             </div>
           </div>
@@ -287,11 +335,28 @@ export function Era1Screen() {
               <div className="space-y-1">
                 {gameState.players.filter(p => p.id !== localPlayerId).map(p => {
                   const pRace = getRaceById(p.raceId);
+                  const isThinking = gameMode === 'multiplayer' && p.connected && !p.isBot && (() => {
+                    if (phase === 'draw_tiles') return !Object.values(p.tiles).some(c => c > 0);
+                    if (phase === 'placement') return !p.hasPlaced;
+                    if (phase === 'trade') return !p.hasTraded;
+                    return false;
+                  })();
                   return (
                     <div key={p.id} className="flex items-center gap-1.5 bg-game-surface/40 rounded-lg px-2.5 py-1.5 border border-border-subtle">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: pRace.color }} />
-                      <span className="text-text-primary text-sm">{p.name}</span>
+                      <div className="relative shrink-0">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: pRace.color }} />
+                        {isThinking && (
+                          <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-game-gold animate-ping" />
+                        )}
+                      </div>
+                      <span className="flex-1 text-text-primary text-sm truncate">{p.name}</span>
                       {p.isBot && <span className="text-text-muted text-xs">[{t.era1.bot}]</span>}
+                      {isThinking && (
+                        <span className="text-game-gold/70 text-[10px] shrink-0">{t.era1.thinking}</span>
+                      )}
+                      {!p.connected && (
+                        <span className="text-red-400/70 text-[10px] shrink-0">{t.multiplayer.disconnected}</span>
+                      )}
                     </div>
                   );
                 })}
@@ -307,15 +372,17 @@ export function Era1Screen() {
                 placedCounts={placedCounts}
                 cardBonusPoints={player.cardBonusPoints ?? 0}
                 board={board}
+                gameState={gameState}
+                playerId={localPlayerId}
               />
             </div>
           )}
         </div>
 
         {/* MAIN CONTENT */}
-        <div className="flex-1 p-4 lg:p-6 flex flex-col overflow-y-auto max-h-[calc(100vh-3.5rem)]">
+        <div className="flex-1 p-4 lg:p-6 flex flex-col min-h-0 h-[calc(100vh-3.5rem)] w-full overflow-hidden">
           {showHexBoard ? (
-            <div className="flex-1 flex flex-col animate-fade-in-up">
+            <div className="flex-1 min-h-0 flex flex-col animate-fade-in-up">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-game-gold text-sm font-bold uppercase tracking-wider">
                   {t.hexBoard.yourKingdom}
@@ -325,31 +392,43 @@ export function Era1Screen() {
                 </span>
                 <div className="flex-1" />
                 {phase === 'placement' && !player.hasPlaced && (
-                  <button
-                    type="button"
-                    onClick={() => autoAssign(player.raceId)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-game-gold/10 border border-game-gold/20 text-game-gold hover:bg-game-gold/20 hover:border-game-gold/40 transition-all text-xs font-medium"
-                    title={t.hexBoard.autoAssignHint}
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
-                    {t.hexBoard.autoAssign}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={undoLastTile}
+                      disabled={!canUndo}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-game-surface/80 border border-border-subtle text-text-secondary hover:text-text-primary hover:border-border-medium disabled:opacity-30 transition-all text-xs font-medium"
+                      title={t.hexBoard.undo}
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                      </svg>
+                      <span className="hidden sm:inline">{t.hexBoard.undo}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => autoAssign(player.raceId)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-game-gold/10 border border-game-gold/20 text-game-gold hover:bg-game-gold/20 hover:border-game-gold/40 transition-all text-xs font-medium"
+                      title={t.hexBoard.autoAssignHint}
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                      <span className="hidden sm:inline">{t.hexBoard.autoAssign}</span>
+                    </button>
+                  </div>
                 )}
               </div>
 
-              <div className="flex-1 flex items-center justify-center">
-                <div className="w-full max-w-3xl">
-                  <HexBoard
-                    board={board}
-                    onPlaceTile={placeTile}
-                    onRemoveTile={removeTile}
-                    dragTerrain={selectedTerrain}
-                    raceId={player.raceId}
-                    onResetBoard={resetBoard}
-                  />
-                </div>
+              <div className="flex-1 min-h-0 w-full">
+                <HexBoard
+                  board={board}
+                  onPlaceTile={placeTile}
+                  onRemoveTile={removeTile}
+                  dragTerrain={selectedTerrain}
+                  raceId={player.raceId}
+                  onResetBoard={resetBoard}
+                />
               </div>
 
               <div className="mt-4">
@@ -626,39 +705,24 @@ function EraTimeline({ currentPhase, t }: { currentPhase: string; t: Translation
   );
 }
 
-// ── Draw Tiles Animation ─────────────────────────────────────────
+// ── Terrain icons (used in solo trade panel) ─────────────────────
 
 const TILE_ICONS: Record<TerrainType, string> = {
   plain: '🌾', mountain: '⛰️', forest: '🌲', swamp: '🌿', road: '🛤️',
 };
 
-const TILE_COLORS: Record<TerrainType, string> = {
-  plain: 'tile-plain',
-  mountain: 'tile-mountain',
-  forest: 'tile-forest',
-  swamp: 'tile-swamp',
-  road: 'tile-road',
-};
-
-const TILE_STYLES: Record<TerrainType, { bg: string; border: string }> = {
-  plain:    { bg: 'var(--tile-plain-bg)',    border: 'var(--tile-plain-border)' },
-  mountain: { bg: 'var(--tile-mountain-bg)', border: 'var(--tile-mountain-border)' },
-  forest:   { bg: 'var(--tile-forest-bg)',   border: 'var(--tile-forest-border)' },
-  swamp:    { bg: 'var(--tile-swamp-bg)',    border: 'var(--tile-swamp-border)' },
-  road:     { bg: 'var(--tile-road-bg)',     border: 'var(--tile-road-border)' },
-};
+// ── Draw Tiles Animation ─────────────────────────────────────────
 
 function DrawTilesAnimation({ drawnTiles, complete, onSkip, onFinish, t }: {
-  drawnTiles: TerrainType[];
+  drawnTiles: { terrain: TerrainType; key: string }[];
   complete: boolean;
   onSkip: () => void;
   onFinish: () => void;
   t: Translations;
 }) {
-  // Count tiles by type
   const counts: Partial<Record<TerrainType, number>> = {};
-  for (const tile of drawnTiles) {
-    counts[tile] = (counts[tile] ?? 0) + 1;
+  for (const { terrain } of drawnTiles) {
+    counts[terrain] = (counts[terrain] ?? 0) + 1;
   }
 
   return (
@@ -671,7 +735,6 @@ function DrawTilesAnimation({ drawnTiles, complete, onSkip, onFinish, t }: {
         <div className="text-text-secondary text-sm">
           {drawnTiles.length} / 18 {t.era1.drawnCount}
         </div>
-        {/* Progress bar */}
         <div className="mt-2 h-1.5 bg-game-surface rounded-full overflow-hidden max-w-xs mx-auto">
           <div
             className="h-full bg-gradient-to-r from-game-gold to-game-ember rounded-full transition-all duration-200"
@@ -680,47 +743,36 @@ function DrawTilesAnimation({ drawnTiles, complete, onSkip, onFinish, t }: {
         </div>
       </div>
 
-      {/* Tile grid — animated entry */}
-      <div className="flex flex-wrap gap-2 justify-center min-h-[120px]">
-        {drawnTiles.map((tile, i) => (
-          <div
-            key={i}
-            className="w-14 h-16 rounded-lg border flex flex-col items-center justify-center animate-scale-in"
-            style={{ animationDelay: `${i * 0.02}s`, backgroundColor: TILE_STYLES[tile].bg, borderColor: TILE_STYLES[tile].border }}
-          >
-            <span className="text-xl">{TILE_ICONS[tile]}</span>
-            <span className="text-[10px] text-text-secondary mt-0.5">{i + 1}</span>
+      {/* Hex tile grid — animated entry */}
+      <div className="flex flex-wrap gap-1.5 justify-center min-h-[120px] items-end">
+        {drawnTiles.map(({ terrain: tile, key }, i) => (
+          <div key={key} style={{ animationDelay: `${i * 0.025}s` }}>
+            <HexTile terrain={tile} size={48} index={i} />
           </div>
         ))}
       </div>
 
-      {/* Summary counts */}
-      <div className="grid grid-cols-5 gap-2">
-        {(['plain', 'mountain', 'forest', 'swamp', 'road'] as TerrainType[]).map(terrain => (
-          <div key={terrain} className="rounded-lg p-2 text-center border"
-            style={{ backgroundColor: TILE_STYLES[terrain].bg, borderColor: TILE_STYLES[terrain].border }}>
-            <div className="text-lg">{TILE_ICONS[terrain]}</div>
-            <div className="text-base font-bold text-text-primary tabular-nums">{counts[terrain] ?? 0}</div>
-          </div>
+      {/* Summary counts as hex tiles */}
+      <div className="flex gap-3 justify-center flex-wrap">
+        {(['plain', 'mountain', 'forest', 'swamp', 'road'] as TerrainType[]).map((terrain, i) => (
+          counts[terrain] ? (
+            <div key={terrain} className="flex flex-col items-center gap-1">
+              <HexTile terrain={terrain} size={52} showCount={counts[terrain]} index={i} />
+            </div>
+          ) : null
         ))}
       </div>
 
       {/* Buttons */}
       <div className="flex gap-2">
         {!complete ? (
-          <button
-            type="button"
-            onClick={onSkip}
-            className="flex-1 bg-game-surface/80 border border-border-subtle text-text-secondary hover:text-text-primary py-2.5 rounded-xl text-base transition-colors"
-          >
+          <button type="button" onClick={onSkip}
+            className="flex-1 bg-game-surface/80 border border-border-subtle text-text-secondary hover:text-text-primary py-2.5 rounded-xl text-base transition-colors">
             {t.era1.skipAnimation}
           </button>
         ) : (
-          <button
-            type="button"
-            onClick={onFinish}
-            className="flex-1 bg-gradient-to-r from-game-accent to-game-ember text-text-primary py-2.5 rounded-xl font-bold text-base uppercase tracking-wider relative overflow-hidden hover:-translate-y-0.5 transition-all"
-          >
+          <button type="button" onClick={onFinish}
+            className="flex-1 bg-gradient-to-r from-game-accent to-game-ember text-text-primary py-2.5 rounded-xl font-bold text-base uppercase tracking-wider relative overflow-hidden hover:-translate-y-0.5 transition-all">
             <div className="absolute inset-0 animate-shimmer pointer-events-none" />
             <span className="relative">{t.actions.next}</span>
           </button>
@@ -733,17 +785,12 @@ function DrawTilesAnimation({ drawnTiles, complete, onSkip, onFinish, t }: {
 // ── Simple tile counter for pre-placement phases ─────────────────
 
 function TileCounter({ tiles }: { tiles: Record<TerrainType, number> }) {
-  const t = useI18n(s => s.t);
   const terrains: TerrainType[] = ['plain', 'mountain', 'forest', 'swamp', 'road'];
-
   return (
-    <div className="grid grid-cols-5 gap-2">
-      {terrains.map(terrain => (
-        <div key={terrain} className="rounded-lg p-2 text-center text-text-primary border"
-          style={{ backgroundColor: TILE_STYLES[terrain].bg, borderColor: TILE_STYLES[terrain].border }}>
-          <div className="text-2xl" aria-hidden="true">{TILE_ICONS[terrain]}</div>
-          <div className="text-xs mt-0.5 text-text-secondary">{t.terrain[terrain]}</div>
-          <div className="text-lg font-bold">{tiles[terrain]}</div>
+    <div className="flex gap-3 justify-center flex-wrap">
+      {terrains.filter(t => tiles[t] > 0).map((terrain, i) => (
+        <div key={terrain} className="flex flex-col items-center gap-1">
+          <HexTile terrain={terrain} size={56} showCount={tiles[terrain]} showLabel index={i} />
         </div>
       ))}
     </div>
@@ -764,7 +811,7 @@ function SoloTradePanel({ player, dispatch, t, favorableTerrain }: {
   const favorableCount = player.tiles[favorableTerrain];
   const canTrade = favorableCount < 6;
 
-  function handleToggleTile(tt: TerrainType) {
+  const handleToggleTile = useCallback((tt: TerrainType) => {
     setSelectedTiles(prev => {
       const selectedOfType = prev.filter(t => t === tt).length;
       const available = player.tiles[tt];
@@ -776,12 +823,12 @@ function SoloTradePanel({ player, dispatch, t, favorableTerrain }: {
       }
       return prev;
     });
-  }
+  }, [player.tiles]);
 
-  function handleSoloTrade() {
+  const handleSoloTrade = useCallback(() => {
     if (selectedTiles.length !== 2) return;
     dispatch({ type: 'SOLO_TRADE', playerId: player.id, discardTiles: selectedTiles as [TerrainType, TerrainType] });
-  }
+  }, [selectedTiles, dispatch, player.id]);
 
   if (!canTrade) {
     return (
@@ -1052,13 +1099,17 @@ function ScoringModal({ gameState, onClose, onBackToMenu, t }: {
   onBackToMenu: () => void;
   t: Translations;
 }) {
-  const playerScores = gameState.players
-    .map(player => ({
-      player,
-      race: getRaceById(player.raceId),
-      breakdown: calculateScoreBreakdown(gameState, player.id),
-    }))
-    .sort((a, b) => b.breakdown.total - a.breakdown.total);
+  const playerScores = useMemo(
+    () =>
+      gameState.players
+        .map(player => ({
+          player,
+          race: getRaceById(player.raceId),
+          breakdown: calculateScoreBreakdown(gameState, player.id),
+        }))
+        .sort((a, b) => b.breakdown.total - a.breakdown.total),
+    [gameState],
+  );
 
   const totalScore = playerScores.reduce((sum, ps) => sum + ps.breakdown.total, 0);
 

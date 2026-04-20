@@ -75,7 +75,7 @@ function ProfileEditPanel({ onBack }: { onBack: () => void }) {
         <button
           type="button"
           onClick={onBack}
-          className="text-text-muted hover:text-text-primary w-7 h-7 flex items-center justify-center rounded-lg hover:bg-hover-bg transition-colors"
+          className="text-text-muted hover:text-text-primary w-10 h-10 flex items-center justify-center rounded-lg hover:bg-hover-bg transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -214,7 +214,7 @@ export function SettingsSidebar({ open, onClose }: Props) {
                       key={lang.code}
                       type="button"
                       onClick={() => setLocale(lang.code)}
-                      className={`w-8 h-6 flex items-center justify-center rounded text-[10px] font-bold transition-all ${
+                      className={`w-10 h-9 flex items-center justify-center rounded text-sm font-bold transition-all ${
                         locale === lang.code
                           ? 'bg-game-accent text-white'
                           : 'text-text-muted hover:text-text-primary'
@@ -260,7 +260,7 @@ export function SettingsSidebar({ open, onClose }: Props) {
               <button
                 type="button"
                 onClick={onClose}
-                className="text-text-muted hover:text-text-primary w-7 h-7 flex items-center justify-center rounded-lg hover:bg-hover-bg transition-colors"
+                className="text-text-muted hover:text-text-primary w-10 h-10 flex items-center justify-center rounded-lg hover:bg-hover-bg transition-colors"
                 aria-label={t.settings.close}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

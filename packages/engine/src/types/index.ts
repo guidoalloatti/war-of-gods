@@ -5,3 +5,9 @@ export type { WorldCard, EraCard, RelicCard, CardEffect } from './cards.js';
 export type { Player, BotDifficulty } from './player.js';
 export type { GameState, GameConfig, PlayerConfig, GameMode, GamePhase, Era1Phase, SoloVariant, TradeProposal } from './game.js';
 export type { GameAction } from './actions.js';
+export type {
+  TechType, UnitType, Era2Phase, Era3Phase,
+  TransferProposal as Era2TransferProposal,
+  FreeUnitGrant, PlayerEra2State,
+} from './era2.js';
+export { TECH_TYPES, UNIT_TYPES } from './era2.js';

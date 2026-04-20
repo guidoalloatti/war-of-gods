@@ -1,5 +1,5 @@
 import type { Server, Socket } from 'socket.io';
-import type { GameConfig, GameAction } from '@war-of-gods/engine';
+import type { GameConfig, GameAction, GameState } from '@war-of-gods/engine';
 import {
   createRoom,
   joinRoom,
@@ -36,7 +36,26 @@ function safeCallback<T>(callback: unknown, data: T): void {
   }
 }
 
+/** Debounced state broadcaster — coalesces rapid updates per room into one emission */
+function createStateBroadcaster(io: Server, delayMs = 50) {
+  const pending = new Map<string, { state: GameState; timer: ReturnType<typeof setTimeout> }>();
+
+  return (roomCode: string, state: GameState) => {
+    const existing = pending.get(roomCode);
+    if (existing) {
+      clearTimeout(existing.timer);
+    }
+    const timer = setTimeout(() => {
+      io.to(roomCode).emit('state_update', state);
+      pending.delete(roomCode);
+    }, delayMs);
+    pending.set(roomCode, { state, timer });
+  };
+}
+
 export function registerGameSocket(io: Server): void {
+  const broadcastState = createStateBroadcaster(io, 50);
+
   io.on('connection', (socket: Socket) => {
     console.log(`Client connected: ${socket.id}`);
 
@@ -63,7 +82,6 @@ export function registerGameSocket(io: Server): void {
         return;
       }
 
-      // Validate data shape
       if (!data || typeof data.code !== 'string') {
         safeCallback(callback, { error: 'Invalid request' });
         return;
@@ -84,6 +102,7 @@ export function registerGameSocket(io: Server): void {
       const { room } = result;
       const playerId = getPlayerIdForSocket(room, socket.id);
       socket.join(data.code);
+      // Immediate broadcast for join — players need to see each other right away
       io.to(data.code).emit('state_update', room.state);
       safeCallback(callback, { state: room.state, playerId });
     });
@@ -102,18 +121,18 @@ export function registerGameSocket(io: Server): void {
       }
 
       socket.join(data.code);
+      // Immediate broadcast for reconnect — restoring session is time-sensitive
       io.to(data.code).emit('state_update', room.state);
       safeCallback(callback, { state: room.state, playerId: data.playerId });
     });
 
-    // Player action — with authorization
+    // Player action — with authorization and debounced broadcast
     socket.on('player_action', (data: { roomCode: string; action: GameAction }) => {
       if (!actionLimiter(socket.id)) {
         socket.emit('error', { message: 'Rate limit exceeded' });
         return;
       }
 
-      // Validate data shape
       if (!data || typeof data.roomCode !== 'string' || !data.action) {
         socket.emit('error', { message: 'Invalid request' });
         return;
@@ -125,14 +144,12 @@ export function registerGameSocket(io: Server): void {
         return;
       }
 
-      // Authorization: verify socket belongs to this room
       const socketPlayerId = getPlayerIdForSocket(room, socket.id);
       if (!socketPlayerId) {
         socket.emit('error', { message: 'Not a member of this room' });
         return;
       }
 
-      // For player-specific actions, verify the action's playerId matches the socket's player
       const action = data.action;
       if ('playerId' in action && action.playerId !== socketPlayerId) {
         socket.emit('error', { message: 'Cannot perform actions for other players' });
@@ -149,7 +166,7 @@ export function registerGameSocket(io: Server): void {
         return;
       }
 
-      io.to(data.roomCode).emit('state_update', result.state);
+      broadcastState(data.roomCode, result.state);
     });
 
     // Disconnect

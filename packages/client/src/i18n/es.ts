@@ -18,6 +18,8 @@ export const es = {
     joinSubtitle: 'Ingresa a la sala de un amigo',
     era: 'ERA',
     theWorldAwaits: 'El mundo de Vali te espera',
+    continueLocal: 'Tienes una partida guardada localmente',
+    continueBtn: 'Continuar',
   },
   races: {
     elf: 'Rey Elfo',
@@ -145,6 +147,7 @@ export const es = {
     yourCards: 'Tus cartas',
     effect: 'Efecto',
     bot: 'Bot',
+    thinking: 'pensando...',
     you: 'tú',
     rerollName: 'Generar otro nombre',
     drawing: 'Robando fichas...',
@@ -234,6 +237,7 @@ export const es = {
     resetBoard: 'Reiniciar tablero',
     autoAssign: 'Auto-asignar',
     autoAssignHint: 'Distribuye fichas para maximizar puntos',
+    undo: 'Deshacer',
   },
   auth: {
     login: 'Iniciar sesión',

@@ -17,33 +17,48 @@ function nextTradeId(): string {
 
 /**
  * Main Era I reducer.
- * Receives state + action, validates, and returns new state (immutable).
+ * Receives state + action, validates inputs, and returns new state (immutable).
  */
 export function era1Reducer(state: GameState, action: GameAction): GameState {
+  if (!state) throw new Error('State is required');
+  if (!action || typeof action.type !== 'string') throw new Error('Action must have a type');
+
   switch (action.type) {
     case 'ADVANCE_PHASE':
       return advanceEra1Phase(state);
     case 'DRAW_TILES':
+      if (!action.playerId) throw new Error('DRAW_TILES requires playerId');
       return drawTiles(state, action.playerId);
     case 'PROPOSE_TRADE':
+      if (!action.fromPlayerId || !action.toPlayerId) throw new Error('PROPOSE_TRADE requires fromPlayerId and toPlayerId');
+      if (action.fromPlayerId === action.toPlayerId) throw new Error('Cannot trade with yourself');
+      if (!action.tileOffered || !action.tileRequested) throw new Error('PROPOSE_TRADE requires tileOffered and tileRequested');
       return proposeTrade(state, action.fromPlayerId, action.toPlayerId, action.tileOffered, action.tileRequested);
     case 'ACCEPT_TRADE':
+      if (!action.tradeId) throw new Error('ACCEPT_TRADE requires tradeId');
       return acceptTrade(state, action.tradeId);
     case 'REJECT_TRADE':
+      if (!action.tradeId) throw new Error('REJECT_TRADE requires tradeId');
       return rejectTrade(state, action.tradeId);
     case 'END_TRADE_PHASE':
       return endTradePhase(state);
     case 'SOLO_TRADE':
+      if (!action.playerId) throw new Error('SOLO_TRADE requires playerId');
+      if (!Array.isArray(action.discardTiles) || action.discardTiles.length !== 2) throw new Error('SOLO_TRADE requires exactly 2 discardTiles');
       return soloTrade(state, action.playerId, action.discardTiles);
     case 'PLACE_TILES':
+      if (!action.playerId) throw new Error('PLACE_TILES requires playerId');
       return placeTiles(state, action.playerId);
     case 'CALCULATE_SCORES':
       return calculateScores(state);
     case 'CHOOSE_ERA_CARD':
+      if (!action.playerId || !action.cardId) throw new Error('CHOOSE_ERA_CARD requires playerId and cardId');
       return chooseEraCard(state, action.playerId, action.cardId);
     case 'CHOOSE_RELIC':
+      if (!action.playerId || !action.relicId) throw new Error('CHOOSE_RELIC requires playerId and relicId');
       return chooseRelic(state, action.playerId, action.relicId);
     case 'RESOLVE_EFFECT':
+      if (!action.playerId) throw new Error('RESOLVE_EFFECT requires playerId');
       return resolveEffect(state, action.playerId, action.resolution);
     default:
       return state;

@@ -3,18 +3,323 @@
 > vite
 
 
-  VITE v5.4.21  ready in 148 ms
+  VITE v5.4.21  ready in 389 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-11:25:43 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
-11:26:17 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
-11:30:21 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
-11:31:18 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
-11:31:25 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
-11:31:42 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
-11:31:54 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
-11:32:01 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
-11:33:20 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
-11:33:39 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
-11:34:21 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+4:55:48 PM [vite] ✨ new dependencies optimized: zustand/react/shallow
+4:55:48 PM [vite] ✨ optimized dependencies changed. reloading
+4:59:12 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+4:59:12 PM [vite] Internal server error: /Users/guidoalloatti/projects/war-of-gods/packages/client/src/screens/Era1Screen.tsx: Identifier 'handleFinishDraw' has already been declared. (253:8)
+
+  251 |   }
+  252 |
+> 253 |   const handleFinishDraw = useCallback(() => {
+      |         ^
+  254 |     setIsDrawing(false);
+  255 |     setDrawnTiles([]);
+  256 |     setDrawComplete(false);
+  Plugin: vite:react-babel
+  File: /Users/guidoalloatti/projects/war-of-gods/packages/client/src/screens/Era1Screen.tsx:253:8
+  251|    }
+  252|  
+  253|    const handleFinishDraw = useCallback(() => {
+     |          ^
+  254|      setIsDrawing(false);
+  255|      setDrawnTiles([]);
+      at constructor (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:365:19)
+      at TypeScriptParserMixin.raise (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:6599:19)
+      at TypeScriptScopeHandler.checkRedeclarationInScope (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:1619:19)
+      at TypeScriptScopeHandler.declareName (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:1585:12)
+      at TypeScriptScopeHandler.declareName (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:4880:11)
+      at TypeScriptParserMixin.declareNameFromIdentifier (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:7567:16)
+      at TypeScriptParserMixin.checkIdentifier (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:7563:12)
+      at TypeScriptParserMixin.checkLVal (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:7500:12)
+      at TypeScriptParserMixin.parseVarId (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13412:10)
+      at TypeScriptParserMixin.parseVarId (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9752:11)
+      at TypeScriptParserMixin.parseVar (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13383:12)
+      at TypeScriptParserMixin.parseVarStatement (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13230:10)
+      at TypeScriptParserMixin.parseVarStatement (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9408:31)
+      at TypeScriptParserMixin.parseStatementContent (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12851:23)
+      at TypeScriptParserMixin.parseStatementContent (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9508:18)
+      at TypeScriptParserMixin.parseStatementLike (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12767:17)
+      at TypeScriptParserMixin.parseStatementListItem (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12747:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13316:61)
+      at TypeScriptParserMixin.parseBlockBody (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13309:10)
+      at TypeScriptParserMixin.parseBlock (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13297:10)
+      at TypeScriptParserMixin.parseFunctionBody (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12100:24)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12086:10)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9172:18)
+      at /Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13445:12
+      at TypeScriptParserMixin.withSmartMixTopicForbiddingContext (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12403:14)
+      at TypeScriptParserMixin.parseFunction (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13444:10)
+      at TypeScriptParserMixin.parseFunctionStatement (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13125:17)
+      at TypeScriptParserMixin.parseStatementContent (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12791:21)
+      at TypeScriptParserMixin.parseStatementContent (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9508:18)
+      at TypeScriptParserMixin.parseStatementLike (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12767:17)
+      at TypeScriptParserMixin.parseStatementListItem (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12747:17)
+      at TypeScriptParserMixin.parseExportDeclaration (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13934:17)
+      at TypeScriptParserMixin.parseExportDeclaration (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9629:85)
+      at TypeScriptParserMixin.maybeParseExportDeclaration (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13893:31)
+      at TypeScriptParserMixin.parseExport (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13812:29)
+      at TypeScriptParserMixin.parseExport (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9385:20)
+      at TypeScriptParserMixin.parseStatementContent (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12878:27)
+      at TypeScriptParserMixin.parseStatementContent (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9508:18)
+      at TypeScriptParserMixin.parseStatementLike (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12767:17)
+      at TypeScriptParserMixin.parseModuleItem (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12744:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13316:36)
+      at TypeScriptParserMixin.parseBlockBody (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13309:10)
+      at TypeScriptParserMixin.parseProgram (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12622:10)
+      at TypeScriptParserMixin.parseTopLevel (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12612:25)
+      at TypeScriptParserMixin.parse (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:14488:25)
+      at TypeScriptParserMixin.parse (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10126:18)
+      at parse (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:14522:38)
+      at parser (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+core@7.29.0/node_modules/@babel/core/lib/parser/index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+core@7.29.0/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+4:59:20 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+5:25:35 PM [vite] hmr update /src/App.tsx, /src/index.css
+5:25:43 PM [vite] hmr update /src/App.tsx, /src/index.css
+5:25:48 PM [vite] hmr update /src/App.tsx, /src/index.css
+5:25:48 PM [vite] Internal server error: /Users/guidoalloatti/projects/war-of-gods/packages/client/src/App.tsx: Expected corresponding JSX closing tag for <ScreenErrorBoundary>. (122:6)
+
+  120 |           onClose={() => setSettingsOpen(false)}
+  121 |         />
+> 122 |       </ErrorBoundary>
+      |       ^
+  123 |     </GoogleOAuthProvider>
+  124 |   );
+  125 | }
+  Plugin: vite:react-babel
+  File: /Users/guidoalloatti/projects/war-of-gods/packages/client/src/App.tsx:122:6
+  120|            onClose={() => setSettingsOpen(false)}
+  121|          />
+  122|        </ErrorBoundary>
+     |        ^
+  123|      </GoogleOAuthProvider>
+  124|    );
+      at constructor (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:365:19)
+      at TypeScriptParserMixin.raise (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:6599:19)
+      at TypeScriptParserMixin.jsxParseElementAt (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:4727:16)
+      at TypeScriptParserMixin.jsxParseElementAt (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:4698:32)
+      at TypeScriptParserMixin.jsxParseElement (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:4749:17)
+      at TypeScriptParserMixin.parseExprAtom (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:4759:19)
+      at TypeScriptParserMixin.parseExprSubscripts (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:11081:23)
+      at TypeScriptParserMixin.parseUpdate (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:11066:21)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:11046:23)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9837:18)
+      at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10899:61)
+      at TypeScriptParserMixin.parseExprOps (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10904:23)
+      at TypeScriptParserMixin.parseMaybeConditional (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10881:23)
+      at TypeScriptParserMixin.parseMaybeAssign (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10831:21)
+      at /Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9775:39
+      at TypeScriptParserMixin.tryParse (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:6907:20)
+      at TypeScriptParserMixin.parseMaybeAssign (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9775:18)
+      at /Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10800:39
+      at TypeScriptParserMixin.allowInAnd (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12426:12)
+      at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10800:17)
+      at TypeScriptParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12493:17)
+      at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:11675:28)
+      at TypeScriptParserMixin.parseExprAtom (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:11331:23)
+      at TypeScriptParserMixin.parseExprAtom (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:4764:20)
+      at TypeScriptParserMixin.parseExprSubscripts (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:11081:23)
+      at TypeScriptParserMixin.parseUpdate (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:11066:21)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:11046:23)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9837:18)
+      at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10899:61)
+      at TypeScriptParserMixin.parseExprOps (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10904:23)
+      at TypeScriptParserMixin.parseMaybeConditional (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10881:23)
+      at TypeScriptParserMixin.parseMaybeAssign (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10831:21)
+      at TypeScriptParserMixin.parseMaybeAssign (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9786:20)
+      at TypeScriptParserMixin.parseExpressionBase (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10784:23)
+      at /Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10780:39
+      at TypeScriptParserMixin.allowInAnd (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12421:16)
+      at TypeScriptParserMixin.parseExpression (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10780:17)
+      at TypeScriptParserMixin.parseReturnStatement (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13142:28)
+      at TypeScriptParserMixin.parseStatementContent (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12798:21)
+      at TypeScriptParserMixin.parseStatementContent (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9508:18)
+      at TypeScriptParserMixin.parseStatementLike (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12767:17)
+      at TypeScriptParserMixin.parseStatementListItem (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12747:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13316:61)
+      at TypeScriptParserMixin.parseBlockBody (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13309:10)
+      at TypeScriptParserMixin.parseBlock (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13297:10)
+      at TypeScriptParserMixin.parseFunctionBody (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12100:24)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12086:10)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9172:18)
+      at /Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13445:12
+      at TypeScriptParserMixin.withSmartMixTopicForbiddingContext (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12403:14)
+5:25:51 PM [vite] hmr update /src/App.tsx, /src/index.css
+5:26:14 PM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+5:26:14 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:26:14 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:26:20 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+5:26:34 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+5:26:39 PM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LandingScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/components/ScoreBreakdown.tsx, /src/screens/Era1Screen.tsx, /src/components/GameCard.tsx, /src/components/TradeModal.tsx, /src/components/HexBoard.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx
+5:26:39 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:26:39 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:26:39 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:26:39 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:26:46 PM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LandingScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/components/ScoreBreakdown.tsx, /src/screens/Era1Screen.tsx, /src/components/GameCard.tsx, /src/components/TradeModal.tsx, /src/components/HexBoard.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx
+5:26:46 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:26:46 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:26:46 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:26:46 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:26:59 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era1Screen.tsx
+5:27:07 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era1Screen.tsx
+5:27:11 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era1Screen.tsx
+5:27:18 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era1Screen.tsx
+5:27:31 PM [vite] hmr update /src/screens/MenuScreen.tsx, /src/index.css
+5:27:40 PM [vite] hmr update /src/screens/MenuScreen.tsx, /src/index.css
+5:27:45 PM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LandingScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/components/ScoreBreakdown.tsx, /src/screens/Era1Screen.tsx, /src/components/GameCard.tsx, /src/components/TradeModal.tsx, /src/components/HexBoard.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx
+5:27:45 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:27:45 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:27:45 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:27:45 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:27:53 PM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LandingScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/components/ScoreBreakdown.tsx, /src/screens/Era1Screen.tsx, /src/components/GameCard.tsx, /src/components/TradeModal.tsx, /src/components/HexBoard.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx
+5:27:53 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:27:53 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:27:53 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:27:53 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:27:59 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era1Screen.tsx
+5:28:19 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+5:28:27 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+5:28:35 PM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+5:28:45 PM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LandingScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/components/ScoreBreakdown.tsx, /src/screens/Era1Screen.tsx, /src/components/GameCard.tsx, /src/components/TradeModal.tsx, /src/components/HexBoard.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx
+5:28:46 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:28:46 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:28:46 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:28:46 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:28:52 PM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LandingScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/components/ScoreBreakdown.tsx, /src/screens/Era1Screen.tsx, /src/components/GameCard.tsx, /src/components/TradeModal.tsx, /src/components/HexBoard.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx
+5:28:52 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:28:52 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:28:52 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:28:52 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:30:30 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era1Screen.tsx, /src/components/HexBoard.tsx, /src/components/LiveScoreDisplay.tsx
+5:30:30 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:30:30 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:30:30 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:30:30 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:11:35 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:11:36 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:11:36 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:11:42 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:11:42 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:11:42 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:11:47 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:11:47 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:11:47 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:11:52 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:11:52 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:11:52 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:12:00 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:12:01 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:12:01 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:12:08 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:12:08 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:12:08 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:12:15 AM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+2:12:21 AM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+2:12:28 AM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+2:18:15 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:18:15 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:18:15 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:18:48 AM [vite] hmr update /src/components/GameCard.tsx, /src/index.css
+2:19:00 AM [vite] hmr update /src/components/GameCard.tsx, /src/index.css
+2:21:33 AM [vite] hmr update /src/components/LiveScoreDisplay.tsx, /src/index.css
+2:21:33 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh (export removed)
+2:21:33 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:21:41 AM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+2:23:03 AM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+2:23:38 AM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+2:23:51 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:23:52 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:23:52 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:24:08 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:24:08 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:24:08 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:25:40 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:25:41 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:25:41 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:25:58 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:25:58 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:25:58 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:26:13 AM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+2:28:25 AM [vite] hmr update /src/components/HexTile.tsx, /src/index.css
+2:34:16 AM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+2:35:23 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:35:23 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:35:23 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:35:44 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:35:44 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:35:44 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:37:25 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:37:25 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:37:25 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:37:31 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:37:31 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:37:31 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:38:13 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:38:13 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:38:13 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:38:23 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:38:23 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:38:23 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:38:40 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:38:41 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:38:41 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:40:17 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:40:17 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:40:17 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:40:22 AM [vite] hmr update /src/components/HexTile.tsx, /src/index.css
+2:40:28 AM [vite] hmr update /src/components/HexTile.tsx, /src/index.css
+2:40:33 AM [vite] hmr update /src/components/HexTile.tsx, /src/index.css
+2:40:44 AM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
+2:40:49 AM [vite] hmr update /src/components/GameCard.tsx, /src/index.css
+2:41:01 AM [vite] hmr update /src/components/GameCard.tsx, /src/index.css
+2:41:23 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:41:23 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:41:23 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:41:35 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:41:35 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:41:35 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:41:40 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:41:40 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:41:40 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:41:49 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:41:49 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:41:49 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:41:54 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:41:55 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:41:55 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:41:59 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:41:59 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:41:59 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:42:07 AM [vite] hmr update /src/components/HexTile.tsx, /src/index.css
+2:42:19 AM [vite] hmr update /src/components/GameCard.tsx, /src/index.css
+2:43:56 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:43:56 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:43:56 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:44:11 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:44:11 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:44:11 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:45:03 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:45:04 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:45:04 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+2:46:54 AM [vite] hmr update /src/components/HexBoard.tsx, /src/index.css
+2:46:54 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:46:54 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+3:52:36 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era1Screen.tsx, /src/components/HexBoard.tsx, /src/components/LiveScoreDisplay.tsx
+3:52:36 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+3:52:36 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+3:52:36 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+3:52:36 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+3:52:58 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era1Screen.tsx, /src/components/HexBoard.tsx, /src/components/LiveScoreDisplay.tsx
+3:52:58 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+3:52:58 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+3:52:58 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+3:52:58 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+3:55:28 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era1Screen.tsx, /src/components/HexBoard.tsx, /src/components/LiveScoreDisplay.tsx
+3:55:28 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+3:55:28 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+3:55:28 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+3:55:28 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx

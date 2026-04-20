@@ -128,7 +128,7 @@ export function LandingScreen({ onSkip, onLogin, onRegister }: Props) {
           </div>
 
           {/* Title with text shadow effect */}
-          <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black font-display text-transparent bg-clip-text bg-gradient-to-b from-game-gold via-game-gold to-game-gold-dark tracking-tight uppercase leading-[0.85]"
+          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black font-display text-transparent bg-clip-text bg-gradient-to-b from-game-gold via-game-gold to-game-gold-dark tracking-tight uppercase leading-[0.85]"
             style={{ textShadow: '0 0 80px rgba(245,197,24,0.3)' }}>
             {t.landing.heroTitle}
           </h1>
@@ -191,7 +191,7 @@ export function LandingScreen({ onSkip, onLogin, onRegister }: Props) {
 
       {/* ═══ STATS STRIP ═══ */}
       <section id="landing-stats" ref={statsSection.ref} className="relative py-6 px-6 border-y border-border-subtle bg-game-surface/30 backdrop-blur-sm">
-        <div className={`max-w-3xl mx-auto grid grid-cols-4 gap-4 text-center transition-all duration-700 ${statsSection.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+        <div className={`max-w-3xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-4 text-center transition-all duration-700 ${statsSection.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           {[
             { value: 8, label: t.landing.featureRaces.replace(/\d+\s*/, ''), suffix: '' },
             { value: 37, label: 'Hexagons', suffix: '' },
@@ -219,7 +219,7 @@ export function LandingScreen({ onSkip, onLogin, onRegister }: Props) {
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {[
               { icon: '⬡', key: 'featureBoard', delay: 0, color: '#f5c518' },
               { icon: '👑', key: 'featureRaces', delay: 100, color: '#e94560' },
@@ -267,7 +267,7 @@ export function LandingScreen({ onSkip, onLogin, onRegister }: Props) {
           </div>
 
           {/* Race cards — 2x2 grid with large icons and rich hover */}
-          <div className={`grid grid-cols-2 lg:grid-cols-4 gap-3 transition-all duration-700 delay-100 ${racesSection.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 transition-all duration-700 delay-100 ${racesSection.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             {([
               { id: 'elf', emoji: '🏡', color: '#4aad6a', key: 'raceElf', terrain: '🌲' },
               { id: 'dwarf', emoji: '⛏️', color: '#8a9bae', key: 'raceDwarf', terrain: '⛰️' },

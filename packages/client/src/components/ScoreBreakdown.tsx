@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { ScoreBreakdown as ScoreBreakdownType } from '@war-of-gods/engine';
 import { useI18n } from '../i18n/index.js';
 
@@ -7,7 +8,7 @@ type Props = {
   breakdown: ScoreBreakdownType;
 };
 
-export function ScoreBreakdown({ playerName, raceColor, breakdown }: Props) {
+export const ScoreBreakdown = memo(function ScoreBreakdown({ playerName, raceColor, breakdown }: Props) {
   const t = useI18n(s => s.t);
   const rows = [
     { label: t.scoring.base, value: breakdown.base },
@@ -43,4 +44,4 @@ export function ScoreBreakdown({ playerName, raceColor, breakdown }: Props) {
       </div>
     </div>
   );
-}
+});

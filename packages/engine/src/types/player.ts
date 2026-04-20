@@ -1,6 +1,7 @@
 import type { RaceId } from './race.js';
 import type { TerrainType } from './terrain.js';
 import type { EraCard, RelicCard } from './cards.js';
+import type { PlayerEra2State, TechType } from './era2.js';
 
 export type Player = {
   id: string;
@@ -27,6 +28,8 @@ export type Player = {
   pendingEffect?: {
     type: string;
     params: Record<string, unknown>;
+    /** Which era the effect belongs to, so the UI knows which modal to show */
+    resolutionKind?: 'era1' | 'era2';
   };
   /** Modifier to the number of tiles to draw (e.g. +2 or -2) */
   drawCountModifier?: number;
@@ -34,8 +37,10 @@ export type Player = {
   tradeLimit?: number;
   /** Extra points accumulated from card effects */
   cardBonusPoints?: number;
-  /** Free tech levels granted by cards */
-  freeTechLevels?: Array<{ tech: 'war' | 'science' | 'resources' | 'economy'; level: number }>;
+  /** Free tech levels granted by cards (stackable — multiple entries accumulate) */
+  freeTechLevels?: Array<{ tech: TechType; level: number }>;
+  /** Era II state (populated at transition from Era I) */
+  era2State?: PlayerEra2State;
 };
 
 export type BotDifficulty = 'easy' | 'medium' | 'hard';

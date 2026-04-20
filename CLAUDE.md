@@ -9,7 +9,7 @@ Fantasy board game (1-6 players) as a pnpm monorepo. Players build kingdoms, tra
 ```
 packages/
 ├── engine/   # Pure game logic — zero UI/network deps, runs in Node or browser
-├── client/   # React 18 + Vite + Tailwind frontend
+├── client/   # React 18 + Vite + Tailwind frontend (mobile-responsive)
 └── server/   # Express + Socket.io multiplayer backend
 ```
 
@@ -20,9 +20,18 @@ packages/
 - **Discriminated unions**: `CardEffect` has 25 types — the switch in `effect-dispatcher.ts` must be exhaustive.
 - **Zustand stores**: `gameStore.ts` (game state, multiplayer), `i18n/index.ts` (locale with localStorage persistence).
 
-### Engine exports (from `packages/engine/src/index.ts`)
+### Engine public API (from `packages/engine/src/index.ts`)
 
 All public types and functions are re-exported from `@war-of-gods/engine`. Never import from internal engine paths in client/server code.
+
+Current public exports:
+- **Types**: `TerrainType`, `RaceId`, `Race`, `WorldCard`, `EraCard`, `RelicCard`, `Player`, `GameState`, `GameConfig`, `GameMode`, `GameAction`, `ScoreBreakdown`, `Bot`
+- **Constants/utils**: `getRoadBonus`
+- **Races**: `getAllRaces`, `getRaceById`
+- **State**: `createGame`, `createRng`
+- **Era I**: `era1Reducer`, `calculateScoreBreakdown`
+- **Bots**: `EasyBot`
+- **Names**: `generateFullName`
 
 ## Commands
 
@@ -97,6 +106,15 @@ Race names in `packages/engine/src/races/index.ts` are in Spanish (e.g., 'Rey El
 - **Guaranteed minimum**: 2 favorable terrain tiles per player (swapped from pile if draw is short)
 - Solo trade: discard 1 tile, draw 1 from pile (ensures at least 1 trade action available)
 - Trade limit enforced per-player via `tradeLimit` (default 1), counter-based
+
+## Mobile Support
+
+All screens are responsive (mobile-first breakpoints). Key patterns:
+- `RaceSelectionScreen`: carousel replaced by horizontal scroll on mobile (via `useMediaQuery` hook at `src/hooks/useMediaQuery.ts`)
+- `Era1Screen`: sidebar collapses off-canvas on mobile with FAB toggle button
+- `AdminLayout`: sidebar hidden on mobile with hamburger menu + overlay
+- Minimum tap target size: 44×44px on all interactive elements
+- Hover-only interactions have touch fallbacks (always-visible on mobile, hover-only on `sm:`)
 
 ## Style
 

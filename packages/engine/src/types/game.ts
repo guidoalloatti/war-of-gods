@@ -1,6 +1,7 @@
 import type { Player } from './player.js';
 import type { TerrainType } from './terrain.js';
 import type { WorldCard, EraCard, RelicCard } from './cards.js';
+import type { Era2Phase, Era3Phase, TransferProposal } from './era2.js';
 
 export type GameMode = 'solo' | 'solo_bots' | 'multiplayer';
 export type GamePhase = 'era1' | 'era2' | 'era3';
@@ -33,10 +34,20 @@ export type GameState = {
   soloVariant: SoloVariant | null;
   phase: GamePhase;
   era1Phase: Era1Phase;
+  era2Phase?: Era2Phase;
+  era3Phase?: Era3Phase;
   players: Player[];
   tilePile: TerrainType[];
   worldCard: WorldCard | null;
+  /** Era II world card revealed when Era II starts */
+  worldCardEra2?: WorldCard | null;
   activeTrades: TradeProposal[];
+  /** Era II transfer proposals during Kings Table */
+  activeTransfers?: TransferProposal[];
+  /** Players who have marked themselves ready to close the Kings Table */
+  kingsTableReady?: string[];
+  /** Doom clock (12 = default Saga init, 0 = disabled). Decreased by world/era cards. */
+  doomClock?: number;
   /** Seed for the deterministic random number generator */
   seed: number;
   /** Room code for multiplayer */
@@ -48,6 +59,8 @@ export type GameState = {
   roadRequirement?: number;
   /** Pending era card choices per player (3 cards to choose from) */
   pendingEraCards?: Record<string, EraCard[]>;
+  /** Pending Era II card choices per player (3 cards to choose from) */
+  pendingEra2Cards?: Record<string, EraCard[]>;
   /** Pending relic choices per player (3 relics to choose from) */
   pendingRelics?: Record<string, RelicCard[]>;
 };
