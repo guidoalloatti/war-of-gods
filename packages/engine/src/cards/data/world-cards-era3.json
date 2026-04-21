@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "description": "World Cards for Era III. One is revealed at the start of Era III, applying a global passive effect during the war against Dhakhan.",
+  "cards": [
+    {
+      "id": "world_era3_01",
+      "name": "Vientos de Guerra",
+      "name_en": "Winds of War",
+      "type": "world_era3",
+      "flavorText": "El aliento de Tyr sopla sobre todos los ejércitos libres.",
+      "flavorText_en": "Tyr's breath blows over every free army.",
+      "mechanicalText": "Todas las unidades de los jugadores (no Wrought) ganan +1 ataque permanentemente.",
+      "mechanicalText_en": "All player units (not Wrought) gain +1 attack permanently.",
+      "effects": [
+        { "type": "era3_global_passive_atk", "trigger": "on_era3_start", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "world_era3_02",
+      "name": "La Cornucopia",
+      "name_en": "The Cornucopia",
+      "type": "world_era3",
+      "flavorText": "Los graneros rebosan incluso mientras los cuervos giran en el cielo.",
+      "flavorText_en": "Granaries overflow even as the ravens circle above.",
+      "mechanicalText": "Cada jugador recibe 5 monedas de oro al inicio de la Era III.",
+      "mechanicalText_en": "Each player receives 5 gold at the start of Era III.",
+      "effects": [
+        { "type": "era3_gold_bonus", "trigger": "on_era3_start", "amount": 5 }
+      ]
+    },
+    {
+      "id": "world_era3_03",
+      "name": "El Grito de Guerra",
+      "name_en": "The War Cry",
+      "type": "world_era3",
+      "flavorText": "Un solo grito cruza las colinas y cada espada responde.",
+      "flavorText_en": "A single cry crosses the hills and every sword answers.",
+      "mechanicalText": "Cada jugador recibe una unidad de infantería gratis en su capital al inicio de la Era III.",
+      "mechanicalText_en": "Each player gets a free infantry unit in their capital at the start of Era III.",
+      "effects": [
+        { "type": "era3_free_recruit", "trigger": "on_era3_start", "unit": "infantry" }
+      ]
+    }
+  ]
+}

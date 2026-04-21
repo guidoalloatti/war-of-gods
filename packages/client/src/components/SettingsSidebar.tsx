@@ -154,6 +154,8 @@ export function SettingsSidebar({ open, onClose }: Props) {
   const setLocale = useI18n(s => s.setLocale);
   const theme = useI18n(s => s.theme);
   const setTheme = useI18n(s => s.setTheme);
+  const mapFontScale = useI18n(s => s.mapFontScale);
+  const setMapFontScale = useI18n(s => s.setMapFontScale);
   const user = useAuth(s => s.user);
   const login = useAuth(s => s.login);
   const logout = useAuth(s => s.logout);
@@ -188,12 +190,12 @@ export function SettingsSidebar({ open, onClose }: Props) {
         />
       )}
 
-      {/* Sidebar panel */}
+      {/* Sidebar panel — slides in from the right to avoid colliding with the left game sidebar */}
       <div
         id="settings-sidebar"
         ref={sidebarRef}
-        className={`fixed top-0 left-0 bottom-0 z-[100] w-72 max-w-[85vw] flex flex-col bg-game-surface border-r border-border-medium shadow-2xl transition-transform duration-300 ease-out ${
-          open ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed top-0 right-0 bottom-0 z-[100] w-72 max-w-[85vw] flex flex-col bg-game-surface border-l border-border-medium shadow-2xl transition-transform duration-300 ease-out ${
+          open ? 'translate-x-0' : 'translate-x-full'
         }`}
         role="dialog"
         aria-modal={open}
@@ -267,6 +269,36 @@ export function SettingsSidebar({ open, onClose }: Props) {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
+            </div>
+
+            {/* Font size control — right below the header */}
+            <div className="px-3 py-2 border-b border-border-subtle shrink-0">
+              <div className="text-text-muted text-[10px] uppercase tracking-wider mb-1.5">{t.settings.mapFontSize}</div>
+              <div className="flex items-center gap-2">
+                <span className="text-text-faint text-[9px] shrink-0">{t.settings.mapFontSizeSmall}</span>
+                <input
+                  type="range"
+                  min={0.6}
+                  max={2.0}
+                  step={0.1}
+                  value={mapFontScale}
+                  onChange={e => setMapFontScale(parseFloat(e.target.value))}
+                  className="flex-1 h-1.5 accent-game-gold cursor-pointer"
+                />
+                <span className="text-text-faint text-[9px] shrink-0">{t.settings.mapFontSizeLarge}</span>
+              </div>
+              <div className="flex justify-between mt-1">
+                {[0.7, 1.0, 1.4, 2.0].map(v => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setMapFontScale(v)}
+                    className={`text-[9px] px-1.5 py-0.5 rounded transition-colors ${Math.abs(mapFontScale - v) < 0.05 ? 'bg-game-gold/20 text-game-gold' : 'text-text-muted hover:text-text-primary'}`}
+                  >
+                    {v === 0.7 ? 'XS' : v === 1.0 ? 'S' : v === 1.4 ? 'M' : 'L'}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Scrollable content */}

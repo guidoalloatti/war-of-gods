@@ -10,6 +10,9 @@ import { RaceSelectionScreen } from './screens/RaceSelectionScreen.js';
 import { LobbyScreen } from './screens/LobbyScreen.js';
 import { Era1Screen } from './screens/Era1Screen.js';
 import { ScoringScreen } from './screens/ScoringScreen.js';
+import { Era2Screen } from './screens/Era2Screen.js';
+import { Era2ScoringScreen } from './screens/Era2ScoringScreen.js';
+import { Era3Screen } from './screens/Era3Screen.js';
 import { SettingsSidebar } from './components/SettingsSidebar.js';
 import { ScreenErrorBoundary } from './components/ScreenErrorBoundary.js';
 import { useI18n } from './i18n/index.js';
@@ -73,6 +76,16 @@ function CurrentScreen() {
       );
     case 'scoring':
       return <ScreenErrorBoundary screenName="Puntuación"><ScoringScreen /></ScreenErrorBoundary>;
+    case 'era2':
+      return (
+        <ScreenErrorBoundary screenName="Era II" onReset={() => useGameStore.getState().setScreen('menu')}>
+          <Era2Screen />
+        </ScreenErrorBoundary>
+      );
+    case 'era2_scoring':
+      return <ScreenErrorBoundary screenName="Puntuación Era II"><Era2ScoringScreen /></ScreenErrorBoundary>;
+    case 'era3':
+      return <ScreenErrorBoundary screenName="Era III"><Era3Screen /></ScreenErrorBoundary>;
     case 'admin':
       return (
         <ScreenErrorBoundary screenName="Admin">
@@ -94,17 +107,23 @@ export function App() {
     restoreSession();
     // Attempt to reconnect to a multiplayer room if we have stored credentials
     attemptReconnect();
+    // Auto-restore local autosave so HMR / reload / server restart don't
+    // drop the player back to the menu.
+    const store = useGameStore.getState();
+    if (!store.gameState && store.localAutosaveExists) {
+      store.restoreLocalSave();
+    }
   }, [restoreSession, attemptReconnect]);
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <ScreenErrorBoundary screenName="App">
-        {/* Settings gear button — fixed top-left */}
+        {/* Settings gear button — fixed top-right to avoid collision with left sidebar */}
         <button
           id="settings-button"
           type="button"
           onClick={() => setSettingsOpen(true)}
-          className="fixed top-3 left-3 z-[80] w-10 h-10 flex items-center justify-center rounded-full bg-game-surface/80 border border-border-medium hover:border-game-gold text-text-secondary hover:text-text-primary transition-colors"
+          className="fixed top-3 right-3 z-[80] w-10 h-10 flex items-center justify-center rounded-full bg-game-surface/80 border border-border-medium hover:border-game-gold text-text-secondary hover:text-text-primary transition-colors"
           aria-label={t.settings.openSettings}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

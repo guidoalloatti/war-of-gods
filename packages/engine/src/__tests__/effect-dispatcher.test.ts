@@ -292,18 +292,19 @@ describe('Effect dispatcher', () => {
     });
   });
 
-  describe('stub effects (Era II/III)', () => {
-    it('silently skips unimplemented effects', () => {
+  describe('completed Era I effects (free_unit / extra_relic)', () => {
+    it('free_unit adds to player.freeUnits', () => {
       const state = makeState();
-      const stubTypes = [
-        'free_unit', 'scry_pile', 'extra_relic', 'preview_next_era_deck',
-      ] as const;
+      const effect = { type: 'free_unit', trigger: 'on_era1_close', unit: 'ranged', count: 1 } as CardEffect;
+      const result = applyEffect(state, effect, { playerId: 'player_1', trigger: 'on_era1_close' });
+      expect(result.players[0].freeUnits).toEqual([{ unit: 'ranged', count: 1 }]);
+    });
 
-      for (const type of stubTypes) {
-        const effect = { type, trigger: 'on_reveal' } as CardEffect;
-        const result = applyEffect(state, effect, { playerId: 'player_1', trigger: 'on_reveal' });
-        expect(result).toBe(state);
-      }
+    it('extra_relic bumps extraRelicsAllowed', () => {
+      const state = makeState();
+      const effect = { type: 'extra_relic', trigger: 'on_reveal', count: 1 } as CardEffect;
+      const result = applyEffect(state, effect, { playerId: 'player_1', trigger: 'on_reveal' });
+      expect(result.players[0].extraRelicsAllowed).toBe(1);
     });
   });
 

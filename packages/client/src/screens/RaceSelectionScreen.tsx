@@ -6,6 +6,7 @@ import { useGameStore } from '../stores/gameStore.js';
 import { useI18n } from '../i18n/index.js';
 import type { Translations } from '../i18n/es.js';
 import { RacePortrait } from '../components/RacePortrait.js';
+import { RaceTerrainPreview3D } from '../components/RaceTerrainPreview3D.js';
 
 const TERRAIN_ICONS: Record<string, string> = {
   plain: '🌾',
@@ -500,90 +501,85 @@ function RaceDetailPanel({ race, t }: { race: Race; t: Translations }) {
           </div>
         </div>
 
-        {/* Right: Terrain value chart + stats */}
-        <div className="w-full sm:w-72 shrink-0 rounded-xl border border-border-subtle p-3 sm:p-4"
-          style={{
-            background: `linear-gradient(135deg, ${race.color}06 0%, rgba(10,10,26,0.6) 100%)`,
-          }}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] text-text-secondary uppercase tracking-wider font-medium">{t.raceSelection.terrainPoints}</span>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-text-faint uppercase tracking-wider">{t.raceSelection.totalValue}</span>
-              <span className="text-sm font-black text-game-gold tabular-nums">{totalValue}</span>
+        {/* Right: 3D terrain preview + compact stats */}
+        <div className="w-full sm:w-72 shrink-0 flex flex-col gap-2">
+          {/* 3D terrain mini-map */}
+          <div
+            className="w-full rounded-xl border overflow-hidden"
+            style={{
+              height: 200,
+              borderColor: `${race.color}30`,
+              background: `linear-gradient(135deg, ${race.color}08 0%, rgba(10,10,26,0.6) 100%)`,
+            }}
+          >
+            <RaceTerrainPreview3D
+              favorableTerrain={race.favorableTerrain}
+              raceColor={race.color}
+              className="w-full h-full"
+            />
+          </div>
+
+          {/* Compact terrain score rows */}
+          <div
+            className="rounded-xl border border-border-subtle p-3"
+            style={{ background: `linear-gradient(135deg, ${race.color}06 0%, rgba(10,10,26,0.6) 100%)` }}
+          >
+            <div className="flex items-center justify-between mb-2.5">
+              <span className="text-[10px] text-text-secondary uppercase tracking-wider font-medium">{t.raceSelection.terrainPoints}</span>
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] text-text-faint uppercase tracking-wider">{t.raceSelection.totalValue}</span>
+                <span className="text-sm font-black text-game-gold tabular-nums">{totalValue}</span>
+              </div>
             </div>
-          </div>
-
-          {/* Terrain rows — horizontal bars with labels */}
-          <div className="space-y-2.5">
-            {TERRAINS.map(terrain => {
-              const value = race.terrainValues[terrain];
-              const pct = maxTerrainValue > 0 ? (value / maxTerrainValue) * 100 : 0;
-              const isFavorable = terrain === race.favorableTerrain;
-              const isUnfavorable = terrain === race.unfavorableTerrain;
-              const barColor = isFavorable
-                ? 'from-emerald-600 to-emerald-400'
-                : isUnfavorable
-                ? 'from-red-600/70 to-red-400/70'
-                : value > 0
-                ? 'from-slate-500/50 to-slate-400/50'
-                : 'from-slate-700/30 to-slate-600/30';
-
-              return (
-                <div key={terrain} className="flex items-center gap-2">
-                  {/* Icon + name */}
-                  <div className="w-20 shrink-0 flex items-center gap-1.5">
-                    <span className="text-sm">{TERRAIN_ICONS[terrain]}</span>
-                    <span className={`text-[11px] font-medium truncate ${
-                      isFavorable ? 'text-emerald-400' :
-                      isUnfavorable ? 'text-red-400' :
-                      'text-text-secondary'
-                    }`}>
-                      {t.terrain[terrain]}
-                    </span>
+            <div className="space-y-2">
+              {TERRAINS.map(terrain => {
+                const value = race.terrainValues[terrain];
+                const pct = maxTerrainValue > 0 ? (value / maxTerrainValue) * 100 : 0;
+                const isFavorable = terrain === race.favorableTerrain;
+                const isUnfavorable = terrain === race.unfavorableTerrain;
+                const barColor = isFavorable
+                  ? 'from-emerald-600 to-emerald-400'
+                  : isUnfavorable
+                  ? 'from-red-600/70 to-red-400/70'
+                  : value > 0
+                  ? 'from-slate-500/50 to-slate-400/50'
+                  : 'from-slate-700/30 to-slate-600/30';
+                return (
+                  <div key={terrain} className="flex items-center gap-2">
+                    <div className="w-20 shrink-0 flex items-center gap-1.5">
+                      <span className="text-sm">{TERRAIN_ICONS[terrain]}</span>
+                      <span className={`text-[11px] font-medium truncate ${
+                        isFavorable ? 'text-emerald-400' : isUnfavorable ? 'text-red-400' : 'text-text-secondary'
+                      }`}>{t.terrain[terrain]}</span>
+                    </div>
+                    <div className="flex-1 h-2.5 rounded-full bg-game-surface/80 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-700 ease-out`}
+                        style={{ width: `${Math.max(pct, 3)}%` }}
+                      />
+                    </div>
+                    <span className={`w-5 text-right text-xs font-bold tabular-nums ${
+                      isFavorable ? 'text-emerald-400' : isUnfavorable ? 'text-red-400' : value > 0 ? 'text-text-primary' : 'text-text-faint'
+                    }`}>{value}</span>
+                    {isFavorable && <span className="text-[8px] text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 rounded px-1 py-px font-semibold shrink-0">+</span>}
+                    {isUnfavorable && <span className="text-[8px] text-red-400 bg-red-400/10 border border-red-400/20 rounded px-1 py-px font-semibold shrink-0">-</span>}
+                    {!isFavorable && !isUnfavorable && <span className="w-4 shrink-0" />}
                   </div>
-                  {/* Bar */}
-                  <div className="flex-1 h-3 rounded-full bg-game-surface/80 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-700 ease-out`}
-                      style={{ width: `${Math.max(pct, 3)}%` }}
-                    />
-                  </div>
-                  {/* Value */}
-                  <span className={`w-5 text-right text-xs font-bold tabular-nums ${
-                    isFavorable ? 'text-emerald-400' :
-                    isUnfavorable ? 'text-red-400' :
-                    value > 0 ? 'text-text-primary' : 'text-text-faint'
-                  }`}>
-                    {value}
-                  </span>
-                  {/* Tag */}
-                  {isFavorable && (
-                    <span className="text-[8px] text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 rounded px-1 py-px font-semibold uppercase tracking-wider shrink-0">+</span>
-                  )}
-                  {isUnfavorable && (
-                    <span className="text-[8px] text-red-400 bg-red-400/10 border border-red-400/20 rounded px-1 py-px font-semibold uppercase tracking-wider shrink-0">-</span>
-                  )}
-                  {!isFavorable && !isUnfavorable && (
-                    <span className="w-4 shrink-0" />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Favorable / Unfavorable legend */}
-          <div className="mt-3 pt-2 border-t border-border-subtle flex items-center gap-2">
-            <span className="text-[10px] text-emerald-400/90 bg-emerald-400/10 rounded-full px-2 py-0.5 border border-emerald-400/20 flex items-center gap-1">
-              <span className="font-bold">+</span>
-              <span>{TERRAIN_ICONS[race.favorableTerrain]}</span>
-              <span>{t.terrain[race.favorableTerrain]}</span>
-            </span>
-            <span className="text-[10px] text-red-400/90 bg-red-400/10 rounded-full px-2 py-0.5 border border-red-400/20 flex items-center gap-1">
-              <span className="font-bold">-</span>
-              <span>{TERRAIN_ICONS[race.unfavorableTerrain]}</span>
-              <span>{t.terrain[race.unfavorableTerrain]}</span>
-            </span>
+                );
+              })}
+            </div>
+            <div className="mt-2.5 pt-2 border-t border-border-subtle flex items-center gap-2 flex-wrap">
+              <span className="text-[10px] text-emerald-400/90 bg-emerald-400/10 rounded-full px-2 py-0.5 border border-emerald-400/20 flex items-center gap-1">
+                <span className="font-bold">+</span>
+                <span>{TERRAIN_ICONS[race.favorableTerrain]}</span>
+                <span>{t.terrain[race.favorableTerrain]}</span>
+              </span>
+              <span className="text-[10px] text-red-400/90 bg-red-400/10 rounded-full px-2 py-0.5 border border-red-400/20 flex items-center gap-1">
+                <span className="font-bold">-</span>
+                <span>{TERRAIN_ICONS[race.unfavorableTerrain]}</span>
+                <span>{t.terrain[race.unfavorableTerrain]}</span>
+              </span>
+            </div>
           </div>
         </div>
       </div>

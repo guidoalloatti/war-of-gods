@@ -11,3 +11,7 @@ export type {
   FreeUnitGrant, PlayerEra2State,
 } from './era2.js';
 export { TECH_TYPES, UNIT_TYPES } from './era2.js';
+export type {
+  HexCoord, HexTerrain, Hex, GameMap, Unit, Stack, PlayerEra3State, CombatEntry,
+  RuinsReward, RuinsLootEntry, General,
+} from './era3.js';

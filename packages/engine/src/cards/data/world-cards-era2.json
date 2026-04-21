@@ -1,0 +1,201 @@
+{
+  "version": "1.0.0",
+  "description": "World Cards for Era II. One is revealed at the start of Era II, affecting all players during kingdom construction.",
+  "cards": [
+    {
+      "id": "world_era2_01",
+      "name": "Forja del Destino",
+      "name_en": "Forge of Destiny",
+      "type": "world_era2",
+      "flavorText": "Los hornos de los dioses arden con un fuego que no es de este mundo.",
+      "flavorText_en": "The gods' furnaces burn with a fire not of this world.",
+      "mechanicalText": "Cada jugador puede alcanzar el nivel 6 en una rama tecnológica. El costo adicional es el doble del salto de nivel 5.",
+      "mechanicalText_en": "Each player can reach level 6 in one technology branch. Additional cost is double the level-5 increment.",
+      "effects": [
+        { "type": "allow_tech_level_6", "trigger": "on_era2_start", "maxTechs": 1 }
+      ]
+    },
+    {
+      "id": "world_era2_02",
+      "name": "La Mesa Redonda",
+      "name_en": "The Round Table",
+      "type": "world_era2",
+      "flavorText": "Los reyes se reúnen como iguales bajo la luz de Vali.",
+      "flavorText_en": "Kings gather as equals beneath Vali's light.",
+      "mechanicalText": "En la Mesa de los Reyes, las transferencias de puntos son 1:1 en vez de 2:1.",
+      "mechanicalText_en": "At the Kings' Table, point transfers are 1:1 instead of 2:1.",
+      "effects": [
+        { "type": "modify_give_ratio", "trigger": "kings_table_open", "ratio": 1 }
+      ]
+    },
+    {
+      "id": "world_era2_03",
+      "name": "La Veda de los Hierros",
+      "name_en": "The Iron Embargo",
+      "type": "world_era2",
+      "flavorText": "El metal escasea; los herreros lloran sobre yunques vacíos.",
+      "flavorText_en": "Metal runs scarce; smiths weep over empty anvils.",
+      "mechanicalText": "El costo de Guerra aumenta en +1 por nivel para todos los jugadores.",
+      "mechanicalText_en": "War cost increases by +1 per level for all players.",
+      "effects": [
+        { "type": "modify_tech_cost", "trigger": "on_era2_start", "tech": "war", "delta": 1, "perLevel": true }
+      ]
+    },
+    {
+      "id": "world_era2_04",
+      "name": "El Despertar del Saber",
+      "name_en": "The Awakening of Knowledge",
+      "type": "world_era2",
+      "flavorText": "Los sabios redescubren artes que se creían perdidas.",
+      "flavorText_en": "Sages rediscover arts thought long forgotten.",
+      "mechanicalText": "El costo de Ciencia se reduce en 1 por nivel (mínimo 1) para todos.",
+      "mechanicalText_en": "Science cost is reduced by 1 per level (minimum 1) for all players.",
+      "effects": [
+        { "type": "modify_tech_cost", "trigger": "on_era2_start", "tech": "science", "delta": -1, "perLevel": true, "minCost": 1 }
+      ]
+    },
+    {
+      "id": "world_era2_05",
+      "name": "La Abundancia de Vali",
+      "name_en": "Vali's Abundance",
+      "type": "world_era2",
+      "flavorText": "Los campos rinden el triple; los graneros rebosan.",
+      "flavorText_en": "Fields yield threefold; granaries overflow.",
+      "mechanicalText": "Al convertir excedente en monedas, la tasa es 1:1 en vez de 2:1.",
+      "mechanicalText_en": "When converting surplus to coins, the rate is 1:1 instead of 2:1.",
+      "effects": [
+        { "type": "modify_surplus_ratio", "trigger": "on_convert_surplus", "ratio": 1 }
+      ]
+    },
+    {
+      "id": "world_era2_06",
+      "name": "El Reloj de Dhakhan",
+      "name_en": "Dhakhan's Clock",
+      "type": "world_era2",
+      "flavorText": "El tirano cuenta los días más rápido de lo que creíamos.",
+      "flavorText_en": "The tyrant counts the days faster than we believed.",
+      "mechanicalText": "El reloj del fin avanza -3 al inicio de Era II (modo Saga).",
+      "mechanicalText_en": "The doom clock advances -3 at the start of Era II (Saga mode).",
+      "effects": [
+        { "type": "modify_doom_clock", "trigger": "on_era2_start", "delta": -3, "modeRestriction": "saga" }
+      ]
+    },
+    {
+      "id": "world_era2_07",
+      "name": "La Tregua Sagrada",
+      "name_en": "The Sacred Truce",
+      "type": "world_era2",
+      "flavorText": "Los oráculos han decretado un tiempo de paz antes de la tormenta.",
+      "flavorText_en": "The oracles have decreed a time of peace before the storm.",
+      "mechanicalText": "Todos los jugadores inician Era II con todas sus ramas tecnológicas en nivel 1 mínimo.",
+      "mechanicalText_en": "All players begin Era II with every technology branch at level 1 minimum.",
+      "effects": [
+        { "type": "all_techs_min_level", "trigger": "on_era2_start", "minLevel": 1 }
+      ]
+    },
+    {
+      "id": "world_era2_08",
+      "name": "El Pacto de las Naciones",
+      "name_en": "The Pact of Nations",
+      "type": "world_era2",
+      "flavorText": "Los reinos sellan un acuerdo de prosperidad compartida.",
+      "flavorText_en": "The kingdoms seal an accord of shared prosperity.",
+      "mechanicalText": "Al cerrar Era II, cada jugador gana +3 puntos adicionales compartidos.",
+      "mechanicalText_en": "When Era II closes, each player gains +3 additional shared points.",
+      "effects": [
+        { "type": "shared_bonus", "trigger": "on_era2_close", "bonus": 3 }
+      ]
+    },
+    {
+      "id": "world_era2_09",
+      "name": "La Sombra del Débil",
+      "name_en": "The Shadow of the Weak",
+      "type": "world_era2",
+      "flavorText": "Los dioses miran con compasión a los que menos tienen.",
+      "flavorText_en": "The gods look with compassion upon those who have the least.",
+      "mechanicalText": "El jugador con menos puntos de construcción recibe +6 puntos bonus.",
+      "mechanicalText_en": "The player with the fewest construction points receives +6 bonus points.",
+      "effects": [
+        { "type": "bonus_to_weakest", "trigger": "on_era2_start", "bonus": 6 }
+      ]
+    },
+    {
+      "id": "world_era2_10",
+      "name": "La Feria de los Sabios",
+      "name_en": "The Sages' Fair",
+      "type": "world_era2",
+      "flavorText": "Los reinos abren sus bibliotecas y sus arsenales.",
+      "flavorText_en": "Kingdoms open their libraries and their arsenals.",
+      "mechanicalText": "Cada jugador puede reasignar su tecnología una vez antes de confirmar.",
+      "mechanicalText_en": "Each player may reallocate their technology once before confirming.",
+      "effects": [
+        { "type": "allow_reallocation", "trigger": "on_tech_allocation", "times": 1 }
+      ]
+    },
+    {
+      "id": "world_era2_11",
+      "name": "Los Mercaderes Libres",
+      "name_en": "The Free Merchants",
+      "type": "world_era2",
+      "flavorText": "El oro fluye entre los reinos sin trabas ni aranceles.",
+      "flavorText_en": "Gold flows between kingdoms unhindered and untaxed.",
+      "mechanicalText": "En la Mesa de los Reyes, cada jugador puede transferir hasta 10 puntos a otro.",
+      "mechanicalText_en": "At the Kings' Table, each player may transfer up to 10 points to another.",
+      "effects": [
+        { "type": "allow_point_transfer", "trigger": "kings_table_open", "maxPoints": 10 }
+      ]
+    },
+    {
+      "id": "world_era2_12",
+      "name": "La Bendición del Sol",
+      "name_en": "The Sun's Blessing",
+      "type": "world_era2",
+      "flavorText": "Vali otorga su gracia a quienes más la merecen.",
+      "flavorText_en": "Vali bestows her grace upon those most worthy.",
+      "mechanicalText": "Cada jugador gana +2 puntos por cada rama tecnológica en nivel 3 o superior.",
+      "mechanicalText_en": "Each player gains +2 points per technology branch at level 3 or higher.",
+      "effects": [
+        { "type": "bonus_per_high_tech", "trigger": "on_era2_close", "minLevel": 3, "bonusPerTech": 2, "goldOnly": false }
+      ]
+    },
+    {
+      "id": "world_era2_13",
+      "name": "La Especialización Forzada",
+      "name_en": "Forced Specialization",
+      "type": "world_era2",
+      "flavorText": "Los recursos escasean; hay que elegir con cuidado.",
+      "flavorText_en": "Resources run thin; choices must be made with care.",
+      "mechanicalText": "Cada jugador puede subir como máximo 3 ramas tecnológicas (una debe quedar en 0).",
+      "mechanicalText_en": "Each player may raise at most 3 technology branches (one must remain at 0).",
+      "effects": [
+        { "type": "limit_tech_count", "trigger": "on_tech_allocation", "maxTechs": 3 }
+      ]
+    },
+    {
+      "id": "world_era2_14",
+      "name": "El Don de los Ancestros",
+      "name_en": "The Ancestors' Gift",
+      "type": "world_era2",
+      "flavorText": "Los espíritus guían a cada rey a dominar un arte gratuito.",
+      "flavorText_en": "Ancestral spirits guide each king to master one art for free.",
+      "mechanicalText": "Cada jugador elige 1 nivel tecnológico gratis en la rama que prefiera.",
+      "mechanicalText_en": "Each player chooses 1 free technology level in the branch of their choice.",
+      "effects": [
+        { "type": "player_choice_free_tech", "trigger": "on_era2_start", "levels": 1 }
+      ]
+    },
+    {
+      "id": "world_era2_15",
+      "name": "La Era de las Legiones",
+      "name_en": "The Age of Legions",
+      "type": "world_era2",
+      "flavorText": "Los ejércitos se levantan; Dhakhan se acerca.",
+      "flavorText_en": "Armies rise; Dhakhan draws near.",
+      "mechanicalText": "Cada jugador con Guerra en nivel 4 o superior recibe 1 unidad de Caballería gratis.",
+      "mechanicalText_en": "Each player with War at level 4 or higher receives 1 free Cavalry unit.",
+      "effects": [
+        { "type": "free_unit_per_high_tech", "trigger": "on_era2_close", "minLevel": 4, "unit": "mounted", "count": 1 }
+      ]
+    }
+  ]
+}

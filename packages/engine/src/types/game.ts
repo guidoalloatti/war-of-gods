@@ -2,6 +2,7 @@ import type { Player } from './player.js';
 import type { TerrainType } from './terrain.js';
 import type { WorldCard, EraCard, RelicCard } from './cards.js';
 import type { Era2Phase, Era3Phase, TransferProposal } from './era2.js';
+import type { GameMap, Stack, CombatEntry, RuinsLootEntry } from './era3.js';
 
 export type GameMode = 'solo' | 'solo_bots' | 'multiplayer';
 export type GamePhase = 'era1' | 'era2' | 'era3';
@@ -63,6 +64,54 @@ export type GameState = {
   pendingEra2Cards?: Record<string, EraCard[]>;
   /** Pending relic choices per player (3 relics to choose from) */
   pendingRelics?: Record<string, RelicCard[]>;
+  /** Era III hex map (populated at Era II → Era III transition) */
+  map?: GameMap;
+  /** Era III stacks, keyed by stack id. Hexes reference stacks via `stackId`. */
+  era3Stacks?: Record<string, Stack>;
+  /** Era III turn order — frozen at game_loop start (player IDs). */
+  era3TurnOrder?: string[];
+  /** Player ID whose turn it is during `game_loop`. */
+  era3CurrentPlayerId?: string | null;
+  /** Turn counter (1-indexed), increments when turn order wraps. */
+  era3TurnNumber?: number;
+  /** Append-only combat log (most recent last). */
+  era3CombatLog?: CombatEntry[];
+  /** Append-only ruins-loot log (most recent last). */
+  era3RuinsLog?: RuinsLootEntry[];
+  /** Era III world card revealed at Era III start (persistent global effects). */
+  worldCardEra3?: WorldCard | null;
+  /** Shuffled Era III deck not yet drawn into a player hand. */
+  era3Deck?: EraCard[];
+  /** Per-player hand of Era III cards (full card records; ownership tracked via assignedTo). */
+  era3Hands?: Record<string, EraCard[]>;
+  /** Global per-player passive attack bonus (from world_era3 cards). */
+  era3PassiveAttackBonus?: number;
+  /** Per-turn effects applied by Era III era cards; cleared on END_TURN for the acting player. */
+  era3TurnEffects?: Era3TurnEffects;
+  /** Per-player: whether they have already played a card this turn. */
+  era3CardPlayedThisTurn?: Record<string, boolean>;
+  /**
+   * Once any player stack reaches a hex adjacent to the citadel while the
+   * boss is alive, this flag is set. On the next cycle wrap the phase
+   * advances to 'final_heroic_turn'.
+   */
+  era3HeroicTurnTriggered?: boolean;
+  /**
+   * During 'final_heroic_turn', each living player takes one last turn.
+   * This records which players have already taken theirs (set-like).
+   */
+  era3HeroicTurnsTaken?: Record<string, boolean>;
+  /** Player id who dealt the killing blow to the boss (if any). */
+  era3BossKillerId?: string | null;
+  /** Monotonically increasing counter for unique unit IDs in Era III. Never decreases. */
+  era3UnitSeq?: number;
+};
+
+export type Era3TurnEffects = {
+  /** Per-player-id per-unit attack bonus during their current turn. */
+  attackBoost: Record<string, number>;
+  /** Per-player-id extra movement to each of their stacks this turn. */
+  movementBonus: Record<string, number>;
 };
 
 export type GameConfig = {

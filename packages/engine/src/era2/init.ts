@@ -56,6 +56,13 @@ export function initPlayerEra2State(player: Player): PlayerEra2State {
   }
 
   const freeUnitsForEra3 = racial ? [{ unit: racial.freeUnit.unit, count: racial.freeUnit.count }] : [];
+  if (player.freeUnits) {
+    for (const grant of player.freeUnits) {
+      const existing = freeUnitsForEra3.find(g => g.unit === grant.unit);
+      if (existing) existing.count += grant.count;
+      else freeUnitsForEra3.push({ unit: grant.unit, count: grant.count });
+    }
+  }
 
   return {
     constructionPoints,
@@ -63,6 +70,7 @@ export function initPlayerEra2State(player: Player): PlayerEra2State {
     pointsGiven: 0,
     pointsReceived: 0,
     techLevels,
+    baselineTechLevels: { ...techLevels },
     freeLevelsRemaining: zeroByTech(0),
     goldCoins: 0,
     freeUnitsForEra3,
@@ -80,5 +88,6 @@ export function initPlayerEra2State(player: Player): PlayerEra2State {
       surplusRatio: DEFAULT_SURPLUS_RATIO,
     },
     hasConfirmed: false,
+    hasConvertedSurplus: false,
   };
 }

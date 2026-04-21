@@ -7,8 +7,8 @@ export type GameAction =
   | { type: 'ADVANCE_PHASE' }
   | { type: 'DRAW_TILES'; playerId: string }
   | { type: 'PROPOSE_TRADE'; fromPlayerId: string; toPlayerId: string; tileOffered: TerrainType; tileRequested: TerrainType }
-  | { type: 'ACCEPT_TRADE'; tradeId: string }
-  | { type: 'REJECT_TRADE'; tradeId: string }
+  | { type: 'ACCEPT_TRADE'; tradeId: string; playerId?: string }
+  | { type: 'REJECT_TRADE'; tradeId: string; playerId?: string }
   | { type: 'END_TRADE_PHASE' }
   | { type: 'SOLO_TRADE'; playerId: string; discardTiles: [TerrainType, TerrainType] }
   | { type: 'PLACE_TILES'; playerId: string }
@@ -29,5 +29,25 @@ export type GameAction =
   | { type: 'CONFIRM_ALLOCATION'; playerId: string }
   | { type: 'CONVERT_SURPLUS'; playerId: string }
 
-  // ── Era III (stub) ──
-  | { type: 'ADVANCE_ERA3_PHASE' };
+  // ── Era III ──
+  | { type: 'ADVANCE_ERA3_PHASE' }
+  | { type: 'START_ERA3_GAME_LOOP' }
+  | { type: 'MOVE_STACK'; playerId: string; stackId: string; path: { q: number; r: number }[] }
+  | { type: 'ATTACK_STACK'; playerId: string; attackerStackId: string; targetCoord: { q: number; r: number } }
+  | { type: 'END_TURN'; playerId: string }
+  | { type: 'RECRUIT_UNIT'; playerId: string; unitType: 'infantry' | 'ranged' | 'mounted' | 'siege' | 'flying' }
+  | { type: 'PLAY_ERA3_CARD'; playerId: string; cardId: string; targetStackId?: string }
+  | { type: 'BUILD_ROAD'; playerId: string; coord: { q: number; r: number } }
+  | { type: 'SPLIT_STACK'; playerId: string; stackId: string; unitIds: string[] }
+  | { type: 'RANGED_ATTACK'; playerId: string; attackerStackId: string; targetCoord: { q: number; r: number } }
+  | { type: 'ASSIGN_GENERAL'; playerId: string; generalId: string; stackId: string }
+  | { type: 'UNASSIGN_GENERAL'; playerId: string; stackId: string }
+  | { type: 'REST_STACK'; playerId: string; stackId: string }
+  | { type: 'FORTIFY_STACK'; playerId: string; stackId: string }
+  | { type: 'UNFORTIFY_STACK'; playerId: string; stackId: string }
+  | { type: 'DISBAND_UNIT'; playerId: string; stackId: string; unitId: string }
+  | { type: 'TERRAFORM'; playerId: string; stackId: string; coord: { q: number; r: number } }
+  | { type: 'BUILD_ROAD_OVERLAY'; playerId: string; stackId: string; coord: { q: number; r: number } }
+  | { type: 'DRAIN_WATER'; playerId: string; stackId: string; coord: { q: number; r: number } }
+  | { type: 'BUILD_BRIDGE'; playerId: string; stackId: string; coord: { q: number; r: number } }
+  | { type: 'ERA3_UPGRADE_TECH'; playerId: string; tech: TechType };

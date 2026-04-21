@@ -1,0 +1,396 @@
+{
+  "version": "1.0.0",
+  "description": "Era II personal cards. Each player is dealt 3 and keeps 1 during Era II.",
+  "cards": [
+    {
+      "id": "era2_01",
+      "name": "El Maestro Herrero",
+      "name_en": "The Master Smith",
+      "type": "era2",
+      "flavorText": "Su martillo suena como un trueno en las forjas del reino.",
+      "flavorText_en": "His hammer rings like thunder through the kingdom's forges.",
+      "mechanicalText": "Reduce el costo de Guerra en 1 por nivel (mínimo 1).",
+      "mechanicalText_en": "Reduces War cost by 1 per level (minimum 1).",
+      "effects": [
+        { "type": "modify_tech_cost", "trigger": "on_era2_start", "tech": "war", "delta": -1, "perLevel": true, "minCost": 1 }
+      ]
+    },
+    {
+      "id": "era2_02",
+      "name": "La Gran Biblioteca",
+      "name_en": "The Great Library",
+      "type": "era2",
+      "flavorText": "Los pergaminos susurran los secretos de los antiguos.",
+      "flavorText_en": "Scrolls whisper the secrets of the ancients.",
+      "mechanicalText": "Recibís 1 nivel gratis en Ciencia.",
+      "mechanicalText_en": "Receive 1 free level in Science.",
+      "effects": [
+        { "type": "free_tech_level", "trigger": "on_era2_start", "tech": "science", "level": 1 }
+      ]
+    },
+    {
+      "id": "era2_03",
+      "name": "Las Minas Profundas",
+      "name_en": "The Deep Mines",
+      "type": "era2",
+      "flavorText": "Tus mineros encuentran vetas que creían agotadas.",
+      "flavorText_en": "Your miners uncover veins thought long exhausted.",
+      "mechanicalText": "Recibís 1 nivel gratis en Recursos.",
+      "mechanicalText_en": "Receive 1 free level in Resources.",
+      "effects": [
+        { "type": "free_tech_level", "trigger": "on_era2_start", "tech": "resources", "level": 1 }
+      ]
+    },
+    {
+      "id": "era2_04",
+      "name": "El Mercado Central",
+      "name_en": "The Central Market",
+      "type": "era2",
+      "flavorText": "Todos los caminos comerciales conducen a tu capital.",
+      "flavorText_en": "All trade roads lead to your capital.",
+      "mechanicalText": "Recibís 1 nivel gratis en Economía.",
+      "mechanicalText_en": "Receive 1 free level in Economy.",
+      "effects": [
+        { "type": "free_tech_level", "trigger": "on_era2_start", "tech": "economy", "level": 1 }
+      ]
+    },
+    {
+      "id": "era2_05",
+      "name": "La Academia Militar",
+      "name_en": "The Military Academy",
+      "type": "era2",
+      "flavorText": "Los jóvenes aprenden el arte de la guerra desde niños.",
+      "flavorText_en": "Youth learn the art of war from childhood.",
+      "mechanicalText": "Recibís 1 nivel gratis en Guerra.",
+      "mechanicalText_en": "Receive 1 free level in War.",
+      "effects": [
+        { "type": "free_tech_level", "trigger": "on_era2_start", "tech": "war", "level": 1 }
+      ]
+    },
+    {
+      "id": "era2_06",
+      "name": "El Consejo de los Sabios",
+      "name_en": "The Council of Sages",
+      "type": "era2",
+      "flavorText": "Los ancianos escogen sabiamente dónde invertir el saber.",
+      "flavorText_en": "Elders choose wisely where to invest knowledge.",
+      "mechanicalText": "Elegí una rama tecnológica y recibí 1 nivel gratis.",
+      "mechanicalText_en": "Choose a technology branch and receive 1 free level.",
+      "effects": [
+        { "type": "player_choice_free_tech", "trigger": "on_era2_start", "levels": 1 }
+      ]
+    },
+    {
+      "id": "era2_07",
+      "name": "El Tratado Comercial",
+      "name_en": "The Trade Treaty",
+      "type": "era2",
+      "flavorText": "Un pacto firmado en tinta y oro.",
+      "flavorText_en": "A pact signed in ink and gold.",
+      "mechanicalText": "Elegí una rama tecnológica y reducí su costo en -2 totales.",
+      "mechanicalText_en": "Choose a technology branch and reduce its cost by -2 total.",
+      "effects": [
+        { "type": "player_choice_tech_discount", "trigger": "on_era2_start", "delta": -2 }
+      ]
+    },
+    {
+      "id": "era2_08",
+      "name": "La Prisa de Dhakhan",
+      "name_en": "Dhakhan's Haste",
+      "type": "era2",
+      "flavorText": "El tirano sabe de tus planes; el tiempo corre.",
+      "flavorText_en": "The tyrant knows your plans; time is running out.",
+      "mechanicalText": "El costo de Ciencia aumenta en +2 por nivel para vos (los sabios huyen).",
+      "mechanicalText_en": "Science cost increases by +2 per level for you (the sages flee).",
+      "effects": [
+        { "type": "modify_tech_cost", "trigger": "on_era2_start", "tech": "science", "delta": 2, "perLevel": true }
+      ]
+    },
+    {
+      "id": "era2_09",
+      "name": "El Ingeniero Genial",
+      "name_en": "The Brilliant Engineer",
+      "type": "era2",
+      "flavorText": "Una mente rara nacida en tiempos oscuros.",
+      "flavorText_en": "A rare mind born in dark times.",
+      "mechanicalText": "Reducí el costo total de una rama tecnológica en -3 (una vez).",
+      "mechanicalText_en": "Reduce the total cost of a technology branch by -3 (once).",
+      "effects": [
+        { "type": "modify_tech_cost_flat", "trigger": "on_era2_start", "tech": "war", "delta": -3 }
+      ]
+    },
+    {
+      "id": "era2_10",
+      "name": "Las Torres de Vigía",
+      "name_en": "The Watchtowers",
+      "type": "era2",
+      "flavorText": "Desde sus cumbres ves todo el mapa del mundo.",
+      "flavorText_en": "From their peaks you see the whole world map.",
+      "mechanicalText": "Podés ver las cartas elegidas por tus oponentes.",
+      "mechanicalText_en": "You may view the cards chosen by your opponents.",
+      "effects": [
+        { "type": "view_opponents_cards", "trigger": "on_era2_start" }
+      ]
+    },
+    {
+      "id": "era2_11",
+      "name": "La Diplomacia del Fuerte",
+      "name_en": "The Diplomacy of the Strong",
+      "type": "era2",
+      "flavorText": "Quien regatea desde la victoria, siempre gana.",
+      "flavorText_en": "Who bargains from victory always wins.",
+      "mechanicalText": "En la Mesa de los Reyes, tu ratio de entrega es 1:1 en vez de 2:1.",
+      "mechanicalText_en": "At the Kings' Table, your give ratio is 1:1 instead of 2:1.",
+      "effects": [
+        { "type": "modify_give_ratio", "trigger": "kings_table_open", "ratio": 1 }
+      ]
+    },
+    {
+      "id": "era2_12",
+      "name": "El Banquero Astuto",
+      "name_en": "The Shrewd Banker",
+      "type": "era2",
+      "flavorText": "Cada moneda recibida vale el doble en sus arcas.",
+      "flavorText_en": "Every coin received is worth double in his coffers.",
+      "mechanicalText": "En la Mesa de los Reyes, tu ratio de recepción es x2.",
+      "mechanicalText_en": "At the Kings' Table, your receive ratio is x2.",
+      "effects": [
+        { "type": "modify_receive_ratio", "trigger": "kings_table_open", "ratio": 2 }
+      ]
+    },
+    {
+      "id": "era2_13",
+      "name": "El Granero Inagotable",
+      "name_en": "The Inexhaustible Granary",
+      "type": "era2",
+      "flavorText": "Los campos rinden cosecha tras cosecha.",
+      "flavorText_en": "The fields yield harvest after harvest.",
+      "mechanicalText": "Al convertir excedente en monedas, tu tasa personal es 1:1.",
+      "mechanicalText_en": "When converting surplus to coins, your personal rate is 1:1.",
+      "effects": [
+        { "type": "modify_surplus_ratio", "trigger": "on_convert_surplus", "ratio": 1 }
+      ]
+    },
+    {
+      "id": "era2_14",
+      "name": "El Oráculo de Vali",
+      "name_en": "Vali's Oracle",
+      "type": "era2",
+      "flavorText": "Sus visiones adelantan el paso del tiempo.",
+      "flavorText_en": "Her visions outpace time itself.",
+      "mechanicalText": "Avanzá el reloj del fin en -2 (modo Saga).",
+      "mechanicalText_en": "Advance the doom clock by -2 (Saga mode).",
+      "effects": [
+        { "type": "modify_doom_clock", "trigger": "on_era2_start", "delta": -2, "modeRestriction": "saga" }
+      ]
+    },
+    {
+      "id": "era2_15",
+      "name": "La Flota de los Mares",
+      "name_en": "The Fleet of Seas",
+      "type": "era2",
+      "flavorText": "Tus barcos zarpan rumbo al horizonte, llenos de oro.",
+      "flavorText_en": "Your ships sail the horizon, laden with gold.",
+      "mechanicalText": "Al cerrar Era II ganás +2 por cada rama en nivel 3 o más (solo monedas).",
+      "mechanicalText_en": "On Era II close, gain +2 per branch at level 3 or higher (coins only).",
+      "effects": [
+        { "type": "bonus_per_high_tech", "trigger": "on_era2_close", "minLevel": 3, "bonusPerTech": 2, "goldOnly": true }
+      ]
+    },
+    {
+      "id": "era2_16",
+      "name": "El Campeón Invicto",
+      "name_en": "The Unbeaten Champion",
+      "type": "era2",
+      "flavorText": "Un solo héroe vale por un ejército.",
+      "flavorText_en": "A single hero is worth an army.",
+      "mechanicalText": "Si tu rama más alta es nivel 5 o más, ganás +6 puntos.",
+      "mechanicalText_en": "If your highest branch is level 5 or higher, gain +6 points.",
+      "effects": [
+        { "type": "bonus_for_max_tech", "trigger": "on_era2_close", "level": 5, "bonus": 6, "goldOnly": false }
+      ]
+    },
+    {
+      "id": "era2_17",
+      "name": "El Equilibrio Perfecto",
+      "name_en": "The Perfect Balance",
+      "type": "era2",
+      "flavorText": "Ni un solo reino caerá por exceso o carencia.",
+      "flavorText_en": "No kingdom shall fall by excess or want.",
+      "mechanicalText": "Todas tus ramas tecnológicas inician en nivel 1 mínimo.",
+      "mechanicalText_en": "All your technology branches start at level 1 minimum.",
+      "effects": [
+        { "type": "all_techs_min_level", "trigger": "on_era2_start", "minLevel": 1 }
+      ]
+    },
+    {
+      "id": "era2_18",
+      "name": "El Experimento Fallido",
+      "name_en": "The Failed Experiment",
+      "type": "era2",
+      "flavorText": "No todo lo que se intenta funciona. Pero se aprende.",
+      "flavorText_en": "Not all attempts succeed. Yet lessons remain.",
+      "mechanicalText": "Podés reasignar tu tecnología dos veces antes de confirmar.",
+      "mechanicalText_en": "You may reallocate your technology twice before confirming.",
+      "effects": [
+        { "type": "allow_reallocation", "trigger": "on_tech_allocation", "times": 2 }
+      ]
+    },
+    {
+      "id": "era2_19",
+      "name": "La Alianza Sagrada",
+      "name_en": "The Sacred Alliance",
+      "type": "era2",
+      "flavorText": "Dos reinos juran ayudarse en la oscuridad que viene.",
+      "flavorText_en": "Two kingdoms swear to aid each other in the coming dark.",
+      "mechanicalText": "Podés intercambiar 1 nivel de una de tus ramas con otro jugador (consentido).",
+      "mechanicalText_en": "You may swap 1 level of one of your branches with another player (consented).",
+      "effects": [
+        { "type": "trade_tech_with_player", "trigger": "kings_table_open" }
+      ]
+    },
+    {
+      "id": "era2_20",
+      "name": "El Don del Héroe",
+      "name_en": "The Hero's Gift",
+      "type": "era2",
+      "flavorText": "Un don de los dioses que fortalece donde hay fuerza.",
+      "flavorText_en": "A gift from the gods that strengthens where strength already stands.",
+      "mechanicalText": "Si tenés Guerra en nivel 3 o más, obtenés +2 niveles en Ciencia.",
+      "mechanicalText_en": "If you have War at level 3 or higher, gain +2 levels in Science.",
+      "effects": [
+        { "type": "bonus_to_highest_tech", "trigger": "on_era2_start", "sourceTech": "war", "bonusTech": "science", "bonusLevels": 2 }
+      ]
+    },
+    {
+      "id": "era2_21",
+      "name": "El Espía de Dhakhan",
+      "name_en": "Dhakhan's Spy",
+      "type": "era2",
+      "flavorText": "Uno de los tuyos trabaja para el enemigo.",
+      "flavorText_en": "One of your own serves the enemy.",
+      "mechanicalText": "Ganás +2 puntos por cada ficha desfavorable que tenés en tu mapa.",
+      "mechanicalText_en": "Gain +2 points per unfavorable tile on your map.",
+      "effects": [
+        { "type": "bonus_per_unfavorable", "trigger": "on_era2_close", "bonusPerTile": 2 }
+      ]
+    },
+    {
+      "id": "era2_22",
+      "name": "El Cartógrafo de los Dioses",
+      "name_en": "The Gods' Cartographer",
+      "type": "era2",
+      "flavorText": "Mapea los terrenos como si los dioses se los dictaran.",
+      "flavorText_en": "Maps the land as if gods dictated each line.",
+      "mechanicalText": "Ganás +1 punto por cada 2 fichas favorables en tu mapa.",
+      "mechanicalText_en": "Gain +1 point per 2 favorable tiles on your map.",
+      "effects": [
+        { "type": "bonus_per_favorable_ratio", "trigger": "on_era2_close", "ratio": 2, "bonusPer": 1 }
+      ]
+    },
+    {
+      "id": "era2_23",
+      "name": "La Legión Veloz",
+      "name_en": "The Swift Legion",
+      "type": "era2",
+      "flavorText": "Caballería que cruza tres reinos en una semana.",
+      "flavorText_en": "Cavalry that crosses three kingdoms in a week.",
+      "mechanicalText": "Si tenés Ciencia en nivel 3 o más, recibís 2 unidades de Caballería gratis para Era III.",
+      "mechanicalText_en": "If you have Science at level 3 or higher, receive 2 free Cavalry units for Era III.",
+      "effects": [
+        { "type": "free_unit_per_high_tech", "trigger": "on_era2_close", "minLevel": 3, "unit": "mounted", "count": 2 }
+      ]
+    },
+    {
+      "id": "era2_24",
+      "name": "Los Arqueros Élficos",
+      "name_en": "The Elven Archers",
+      "type": "era2",
+      "flavorText": "Sus flechas cruzan el viento como susurros.",
+      "flavorText_en": "Their arrows slice the wind like whispers.",
+      "mechanicalText": "Recibís 2 unidades de Tiradores gratis para Era III.",
+      "mechanicalText_en": "Receive 2 free Ranged units for Era III.",
+      "effects": [
+        { "type": "free_unit", "trigger": "on_era3_start", "unit": "ranged", "count": 2 }
+      ]
+    },
+    {
+      "id": "era2_25",
+      "name": "El Templo del Conocimiento",
+      "name_en": "The Temple of Knowledge",
+      "type": "era2",
+      "flavorText": "Donde cada sacerdote es también un sabio.",
+      "flavorText_en": "Where every priest is also a sage.",
+      "mechanicalText": "Si alcanzás Ciencia nivel 5, ganás +8 puntos extra.",
+      "mechanicalText_en": "If you reach Science level 5, gain +8 extra points.",
+      "effects": [
+        { "type": "bonus_for_max_tech", "trigger": "on_era2_close", "level": 5, "bonus": 8, "goldOnly": false }
+      ]
+    },
+    {
+      "id": "era2_26",
+      "name": "La Casa de las Monedas",
+      "name_en": "The Mint",
+      "type": "era2",
+      "flavorText": "Cada moneda acuñada lleva el sello de tu dinastía.",
+      "flavorText_en": "Every coin struck bears your dynasty's seal.",
+      "mechanicalText": "Si tenés Economía en nivel 3 o más, ganás +2 monedas por cada rama a nivel 3+.",
+      "mechanicalText_en": "If you have Economy at level 3 or higher, gain +2 coins per branch at level 3+.",
+      "effects": [
+        { "type": "bonus_per_high_tech", "trigger": "on_era2_close", "minLevel": 3, "bonusPerTech": 2, "goldOnly": true }
+      ]
+    },
+    {
+      "id": "era2_27",
+      "name": "El Pacto del Oro",
+      "name_en": "The Gold Pact",
+      "type": "era2",
+      "flavorText": "Un reino puede comprar la lealtad de otro.",
+      "flavorText_en": "One kingdom may purchase another's loyalty.",
+      "mechanicalText": "En la Mesa de los Reyes podés transferir hasta 15 puntos a otro jugador.",
+      "mechanicalText_en": "At the Kings' Table you may transfer up to 15 points to another player.",
+      "effects": [
+        { "type": "allow_point_transfer", "trigger": "kings_table_open", "maxPoints": 15 }
+      ]
+    },
+    {
+      "id": "era2_28",
+      "name": "La Fortaleza Inexpugnable",
+      "name_en": "The Impregnable Fortress",
+      "type": "era2",
+      "flavorText": "Sus murallas desafían a los dioses.",
+      "flavorText_en": "Its walls defy the gods themselves.",
+      "mechanicalText": "Reducí el costo total de Guerra en -4 (una vez).",
+      "mechanicalText_en": "Reduce the total cost of War by -4 (once).",
+      "effects": [
+        { "type": "modify_tech_cost_flat", "trigger": "on_era2_start", "tech": "war", "delta": -4 }
+      ]
+    },
+    {
+      "id": "era2_29",
+      "name": "La Universidad Real",
+      "name_en": "The Royal University",
+      "type": "era2",
+      "flavorText": "Los reyes rivales envían a sus hijos a estudiar.",
+      "flavorText_en": "Rival kings send their heirs to study here.",
+      "mechanicalText": "Reducí el costo total de Ciencia en -4 (una vez).",
+      "mechanicalText_en": "Reduce the total cost of Science by -4 (once).",
+      "effects": [
+        { "type": "modify_tech_cost_flat", "trigger": "on_era2_start", "tech": "science", "delta": -4 }
+      ]
+    },
+    {
+      "id": "era2_30",
+      "name": "El Legado Ancestral",
+      "name_en": "The Ancestral Legacy",
+      "type": "era2",
+      "flavorText": "Los huesos de los héroes guían tu mano.",
+      "flavorText_en": "The bones of heroes guide your hand.",
+      "mechanicalText": "Elegí 2 niveles tecnológicos gratis (pueden ser en la misma rama).",
+      "mechanicalText_en": "Choose 2 free technology levels (may be in the same branch).",
+      "effects": [
+        { "type": "player_choice_free_tech", "trigger": "on_era2_start", "levels": 2 }
+      ]
+    }
+  ]
+}

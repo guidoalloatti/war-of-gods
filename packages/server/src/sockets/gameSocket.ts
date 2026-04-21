@@ -150,10 +150,15 @@ export function registerGameSocket(io: Server): void {
         return;
       }
 
-      const action = data.action;
-      if ('playerId' in action && action.playerId !== socketPlayerId) {
-        socket.emit('error', { message: 'Cannot perform actions for other players' });
-        return;
+      let action = data.action;
+      if ('playerId' in action) {
+        if (action.playerId == null) {
+          // Inject the socket's playerId so the reducer can authorize.
+          action = { ...action, playerId: socketPlayerId };
+        } else if (action.playerId !== socketPlayerId) {
+          socket.emit('error', { message: 'Cannot perform actions for other players' });
+          return;
+        }
       }
       if ('fromPlayerId' in action && action.fromPlayerId !== socketPlayerId) {
         socket.emit('error', { message: 'Cannot perform actions for other players' });

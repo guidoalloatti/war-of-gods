@@ -1,7 +1,8 @@
 import type { RaceId } from './race.js';
 import type { TerrainType } from './terrain.js';
 import type { EraCard, RelicCard } from './cards.js';
-import type { PlayerEra2State, TechType } from './era2.js';
+import type { FreeUnitGrant, PlayerEra2State, TechType } from './era2.js';
+import type { PlayerEra3State } from './era3.js';
 
 export type Player = {
   id: string;
@@ -39,8 +40,14 @@ export type Player = {
   cardBonusPoints?: number;
   /** Free tech levels granted by cards (stackable — multiple entries accumulate) */
   freeTechLevels?: Array<{ tech: TechType; level: number }>;
+  /** Free units granted by cards (accumulates for Era III, merged into era2State on transition) */
+  freeUnits?: FreeUnitGrant[];
+  /** Extra relics the player is entitled to pick (from `extra_relic`). Default 1 via normal flow. */
+  extraRelicsAllowed?: number;
   /** Era II state (populated at transition from Era I) */
   era2State?: PlayerEra2State;
+  /** Era III state (populated at transition from Era II) */
+  era3State?: PlayerEra3State;
 };
 
 export type BotDifficulty = 'easy' | 'medium' | 'hard';

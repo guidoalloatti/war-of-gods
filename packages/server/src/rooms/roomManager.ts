@@ -1,5 +1,5 @@
 import type { GameState, GameConfig, RaceId } from '@war-of-gods/engine';
-import { createGame, era1Reducer, getAllRaces } from '@war-of-gods/engine';
+import { createGame, gameReducer, getAllRaces } from '@war-of-gods/engine';
 import type { GameAction } from '@war-of-gods/engine';
 import { upsertRoom as dbUpsertRoom, deleteRoom as dbDeleteRoom, findAllActiveRooms, deleteStaleRooms } from '../db/index.js';
 
@@ -211,7 +211,7 @@ export function getRoom(code: string): Room | undefined {
 
 export function applyAction(room: Room, action: GameAction): { state: GameState } | { error: string } {
   try {
-    room.state = era1Reducer(room.state, action);
+    room.state = gameReducer(room.state, action);
     persistRoom(room);
     return { state: room.state };
   } catch (err) {

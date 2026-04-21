@@ -13,6 +13,7 @@ export type EffectTrigger =
   | 'on_era2_start'       // When Era II starts (applied during transition)
   | 'on_era2_close'       // When Era II ends (before Era III starts)
   | 'on_era3_start'       // When Era III starts
+  | 'on_era3_play'        // When a player plays an Era III era card during their turn
   | 'kings_table_open'    // When the Kings Table opens
   | 'on_tech_allocation'  // During tech allocation
   | 'on_convert_surplus'  // During surplus → gold conversion
@@ -70,12 +71,20 @@ export type CardEffect =
   | { type: 'bonus_per_unfavorable';     trigger: EffectTrigger; bonusPerTile: number }
   | { type: 'bonus_per_favorable_ratio'; trigger: EffectTrigger; ratio: number; bonusPer: number }
   | { type: 'bonus_for_max_tech';        trigger: EffectTrigger; level: number; bonus: number; goldOnly: boolean }
-  | { type: 'free_unit_per_high_tech';   trigger: EffectTrigger; minLevel: number; unit: UnitType; count: number };
+  | { type: 'free_unit_per_high_tech';   trigger: EffectTrigger; minLevel: number; unit: UnitType; count: number }
+
+  // ── Era III effects ──
+  | { type: 'era3_attack_boost';         trigger: EffectTrigger; bonus: number }
+  | { type: 'era3_heal_stack';           trigger: EffectTrigger }
+  | { type: 'era3_free_recruit';         trigger: EffectTrigger; unit: UnitType }
+  | { type: 'era3_gold_bonus';           trigger: EffectTrigger; amount: number }
+  | { type: 'era3_extra_movement';       trigger: EffectTrigger; bonus: number }
+  | { type: 'era3_global_passive_atk';   trigger: EffectTrigger; bonus: number };
 
 export type Card = {
   id: string;
   name: string;
-  type: 'world_era1' | 'era1' | 'world_era2' | 'era2';
+  type: 'world_era1' | 'era1' | 'world_era2' | 'era2' | 'world_era3' | 'era3';
   flavorText: string;        // Narrative (italics in UI)
   mechanicalText: string;    // Readable mechanical effect
   effects: CardEffect[];

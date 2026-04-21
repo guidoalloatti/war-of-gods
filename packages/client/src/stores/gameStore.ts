@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import type { GameState, GameConfig, GameAction, GameMode } from '@war-of-gods/engine';
-import { createGame, era1Reducer } from '@war-of-gods/engine';
+import { createGame, gameReducer } from '@war-of-gods/engine';
 import { EasyBot, createRng } from '@war-of-gods/engine';
 import { io, Socket } from 'socket.io-client';
 import { saveGame as apiSaveGame, loadSave, listSaves, deleteSave as apiDeleteSave } from '../api/saves.js';
 import type { SaveSummary } from '../api/saves.js';
 
-type Screen = 'menu' | 'race_selection' | 'lobby' | 'era1' | 'scoring' | 'admin';
+type Screen = 'menu' | 'race_selection' | 'lobby' | 'era1' | 'scoring' | 'era2' | 'era2_scoring' | 'era3' | 'admin';
 
 type GameStore = {
   screen: Screen;
@@ -64,6 +64,15 @@ type GameStore = {
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:3001';
 
+let remoteSaveTimer: ReturnType<typeof setTimeout> | null = null;
+function scheduleRemoteSave(fn: () => Promise<void>) {
+  if (remoteSaveTimer) clearTimeout(remoteSaveTimer);
+  remoteSaveTimer = setTimeout(() => {
+    remoteSaveTimer = null;
+    void fn();
+  }, 500);
+}
+
 export const useGameStore = create<GameStore>((set, get) => ({
   screen: 'menu',
   gameState: null,
@@ -108,11 +117,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     // Local game: apply directly
     try {
-      const newState = era1Reducer(gameState, action);
+      const newState = gameReducer(gameState, action);
       set({ gameState: newState, error: null });
-      // Auto-save after phase changes
-      if (newState.era1Phase !== gameState.era1Phase) {
-        get().autoSave();
+      // Auto-save on every action so mid-phase state (stacks, HP, wins, gold)
+      // survives a reload. autoSave is debounced/coalesced internally.
+      get().autoSave();
+      // Auto-navigate on top-level phase transitions
+      const { screen } = get();
+      if (newState.phase === 'era2' && screen === 'era1') {
+        set({ screen: 'era2' });
+      } else if (newState.phase === 'era3' && (screen === 'era2' || screen === 'era2_scoring')) {
+        set({ screen: 'era3' });
       }
     } catch (err) {
       set({ error: err instanceof Error ? err.message : 'Unknown error' });
@@ -120,16 +135,29 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   runBots: () => {
-    const { gameState, dispatch } = get();
+    const { gameState } = get();
     if (!gameState) return;
 
     const bots = gameState.players.filter(p => p.isBot);
+    const MAX_ITERATIONS = 50; // safety cap per bot
+
     for (const botPlayer of bots) {
       const rng = createRng(gameState.seed + botPlayer.id.charCodeAt(botPlayer.id.length - 1));
       const bot = new EasyBot(rng);
-      const action = bot.decideAction(gameState, botPlayer.id);
-      if (action) {
-        dispatch(action);
+
+      // Era II bots often need multiple actions per phase (e.g. set tech, confirm,
+      // mark kings-table ready). Loop until the bot yields null or we hit the cap.
+      for (let i = 0; i < MAX_ITERATIONS; i++) {
+        const current = get().gameState;
+        if (!current) break;
+        const action = bot.decideAction(current, botPlayer.id);
+        if (!action) break;
+        get().dispatch(action);
+        // Loop only in Era II and Era III; Era I keeps one-action-per-invocation.
+        if (current.phase !== 'era2' && current.phase !== 'era3') break;
+        // If dispatch rejected the action (reducer threw), state ref is unchanged.
+        // Bailing out prevents the bot from spinning on the same bad action.
+        if (get().gameState === current) break;
       }
     }
   },
@@ -152,6 +180,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
       // Auto-navigate to era1 when game starts (phase moves past setup)
       if (screen === 'lobby' && state.era1Phase !== 'setup') {
         set({ screen: 'era1' });
+      }
+      // Auto-navigate on top-level phase transitions
+      if (state.phase === 'era2' && screen === 'era1') {
+        set({ screen: 'era2' });
+      } else if (state.phase === 'era3' && (screen === 'era2' || screen === 'era2_scoring')) {
+        set({ screen: 'era3' });
       }
     });
 
@@ -269,9 +303,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
 
       const state = response.state as GameState;
-      const screen = state.era1Phase === 'setup' || state.era1Phase === 'world_card_reveal'
-        ? 'lobby' as Screen
-        : 'era1' as Screen;
+      let screen: Screen;
+      if (state.phase === 'era3') screen = 'era3';
+      else if (state.phase === 'era2') screen = 'era2';
+      else if (state.era1Phase === 'setup' || state.era1Phase === 'world_card_reveal') screen = 'lobby';
+      else screen = 'era1';
 
       set({
         roomCode,
@@ -290,21 +326,36 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (!gameState || !gameMode) return;
     if (gameMode === 'multiplayer') return;
 
-    const token = localStorage.getItem('wog-token');
-    if (token) {
-      // Logged-in: persist to server
-      try {
-        const id = await apiSaveGame(gameState, gameMode, currentSaveId ?? undefined);
-        set({ currentSaveId: id });
-      } catch {
-        // Silent fail — fall through to localStorage backup
-      }
-    }
-    // Always keep a local snapshot so guest sessions survive refresh
+    // Always keep a local snapshot first — synchronous and cheap. This ensures
+    // mid-phase state (stacks, HP, wins, gold, hand) survives a reload even if
+    // the server round-trip below is slow or fails.
     try {
-      localStorage.setItem('wog-local-autosave', JSON.stringify({ gameState, gameMode, savedAt: Date.now() }));
+      localStorage.setItem(
+        'wog-local-autosave',
+        JSON.stringify({ gameState, gameMode, savedAt: Date.now() }),
+      );
+      // Keep the flag fresh so the menu banner can offer "Continue" if the
+      // player navigates back to it.
+      set({ localAutosaveExists: true });
     } catch {
       // Quota exceeded — ignore
+    }
+
+    // Debounce the server save to avoid hammering the API on every dispatch.
+    // Coalesced via a module-level timer (see scheduleRemoteSave below).
+    const token = localStorage.getItem('wog-token');
+    if (token) {
+      scheduleRemoteSave(async () => {
+        try {
+          const state = get().gameState;
+          const mode = get().gameMode;
+          if (!state || !mode || mode === 'multiplayer') return;
+          const id = await apiSaveGame(state, mode, currentSaveId ?? undefined);
+          set({ currentSaveId: id });
+        } catch {
+          // Silent fail — localStorage already has it.
+        }
+      });
     }
   },
 
@@ -327,12 +378,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
         set({ error: 'Save not found' });
         return;
       }
+      const gs = save.gameState;
+      const screen: Screen =
+        gs.phase === 'era3' ? 'era3' : gs.phase === 'era2' ? 'era2' : 'era1';
       set({
-        gameState: save.gameState,
-        localPlayerId: save.gameState.players[0].id,
+        gameState: gs,
+        localPlayerId: gs.players[0].id,
         gameMode: save.gameMode as GameMode,
         currentSaveId: save.id,
-        screen: 'era1',
+        screen,
         error: null,
       });
     } catch {
@@ -355,12 +409,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
       if (!raw) return false;
       const { gameState, gameMode } = JSON.parse(raw) as { gameState: GameState; gameMode: GameMode; savedAt: number };
       if (!gameState || !gameMode) return false;
+      const screen: Screen =
+        gameState.phase === 'era3' ? 'era3' : gameState.phase === 'era2' ? 'era2' : 'era1';
       set({
         gameState,
         localPlayerId: gameState.players[0].id,
         gameMode: gameMode as GameMode,
         currentSaveId: null,
-        screen: 'era1',
+        screen,
         error: null,
       });
       return true;

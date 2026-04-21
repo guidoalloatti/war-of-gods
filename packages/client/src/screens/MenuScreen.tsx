@@ -140,7 +140,7 @@ export function MenuScreen() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
 
           {/* ── Single Player Column ── */}
-          <div className="bg-game-surface/50 backdrop-blur-sm border border-border-subtle rounded-2xl p-5 flex flex-col">
+          <div className="bg-game-surface/50 backdrop-blur-sm border border-border-subtle rounded-xl p-4 sm:p-5 flex flex-col">
             {/* Column header with illustration */}
             <div className="text-center mb-4">
               <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-game-gold/[0.07] mb-3">
@@ -213,7 +213,7 @@ export function MenuScreen() {
           </div>
 
           {/* ── Multiplayer Column ── */}
-          <div className="bg-game-surface/50 backdrop-blur-sm border border-border-subtle rounded-2xl p-5 flex flex-col">
+          <div className="bg-game-surface/50 backdrop-blur-sm border border-border-subtle rounded-xl p-4 sm:p-5 flex flex-col">
             {/* Column header with illustration */}
             <div className="text-center mb-4">
               <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-game-accent/[0.07] mb-3">

@@ -6,7 +6,8 @@ import { useGameStore } from '../stores/gameStore.js';
 import { useShallow } from 'zustand/react/shallow';
 import { GameCard } from '../components/GameCard.js';
 import { TradeModal } from '../components/TradeModal.js';
-import { HexBoard, TileHand, useHexBoard } from '../components/HexBoard.js';
+import { TileHand, useHexBoard } from '../components/HexBoard.js';
+import { HexBoard3D } from '../components/HexBoard3D.js';
 import { HexTile } from '../components/HexTile.js';
 import { LiveScoreDisplay } from '../components/LiveScoreDisplay.js';
 import { ScoreBreakdown } from '../components/ScoreBreakdown.js';
@@ -421,13 +422,14 @@ export function Era1Screen() {
               </div>
 
               <div className="flex-1 min-h-0 w-full">
-                <HexBoard
+                <HexBoard3D
                   board={board}
                   onPlaceTile={placeTile}
                   onRemoveTile={removeTile}
                   dragTerrain={selectedTerrain}
                   raceId={player.raceId}
                   onResetBoard={resetBoard}
+                  readOnly={phase === 'scoring' || player.hasPlaced}
                 />
               </div>
 
@@ -603,14 +605,14 @@ export function Era1Screen() {
                               <div className="flex gap-2">
                                 <button
                                   type="button"
-                                  onClick={() => dispatch({ type: 'ACCEPT_TRADE', tradeId: trade.id })}
+                                  onClick={() => dispatch({ type: 'ACCEPT_TRADE', tradeId: trade.id, playerId: localPlayerId ?? undefined })}
                                   className="bg-emerald-600 hover:bg-emerald-500 text-text-primary px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
                                 >
                                   {t.actions.acceptTrade}
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => dispatch({ type: 'REJECT_TRADE', tradeId: trade.id })}
+                                  onClick={() => dispatch({ type: 'REJECT_TRADE', tradeId: trade.id, playerId: localPlayerId ?? undefined })}
                                   className="bg-red-600/80 hover:bg-red-500 text-text-primary px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
                                 >
                                   {t.actions.rejectTrade}
@@ -1131,7 +1133,7 @@ function ScoringModal({ gameState, onClose, onBackToMenu, t }: {
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-game-surface border border-border-medium text-text-secondary hover:text-text-primary transition-colors"
+            className="absolute top-3 right-3 w-11 h-11 flex items-center justify-center rounded-full bg-game-surface border border-border-medium text-text-secondary hover:text-text-primary transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

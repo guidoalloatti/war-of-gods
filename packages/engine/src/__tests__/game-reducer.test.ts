@@ -23,15 +23,16 @@ describe('gameReducer top-level dispatcher', () => {
     expect(next.era1Phase).not.toBe('setup');
   });
 
-  it('returns state unchanged in era2 (stub reducer)', () => {
-    const state = { ...newEra1Game(), phase: 'era2' } as GameState;
-    const next = gameReducer(state, { type: 'ADVANCE_ERA2_PHASE', playerId: 'p1' });
-    expect(next).toBe(state);
+  it('routes era2 actions to era2Reducer', () => {
+    const state = { ...newEra1Game(), phase: 'era2', era2Phase: 'world_card_reveal' } as GameState;
+    const next = gameReducer(state, { type: 'ADVANCE_ERA2_PHASE' });
+    // Real reducer now advances; we just assert it stays in era2.
+    expect(next.phase).toBe('era2');
   });
 
-  it('returns state unchanged in era3 (stub reducer)', () => {
+  it('returns state unchanged in era3 for unknown actions', () => {
     const state = { ...newEra1Game(), phase: 'era3' } as GameState;
-    const next = gameReducer(state, { type: 'ADVANCE_ERA3_PHASE', playerId: 'p1' });
+    const next = gameReducer(state, { type: 'ADVANCE_ERA3_PHASE' });
     expect(next).toBe(state);
   });
 });

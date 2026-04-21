@@ -1,6 +1,14 @@
 import { useState } from 'react';
-import type { TerrainType, Player } from '@war-of-gods/engine';
+import type { TerrainType, Player, TechType, EraCard } from '@war-of-gods/engine';
+import { TECH_TYPES } from '@war-of-gods/engine';
 import { useI18n } from '../i18n/index.js';
+
+const TECH_ICONS: Record<TechType, string> = {
+  war: '⚔️',
+  science: '🔬',
+  resources: '🌾',
+  economy: '💰',
+};
 
 const TERRAIN_ICONS: Record<string, string> = {
   plain: '🌾',
@@ -40,6 +48,29 @@ export function EffectModal({ player, onResolve }: Props) {
       return (
         <ViewOpponentsView
           opponents={pending.params.opponents as Array<{ id: string; name: string; raceId: string; tiles: Record<TerrainType, number> }>}
+          onResolve={onResolve}
+        />
+      );
+    case 'player_choice_free_tech':
+      return (
+        <ChooseFreeTechView
+          levels={(pending.params.levels as number) ?? 1}
+          onResolve={onResolve}
+        />
+      );
+    case 'player_choice_tech_discount':
+      return (
+        <ChooseTechDiscountView
+          delta={(pending.params.delta as number) ?? 0}
+          onResolve={onResolve}
+        />
+      );
+    case 'trade_tech_with_player':
+      return <TradeTechView onResolve={onResolve} />;
+    case 'view_opponents_cards':
+      return (
+        <ViewOpponentCardsView
+          opponents={pending.params.opponents as Array<{ id: string; name: string; raceId: string; card: EraCard | null }>}
           onResolve={onResolve}
         />
       );
@@ -250,6 +281,171 @@ function ViewOpponentsView({
           ))}
         </div>
 
+        <button
+          type="button"
+          onClick={() => onResolve({})}
+          className="w-full py-2.5 rounded-xl bg-gradient-to-r from-game-accent to-game-ember text-white font-bold transition-all text-sm"
+        >
+          {t.effects.dismiss}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ChooseFreeTechView({
+  levels,
+  onResolve,
+}: {
+  levels: number;
+  onResolve: (resolution: Record<string, unknown>) => void;
+}) {
+  const t = useI18n(s => s.t);
+  const [selected, setSelected] = useState<TechType | null>(null);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
+      <div className="bg-game-surface rounded-2xl border border-game-gold/20 p-6 max-w-md w-full mx-4 shadow-gold-lg">
+        <h3 className="text-game-gold font-bold text-lg mb-1">{t.effects.chooseFreeTech}</h3>
+        <p className="text-text-muted text-sm mb-4">
+          {t.effects.chooseFreeTechDesc.replace('{levels}', String(levels))}
+        </p>
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {TECH_TYPES.map(tech => (
+            <button
+              key={tech}
+              type="button"
+              onClick={() => setSelected(tech)}
+              className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                selected === tech
+                  ? 'border-game-gold bg-game-gold/10 shadow-gold-sm'
+                  : 'border-border-subtle hover:border-border-medium bg-game-bg'
+              }`}
+            >
+              <span className="text-xl">{TECH_ICONS[tech]}</span>
+              <span className="text-text-primary font-medium text-sm">{t.tech[tech]}</span>
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => onResolve({ tech: selected })}
+          disabled={!selected}
+          className="w-full py-2.5 rounded-xl bg-gradient-to-r from-game-accent to-game-ember text-white font-bold disabled:opacity-40 transition-all text-sm"
+        >
+          {t.effects.confirm}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ChooseTechDiscountView({
+  delta,
+  onResolve,
+}: {
+  delta: number;
+  onResolve: (resolution: Record<string, unknown>) => void;
+}) {
+  const t = useI18n(s => s.t);
+  const [selected, setSelected] = useState<TechType | null>(null);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
+      <div className="bg-game-surface rounded-2xl border border-game-gold/20 p-6 max-w-md w-full mx-4 shadow-gold-lg">
+        <h3 className="text-game-gold font-bold text-lg mb-1">{t.effects.chooseTechDiscount}</h3>
+        <p className="text-text-muted text-sm mb-4">
+          {t.effects.chooseTechDiscountDesc.replace('{delta}', String(delta))}
+        </p>
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {TECH_TYPES.map(tech => (
+            <button
+              key={tech}
+              type="button"
+              onClick={() => setSelected(tech)}
+              className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                selected === tech
+                  ? 'border-game-gold bg-game-gold/10 shadow-gold-sm'
+                  : 'border-border-subtle hover:border-border-medium bg-game-bg'
+              }`}
+            >
+              <span className="text-xl">{TECH_ICONS[tech]}</span>
+              <span className="text-text-primary font-medium text-sm">{t.tech[tech]}</span>
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => onResolve({ tech: selected })}
+          disabled={!selected}
+          className="w-full py-2.5 rounded-xl bg-gradient-to-r from-game-accent to-game-ember text-white font-bold disabled:opacity-40 transition-all text-sm"
+        >
+          {t.effects.confirm}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function TradeTechView({
+  onResolve,
+}: {
+  onResolve: (resolution: Record<string, unknown>) => void;
+}) {
+  const t = useI18n(s => s.t);
+
+  // Minimal UX: engine currently has no target-player picker surfaced in params.
+  // Offer a skip so the game isn't blocked; full implementation comes when
+  // the dispatcher exposes target candidates.
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
+      <div className="bg-game-surface rounded-2xl border border-game-gold/20 p-6 max-w-md w-full mx-4 shadow-gold-lg">
+        <h3 className="text-game-gold font-bold text-lg mb-1">{t.effects.tradeTechTitle}</h3>
+        <p className="text-text-muted text-sm mb-4">{t.effects.tradeTechDesc}</p>
+        <button
+          type="button"
+          onClick={() => onResolve({})}
+          className="w-full py-2.5 rounded-xl bg-gradient-to-r from-game-accent to-game-ember text-white font-bold transition-all text-sm"
+        >
+          {t.effects.dismiss}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ViewOpponentCardsView({
+  opponents,
+  onResolve,
+}: {
+  opponents: Array<{ id: string; name: string; raceId: string; card: EraCard | null }>;
+  onResolve: (resolution: Record<string, unknown>) => void;
+}) {
+  const t = useI18n(s => s.t);
+  const locale = useI18n(s => s.locale);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
+      <div className="bg-game-surface rounded-2xl border border-game-gold/20 p-6 max-w-lg w-full mx-4 shadow-gold-lg max-h-[80vh] overflow-y-auto">
+        <h3 className="text-game-gold font-bold text-lg mb-1">{t.effects.viewOpponentCards}</h3>
+        <p className="text-text-muted text-sm mb-4">{t.effects.viewOpponentCardsDesc}</p>
+        <div className="space-y-3 mb-4">
+          {opponents.map(opp => {
+            const name = opp.card ? (locale === 'en' ? opp.card.name_en || opp.card.name : opp.card.name) : '—';
+            const text = opp.card
+              ? locale === 'en'
+                ? opp.card.mechanicalText_en || opp.card.mechanicalText
+                : opp.card.mechanicalText
+              : '';
+            return (
+              <div key={opp.id} className="rounded-xl border border-border-subtle p-3 bg-game-bg/50">
+                <div className="text-text-primary font-bold text-sm mb-1">{opp.name}</div>
+                <div className="text-game-gold text-xs font-semibold mb-1">{name}</div>
+                {text && <div className="text-text-secondary text-xs">{text}</div>}
+              </div>
+            );
+          })}
+        </div>
         <button
           type="button"
           onClick={() => onResolve({})}

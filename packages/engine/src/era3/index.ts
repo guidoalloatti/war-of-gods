@@ -1,13 +1,18 @@
-import type { GameAction } from '../types/actions.js';
-import type { GameState } from '../types/game.js';
-
-/**
- * Era III stub reducer. Currently a no-op; real combat/unit logic lands later.
- * Accepts `ADVANCE_ERA3_PHASE` but simply returns the state unchanged for now.
- */
-export function era3Reducer(state: GameState, action: GameAction): GameState {
-  if (action.type === 'ADVANCE_ERA3_PHASE') {
-    return state;
-  }
-  return state;
-}
+export * from './hex.js';
+export * from './constants.js';
+export * from './map-gen.js';
+export * from './roads.js';
+export * from './init.js';
+export * from './transition.js';
+export * from './phases.js';
+export * from './pathing.js';
+export * from './turn.js';
+export * from './combat.js';
+export * from './dhakhan.js';
+export * from './economy.js';
+export * from './cards.js';
+export * from './build-road.js';
+export * from './experience.js';
+export * from './ruins.js';
+export * from './generals.js';
+export { era3Reducer } from './reducer.js';

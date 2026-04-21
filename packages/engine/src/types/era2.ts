@@ -19,7 +19,16 @@ export type Era2Phase =
   | 'convert_surplus'
   | 'complete';
 
-export type Era3Phase = 'stub';
+export type Era3Phase =
+  | 'map_generation'
+  | 'initial_deployment'
+  | 'awaiting_next_session'
+  | 'world_card_reveal'
+  | 'era_cards_deal'
+  | 'game_loop'
+  | 'final_heroic_turn'
+  | 'victory'
+  | 'defeat';
 
 export type TransferProposal = {
   id: string;
@@ -42,6 +51,9 @@ export type PlayerEra2State = {
   pointsGiven: number;
   pointsReceived: number;
   techLevels: Record<TechType, number>;
+  /** Snapshot of techLevels granted for free at transition (racial + Era I free_tech).
+   *  Allocation costs count only levels beyond this baseline. */
+  baselineTechLevels: Record<TechType, number>;
   freeLevelsRemaining: Record<TechType, number>;
   goldCoins: number;
   freeUnitsForEra3: FreeUnitGrant[];
@@ -62,4 +74,5 @@ export type PlayerEra2State = {
   chosenEra2Card?: EraCard;
   lockedOutTech?: TechType;
   hasConfirmed: boolean;
+  hasConvertedSurplus: boolean;
 };

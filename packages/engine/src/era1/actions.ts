@@ -8,11 +8,12 @@ import { worldCardDeck, eraCardDeck, relicCardDeck } from '../cards/index.js';
 import { applyEffects } from '../cards/effect-dispatcher.js';
 import { calculateScore } from './scoring.js';
 import { getRaceById } from '../races/index.js';
+import { transitionEraIToEra2 } from '../era2/transition.js';
 
-let tradeIdCounter = 0;
-
-function nextTradeId(): string {
-  return `trade_${Date.now()}_${++tradeIdCounter}`;
+function nextTradeId(state: GameState): string {
+  // Deterministic per-state counter so room-scoped IDs don't collide
+  // across concurrent multiplayer rooms and engine replay stays reproducible.
+  return `trade_${state.seed}_${state.activeTrades.length}`;
 }
 
 /**
@@ -36,10 +37,10 @@ export function era1Reducer(state: GameState, action: GameAction): GameState {
       return proposeTrade(state, action.fromPlayerId, action.toPlayerId, action.tileOffered, action.tileRequested);
     case 'ACCEPT_TRADE':
       if (!action.tradeId) throw new Error('ACCEPT_TRADE requires tradeId');
-      return acceptTrade(state, action.tradeId);
+      return acceptTrade(state, action.tradeId, action.playerId);
     case 'REJECT_TRADE':
       if (!action.tradeId) throw new Error('REJECT_TRADE requires tradeId');
-      return rejectTrade(state, action.tradeId);
+      return rejectTrade(state, action.tradeId, action.playerId);
     case 'END_TRADE_PHASE':
       return endTradePhase(state);
     case 'SOLO_TRADE':
@@ -302,7 +303,7 @@ function proposeTrade(
   }
 
   const trade: TradeProposal = {
-    id: nextTradeId(),
+    id: nextTradeId(state),
     fromPlayerId,
     toPlayerId,
     tileOffered,
@@ -314,12 +315,15 @@ function proposeTrade(
 }
 
 /** Accept a pending trade */
-function acceptTrade(state: GameState, tradeId: string): GameState {
+function acceptTrade(state: GameState, tradeId: string, actingPlayerId?: string): GameState {
   const tradeIndex = state.activeTrades.findIndex(t => t.id === tradeId);
   if (tradeIndex === -1) throw new Error(`Trade not found: ${tradeId}`);
 
   const trade = state.activeTrades[tradeIndex];
   if (trade.status !== 'pending') throw new Error('Trade has already been processed');
+  if (actingPlayerId != null && actingPlayerId !== trade.toPlayerId) {
+    throw new Error('Only the recipient can accept this trade');
+  }
 
   const fromIndex = state.players.findIndex(p => p.id === trade.fromPlayerId);
   const toIndex = state.players.findIndex(p => p.id === trade.toPlayerId);
@@ -374,12 +378,15 @@ function acceptTrade(state: GameState, tradeId: string): GameState {
   return { ...state, players, activeTrades };
 }
 
-function rejectTrade(state: GameState, tradeId: string): GameState {
+function rejectTrade(state: GameState, tradeId: string, actingPlayerId?: string): GameState {
   const tradeIndex = state.activeTrades.findIndex(t => t.id === tradeId);
   if (tradeIndex === -1) throw new Error(`Trade not found: ${tradeId}`);
 
   const trade = state.activeTrades[tradeIndex];
   if (trade.status !== 'pending') throw new Error('Trade has already been processed');
+  if (actingPlayerId != null && actingPlayerId !== trade.toPlayerId) {
+    throw new Error('Only the recipient can reject this trade');
+  }
 
   const activeTrades = [...state.activeTrades];
   activeTrades[tradeIndex] = { ...trade, status: 'rejected' };
@@ -518,7 +525,10 @@ function calculateScores(state: GameState): GameState {
     score: calculateScore(s, player.id),
   }));
 
-  return { ...s, players, era1Phase: 'complete' };
+  const scored: GameState = { ...s, players, era1Phase: 'complete' };
+
+  // Hand off to Era II: seed per-player era2State, reveal is deferred to the Era II reducer.
+  return transitionEraIToEra2(scored);
 }
 
 /** Player chooses 1 era card from their 3 pending options */

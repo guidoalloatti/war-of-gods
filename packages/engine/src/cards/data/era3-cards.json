@@ -1,0 +1,111 @@
+{
+  "version": "1.0.0",
+  "description": "Era III tactical cards. Each player is dealt 3 at the start of Era III and may play one per turn during game_loop.",
+  "cards": [
+    {
+      "id": "era3_01",
+      "name": "Carga Heroica",
+      "name_en": "Heroic Charge",
+      "type": "era3",
+      "flavorText": "Los caballos estallan en una línea de acero.",
+      "flavorText_en": "Horses erupt in a line of steel.",
+      "mechanicalText": "+2 ataque a todas tus unidades durante este turno.",
+      "mechanicalText_en": "+2 attack to all your units this turn.",
+      "effects": [
+        { "type": "era3_attack_boost", "trigger": "on_era3_play", "bonus": 2 }
+      ]
+    },
+    {
+      "id": "era3_02",
+      "name": "Bálsamo Élfico",
+      "name_en": "Elven Balm",
+      "type": "era3",
+      "flavorText": "Donde caen las lágrimas de la druida, la carne se cierra.",
+      "flavorText_en": "Where the druid's tears fall, flesh closes.",
+      "mechanicalText": "Restaura la vida completa de uno de tus stacks.",
+      "mechanicalText_en": "Fully heal one of your stacks.",
+      "effects": [
+        { "type": "era3_heal_stack", "trigger": "on_era3_play" }
+      ]
+    },
+    {
+      "id": "era3_03",
+      "name": "Leva del Pueblo",
+      "name_en": "People's Levy",
+      "type": "era3",
+      "flavorText": "Cada aldea entrega a sus hijos al acero.",
+      "flavorText_en": "Every hamlet gives its sons to the steel.",
+      "mechanicalText": "Recluta 1 infantería gratis en tu capital.",
+      "mechanicalText_en": "Recruit 1 infantry free in your capital.",
+      "effects": [
+        { "type": "era3_free_recruit", "trigger": "on_era3_play", "unit": "infantry" }
+      ]
+    },
+    {
+      "id": "era3_04",
+      "name": "Arcas del Rey",
+      "name_en": "King's Coffers",
+      "type": "era3",
+      "flavorText": "El tesoro, por fin, se abre.",
+      "flavorText_en": "The treasury, at last, is opened.",
+      "mechanicalText": "Ganas 4 monedas de oro.",
+      "mechanicalText_en": "Gain 4 gold.",
+      "effects": [
+        { "type": "era3_gold_bonus", "trigger": "on_era3_play", "amount": 4 }
+      ]
+    },
+    {
+      "id": "era3_05",
+      "name": "Viento Favorable",
+      "name_en": "Following Wind",
+      "type": "era3",
+      "flavorText": "Los estandartes crujen hacia adelante.",
+      "flavorText_en": "The banners crack forward.",
+      "mechanicalText": "+2 movimiento a todos tus stacks este turno.",
+      "mechanicalText_en": "+2 movement to all your stacks this turn.",
+      "effects": [
+        { "type": "era3_extra_movement", "trigger": "on_era3_play", "bonus": 2 }
+      ]
+    },
+    {
+      "id": "era3_06",
+      "name": "Jinetes de la Pradera",
+      "name_en": "Plainsriders",
+      "type": "era3",
+      "flavorText": "Polvo, cascos, y el eco de cuernos lejanos.",
+      "flavorText_en": "Dust, hooves, and the echo of distant horns.",
+      "mechanicalText": "Recluta 1 caballería gratis en tu capital.",
+      "mechanicalText_en": "Recruit 1 mounted unit free in your capital.",
+      "effects": [
+        { "type": "era3_free_recruit", "trigger": "on_era3_play", "unit": "mounted" }
+      ]
+    },
+    {
+      "id": "era3_07",
+      "name": "Furia del Asedio",
+      "name_en": "Siege Fury",
+      "type": "era3",
+      "flavorText": "Las torres de madera avanzan sin pausa.",
+      "flavorText_en": "Wooden towers advance without pause.",
+      "mechanicalText": "+3 ataque a todas tus unidades durante este turno.",
+      "mechanicalText_en": "+3 attack to all your units this turn.",
+      "effects": [
+        { "type": "era3_attack_boost", "trigger": "on_era3_play", "bonus": 3 }
+      ]
+    },
+    {
+      "id": "era3_08",
+      "name": "Consejo del Dragón",
+      "name_en": "Dragon's Counsel",
+      "type": "era3",
+      "flavorText": "El viejo dragón habla en lenguas olvidadas.",
+      "flavorText_en": "The old wyrm speaks in forgotten tongues.",
+      "mechanicalText": "Ganas 2 monedas de oro y +1 ataque a tus unidades este turno.",
+      "mechanicalText_en": "Gain 2 gold and +1 attack to your units this turn.",
+      "effects": [
+        { "type": "era3_gold_bonus", "trigger": "on_era3_play", "amount": 2 },
+        { "type": "era3_attack_boost", "trigger": "on_era3_play", "bonus": 1 }
+      ]
+    }
+  ]
+}

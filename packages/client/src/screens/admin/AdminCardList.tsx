@@ -2,11 +2,19 @@ import { useEffect, useCallback } from 'react';
 import { useAdminStore } from '../../stores/adminStore.js';
 import { useI18n } from '../../i18n/index.js';
 
-const CARD_TYPES = ['world_era1', 'era1', 'relic'] as const;
+const CARD_TYPES = [
+  'world_era1', 'world_era2', 'world_era3',
+  'era1', 'era2', 'era3',
+  'relic',
+] as const;
 
 const TYPE_COLORS: Record<string, string> = {
   world_era1: '#8b5cf6',
+  world_era2: '#a855f7',
+  world_era3: '#c084fc',
   era1: '#3b82f6',
+  era2: '#0ea5e9',
+  era3: '#06b6d4',
   relic: '#f59e0b',
 };
 
@@ -178,7 +186,7 @@ export function AdminCardList() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         <button
                           type="button"
                           onClick={() => startEditCard(card)}
