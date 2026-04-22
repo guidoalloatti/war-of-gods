@@ -142,7 +142,7 @@ describe('recruitUnit', () => {
       ...s,
       players: s.players.map(p =>
         p.id === pid
-          ? { ...p, era3State: { ...p.era3State!, goldCoins: 40, techLevels: { war: 2, science: 5, resources: 5, economy: 0 } } }
+          ? { ...p, era3State: { ...p.era3State!, goldCoins: 40, techLevels: { war: 2, science: 5, resources: 5, economy: 0, religion: 0 } } }
           : p,
       ),
     };

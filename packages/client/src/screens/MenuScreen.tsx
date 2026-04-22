@@ -23,6 +23,7 @@ export function MenuScreen() {
 
   const [joinCode, setJoinCode] = useState('');
   const [showJoin, setShowJoin] = useState(false);
+  const [abandonTarget, setAbandonTarget] = useState<'local' | string | null>(null);
 
   useEffect(() => {
     if (user) fetchSaves();
@@ -88,8 +89,8 @@ export function MenuScreen() {
               </button>
               <button
                 type="button"
-                onClick={clearLocalSave}
-                className="text-xs text-text-muted hover:text-text-secondary px-2 py-1.5 transition-colors"
+                onClick={() => setAbandonTarget('local')}
+                className="text-xs text-text-muted hover:text-red-400 px-2 py-1.5 transition-colors"
               >
                 ✕
               </button>
@@ -122,7 +123,7 @@ export function MenuScreen() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => deleteGame(save.id)}
+                    onClick={() => setAbandonTarget(save.id)}
                     className="text-text-faint hover:text-red-400 active:text-red-400 transition-colors sm:opacity-0 sm:group-hover:opacity-100 opacity-100 p-1"
                     aria-label="Delete"
                   >
@@ -340,6 +341,31 @@ export function MenuScreen() {
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-game-gold/20 to-transparent" />
+
+      {abandonTarget !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="bg-game-surface/95 border border-red-800/60 rounded-2xl p-6 w-80 space-y-4 shadow-2xl animate-scale-in">
+            <h2 className="text-lg font-bold text-red-400 text-center">⚠ {t.escMenu.abandon}</h2>
+            <p className="text-text-secondary text-sm text-center">{t.escMenu.abandonConfirm}</p>
+            <div className="flex gap-2 pt-2">
+              <button type="button" className="btn btn-ghost flex-1" onClick={() => setAbandonTarget(null)}>
+                {t.escMenu.resume}
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger flex-1"
+                onClick={() => {
+                  if (abandonTarget === 'local') clearLocalSave();
+                  else void deleteGame(abandonTarget);
+                  setAbandonTarget(null);
+                }}
+              >
+                {t.escMenu.abandon}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

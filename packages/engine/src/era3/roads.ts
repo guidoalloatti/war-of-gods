@@ -64,7 +64,7 @@ function paintSingleRoad(
 
     // Don't overwrite special tiles; the road simply passes through as plain.
     if (!hex.isCapital && !hex.isSpawnZone && hex.terrain !== 'citadel') {
-      hexes[key] = { ...hex, terrain: 'road' };
+      hexes[key] = { ...hex, roadTerrain: hex.terrain === 'road' ? hex.roadTerrain : hex.terrain, terrain: 'road' };
     }
 
     current = picked;

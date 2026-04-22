@@ -20,7 +20,7 @@ export function initDoomClock(_mode: GameMode, _variant: SoloVariant | null): nu
 }
 
 function zeroByTech<T>(value: T): Record<TechType, T> {
-  return { war: value, science: value, resources: value, economy: value };
+  return { war: value, science: value, resources: value, economy: value, religion: value };
 }
 
 /**

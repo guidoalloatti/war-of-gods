@@ -6,7 +6,11 @@ import { AdminCardPreview } from './AdminCardPreview.js';
 
 const CARD_TYPES = [
   { value: 'world_era1', label: 'world_era1' },
+  { value: 'world_era2', label: 'world_era2' },
+  { value: 'world_era3', label: 'world_era3' },
   { value: 'era1', label: 'era1' },
+  { value: 'era2', label: 'era2' },
+  { value: 'era3', label: 'era3' },
   { value: 'relic', label: 'relic' },
 ];
 

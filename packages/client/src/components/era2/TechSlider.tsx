@@ -12,6 +12,7 @@ const TECH_ICONS: Record<TechType, string> = {
   science: '🔬',
   resources: '🌾',
   economy: '💰',
+  religion: '✨',
 };
 
 const TECH_COLORS: Record<TechType, string> = {
@@ -19,6 +20,7 @@ const TECH_COLORS: Record<TechType, string> = {
   science: '#3b82f6',
   resources: '#10b981',
   economy: '#f5c518',
+  religion: '#c084fc',
 };
 
 type Props = {

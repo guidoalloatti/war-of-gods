@@ -19,7 +19,7 @@ export function calculateEra2ScoreBreakdown(player: Player): Era2ScoreBreakdown 
   const s = player.era2State;
   if (!s) {
     return {
-      techPoints: { war: 0, science: 0, resources: 0, economy: 0 },
+      techPoints: { war: 0, science: 0, resources: 0, economy: 0, religion: 0 },
       totalTech: 0,
       goldCoins: 0,
       freeUnitCount: 0,
@@ -27,7 +27,7 @@ export function calculateEra2ScoreBreakdown(player: Player): Era2ScoreBreakdown 
     };
   }
 
-  const techPoints = { war: 0, science: 0, resources: 0, economy: 0 } as Record<TechType, number>;
+  const techPoints = { war: 0, science: 0, resources: 0, economy: 0, religion: 0 } as Record<TechType, number>;
   let totalTech = 0;
   for (const tech of TECH_TYPES) {
     techPoints[tech] = s.techLevels[tech];

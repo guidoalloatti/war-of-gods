@@ -38,8 +38,11 @@ export function validateBuildRoad(
     if (occ && occ.ownerId === DHAKHAN_OWNER_ID) return 'hex_occupied_by_enemy';
   }
 
-  // Must be adjacent to a friendly stack.
-  const adjacentFriendly = neighbors(coord).some(n => {
+  // Must have a friendly stack on or adjacent to the hex.
+  const ownStackOnHex = hex.stackId
+    ? (state.era3Stacks[hex.stackId]?.ownerId === playerId)
+    : false;
+  const adjacentFriendly = ownStackOnHex || neighbors(coord).some(n => {
     const h = state.map!.hexes[hexKey(n)];
     if (!h || !h.stackId) return false;
     const s = state.era3Stacks![h.stackId];
@@ -71,7 +74,7 @@ export function buildRoad(
 
   const key = hexKey(coord);
   const hex = state.map!.hexes[key];
-  const newHexes = { ...state.map!.hexes, [key]: { ...hex, terrain: 'road' as const } };
+  const newHexes = { ...state.map!.hexes, [key]: { ...hex, terrain: 'road' as const, roadTerrain: hex.terrain } };
   const newPlayers = state.players.map(p => {
     if (p.id !== playerId || !p.era3State) return p;
     return {

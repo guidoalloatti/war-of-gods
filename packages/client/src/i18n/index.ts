@@ -37,7 +37,7 @@ document.documentElement.lang = initialLocale;
 document.documentElement.setAttribute('data-theme', initialTheme);
 
 // Map font scale: 1.0 = default, 0.5 = small, 2.0 = large
-const DEFAULT_MAP_FONT_SCALE = 1.0;
+const DEFAULT_MAP_FONT_SCALE = 1.4;
 
 function getPersistedMapFontScale(): number {
   try {
@@ -47,6 +47,14 @@ function getPersistedMapFontScale(): number {
   return DEFAULT_MAP_FONT_SCALE;
 }
 
+function getPersistedFogOfWar(): boolean {
+  try {
+    const s = localStorage.getItem('wog-fog-of-war');
+    if (s === 'false') return false;
+  } catch { /* ignore */ }
+  return true; // enabled by default
+}
+
 function applyMapFontScale(scale: number) {
   document.documentElement.style.setProperty('--map-font-scale', String(scale));
 }
@@ -54,20 +62,25 @@ function applyMapFontScale(scale: number) {
 const initialMapFontScale = getPersistedMapFontScale();
 applyMapFontScale(initialMapFontScale);
 
+const initialFogOfWar = getPersistedFogOfWar();
+
 type I18nStore = {
   locale: Locale;
   theme: Theme;
   mapFontScale: number;
+  fogOfWar: boolean;
   t: Translations;
   setLocale: (locale: Locale) => void;
   setTheme: (theme: Theme) => void;
   setMapFontScale: (scale: number) => void;
+  setFogOfWar: (enabled: boolean) => void;
 };
 
 export const useI18n = create<I18nStore>((set) => ({
   locale: initialLocale,
   theme: initialTheme,
   mapFontScale: initialMapFontScale,
+  fogOfWar: initialFogOfWar,
   t: translations[initialLocale],
   setLocale: (locale) => {
     document.documentElement.lang = locale;
@@ -83,6 +96,10 @@ export const useI18n = create<I18nStore>((set) => ({
     applyMapFontScale(scale);
     try { localStorage.setItem('wog-map-font-scale', String(scale)); } catch { /* ignore */ }
     set({ mapFontScale: scale });
+  },
+  setFogOfWar: (enabled) => {
+    try { localStorage.setItem('wog-fog-of-war', String(enabled)); } catch { /* ignore */ }
+    set({ fogOfWar: enabled });
   },
 }));
 

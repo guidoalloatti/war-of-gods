@@ -11,7 +11,7 @@ export type GameAction =
   | { type: 'REJECT_TRADE'; tradeId: string; playerId?: string }
   | { type: 'END_TRADE_PHASE' }
   | { type: 'SOLO_TRADE'; playerId: string; discardTiles: [TerrainType, TerrainType] }
-  | { type: 'PLACE_TILES'; playerId: string }
+  | { type: 'PLACE_TILES'; playerId: string; boardCells?: Array<{ q: number; r: number; terrain: string | null }> }
   | { type: 'CALCULATE_SCORES' }
   | { type: 'CHOOSE_ERA_CARD'; playerId: string; cardId: string }
   | { type: 'CHOOSE_RELIC'; playerId: string; relicId: string }
@@ -50,4 +50,12 @@ export type GameAction =
   | { type: 'BUILD_ROAD_OVERLAY'; playerId: string; stackId: string; coord: { q: number; r: number } }
   | { type: 'DRAIN_WATER'; playerId: string; stackId: string; coord: { q: number; r: number } }
   | { type: 'BUILD_BRIDGE'; playerId: string; stackId: string; coord: { q: number; r: number } }
-  | { type: 'ERA3_UPGRADE_TECH'; playerId: string; tech: TechType };
+  | { type: 'DESTROY_SPAWN_ZONE'; playerId: string; stackId: string; coord: { q: number; r: number } }
+  | { type: 'ERA3_UPGRADE_TECH'; playerId: string; tech: TechType }
+  | { type: 'ERA3_CONTINUE_ETERNAL' }
+  | { type: 'PICK_CARD_OFFER'; playerId: string; cardId: string }
+  | { type: 'DISCARD_CARD_OFFER'; playerId: string }
+  | { type: 'MERGE_STACKS'; playerId: string; sourceStackId: string; targetStackId: string }
+  | { type: 'TRADE_GOLD_FOR_FOOD'; playerId: string; amount: number }
+  | { type: 'TRADE_FOOD_FOR_GOLD'; playerId: string; amount: number }
+  | { type: 'DISBAND_UNIT_STARVATION'; playerId: string; stackId: string; unitId: string };

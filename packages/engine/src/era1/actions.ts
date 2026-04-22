@@ -49,7 +49,7 @@ export function era1Reducer(state: GameState, action: GameAction): GameState {
       return soloTrade(state, action.playerId, action.discardTiles);
     case 'PLACE_TILES':
       if (!action.playerId) throw new Error('PLACE_TILES requires playerId');
-      return placeTiles(state, action.playerId);
+      return placeTiles(state, action.playerId, action.boardCells);
     case 'CALCULATE_SCORES':
       return calculateScores(state);
     case 'CHOOSE_ERA_CARD':
@@ -481,7 +481,11 @@ function endTradePhase(state: GameState): GameState {
 }
 
 /** Marks that a player has "placed" their tiles (in Era I this is just a confirmation) */
-function placeTiles(state: GameState, playerId: string): GameState {
+function placeTiles(
+  state: GameState,
+  playerId: string,
+  boardCells?: Array<{ q: number; r: number; terrain: string | null }>,
+): GameState {
   if (state.era1Phase !== 'placement') {
     throw new Error('Can only place tiles during the placement phase');
   }
@@ -490,7 +494,11 @@ function placeTiles(state: GameState, playerId: string): GameState {
   if (playerIndex === -1) throw new Error(`Player not found: ${playerId}`);
 
   const players = [...state.players];
-  players[playerIndex] = { ...players[playerIndex], hasPlaced: true };
+  players[playerIndex] = {
+    ...players[playerIndex],
+    hasPlaced: true,
+    ...(boardCells ? { era1BoardCells: boardCells } : {}),
+  };
 
   return { ...state, players };
 }

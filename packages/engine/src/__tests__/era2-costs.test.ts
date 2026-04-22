@@ -150,13 +150,14 @@ describe('calculateTechCost — cost modifiers', () => {
 });
 
 describe('calculateTotalSpent', () => {
-  it('sums across all four techs', () => {
+  it('sums across all five techs', () => {
     const total = calculateTotalSpent({
       allocations: {
         war:       { currentLevel: 0, targetLevel: 3, freeLevelsRemaining: 0, modifiers: NO_COST_MODIFIERS }, // 7
         science:   { currentLevel: 0, targetLevel: 2, freeLevelsRemaining: 0, modifiers: NO_COST_MODIFIERS }, // 3
         resources: { currentLevel: 1, targetLevel: 1, freeLevelsRemaining: 0, modifiers: NO_COST_MODIFIERS }, // 0
         economy:   { currentLevel: 0, targetLevel: 1, freeLevelsRemaining: 0, modifiers: NO_COST_MODIFIERS }, // 2
+        religion:  { currentLevel: 0, targetLevel: 0, freeLevelsRemaining: 0, modifiers: NO_COST_MODIFIERS }, // 0
       },
       allowLevel6: false,
     });
@@ -170,6 +171,7 @@ describe('calculateTotalSpent', () => {
         science:   { currentLevel: 0, targetLevel: 3, freeLevelsRemaining: 0, modifiers: mods({ perLevel: 1 }) }, // (1+2+3)+3 = 9
         resources: { currentLevel: 0, targetLevel: 0, freeLevelsRemaining: 0, modifiers: NO_COST_MODIFIERS },     // 0
         economy:   { currentLevel: 0, targetLevel: 1, freeLevelsRemaining: 1, modifiers: NO_COST_MODIFIERS },     // 0 (free)
+        religion:  { currentLevel: 0, targetLevel: 0, freeLevelsRemaining: 0, modifiers: NO_COST_MODIFIERS },     // 0
       },
       allowLevel6: false,
     });

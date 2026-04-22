@@ -26,18 +26,24 @@ export function computeTurnOrder(players: Player[]): string[] {
 export const MOVEMENT_SCALE = 3;
 
 /**
- * Base movement for a stack = min movement stat among its units × MOVEMENT_SCALE.
- * Empty stacks return 0.
+ * Movement budget per turn. Stacks have unlimited movement (large sentinel)
+ * so any passable adjacent hex is always reachable.
+ */
+export const UNLIMITED_MOVEMENT = 9999;
+
+/**
+ * Base movement for a stack: min movement stat among all units × MOVEMENT_SCALE.
+ * Mixed stacks are limited by the slowest unit type. Empty stacks return 0.
+ * Movement is displayed as a budget but never enforced (stacks can always move).
  */
 export function computeStackMovement(stack: Stack): number {
   if (stack.units.length === 0) return 0;
   let min = Infinity;
-  for (const unit of stack.units) {
-    const def = UNIT_DEFINITIONS.find(d => d.id === unit.type);
-    if (!def) continue;
-    if (def.movement < min) min = def.movement;
+  for (const u of stack.units) {
+    const m = UNIT_DEFINITIONS.find(d => d.id === u.type)?.movement ?? 1;
+    if (m < min) min = m;
   }
-  return min === Infinity ? 0 : min * MOVEMENT_SCALE;
+  return min === Infinity ? MOVEMENT_SCALE : min * MOVEMENT_SCALE;
 }
 
 /**

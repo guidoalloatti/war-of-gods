@@ -12,6 +12,7 @@ import {
   markKingsTableReady,
 } from './kings-table.js';
 import { eraCardDeckEra2 } from '../cards/loader.js';
+import { RACE_TECH_MAX } from './constants.js';
 import { applyEffects } from '../cards/effect-dispatcher.js';
 import { createRng, shuffle } from '../state/random.js';
 import { transitionEra2ToEra3 } from '../era3/transition.js';
@@ -293,6 +294,9 @@ function setTechLevel(
     if (targetLevel < era2.baselineTechLevels[tech]) {
       throw new Error(`Target level ${targetLevel} is below the free baseline ${era2.baselineTechLevels[tech]}`);
     }
+    // Per-race max cap (4–6 depending on race profile)
+    const raceMax = RACE_TECH_MAX[state.players.find(p => p.id === playerId)!.raceId as keyof typeof RACE_TECH_MAX]?.[tech] ?? 5;
+    if (targetLevel > raceMax) throw new Error(`Tech ${tech} is capped at level ${raceMax} for this race`);
     if (targetLevel > 5 && !era2.allowLevel6) {
       throw new Error('Level 6 requires the "Forja del Destino" world card');
     }

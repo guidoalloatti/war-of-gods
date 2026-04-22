@@ -19,6 +19,8 @@ export type EraCard = {
   name: string;
   name_en: string;
   type: 'era1' | 'era2' | 'era3';
+  /** Card tier for Era III cards. Era I/II cards don't use this. */
+  rarity?: 'common' | 'rare' | 'legendary';
   flavorText: string;
   flavorText_en: string;
   mechanicalText: string;

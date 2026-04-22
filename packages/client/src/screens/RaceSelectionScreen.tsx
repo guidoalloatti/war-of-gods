@@ -86,7 +86,7 @@ export function RaceSelectionScreen() {
     setPlayerName(generateFullName(selectedRace, newSeed, locale));
   }
 
-  // Arrow key navigation — global listener
+  // Arrow key + mouse wheel navigation — global listeners
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'ArrowLeft') {
@@ -98,8 +98,16 @@ export function RaceSelectionScreen() {
         handleSelectRace(selectedIndex + 1);
       }
     }
+    function handleWheel(e: WheelEvent) {
+      e.preventDefault();
+      handleSelectRace(selectedIndex + Math.sign(e.deltaY));
+    }
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('wheel', handleWheel);
+    };
   }, [selectedIndex, handleSelectRace]);
 
   function handleStart() {
@@ -261,6 +269,18 @@ export function RaceSelectionScreen() {
         ) : (
           /* Desktop: 3D perspective carousel */
           <>
+            {/* Random race button — centered below the carousel nav */}
+            <button
+              type="button"
+              onClick={() => handleSelectRace(Math.floor(Math.random() * races.length))}
+              className="absolute left-1/2 -translate-x-1/2 -bottom-1 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-game-surface/70 border border-border-subtle hover:border-game-gold/40 text-text-secondary hover:text-game-gold transition-all backdrop-blur-sm text-xs font-semibold"
+              title={t.raceSelection.randomRace}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {t.raceSelection.randomRace}
+            </button>
             <button
               type="button"
               onClick={() => handleSelectRace(selectedIndex - 1)}

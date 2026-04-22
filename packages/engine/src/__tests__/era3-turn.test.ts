@@ -52,10 +52,12 @@ describe('computeTurnOrder', () => {
 });
 
 describe('computeStackMovement', () => {
-  it('returns min movement stat among units × MOVEMENT_SCALE (3)', () => {
-    // infantry=1, mounted=2, flying=3 → min 1 × 3 = 3
+  it('returns min movement stat × MOVEMENT_SCALE (3)', () => {
+    // min(infantry=1, mounted=2, flying=3) = 1 × 3 = 3
     expect(computeStackMovement(mkStack('s', 'p', ['infantry', 'mounted', 'flying']))).toBe(3);
+    // mounted=2 × 3 = 6
     expect(computeStackMovement(mkStack('s', 'p', ['mounted', 'mounted']))).toBe(6);
+    // flying=3 × 3 = 9
     expect(computeStackMovement(mkStack('s', 'p', ['flying']))).toBe(9);
   });
 
@@ -71,7 +73,7 @@ describe('resetStacksForTurn', () => {
       b: mkStack('b', 'p2', ['mounted']),
     };
     const out = resetStacksForTurn(stacks, 'p1');
-    expect(out.a.movementLeft).toBe(3); // infantry 1 × MOVEMENT_SCALE 3
+    expect(out.a.movementLeft).toBe(3); // infantry=1 × MOVEMENT_SCALE=3
     expect(out.a.units[0].hasMovedThisTurn).toBe(false);
     expect(out.a.units[0].hasAttackedThisTurn).toBe(false);
     // b unchanged

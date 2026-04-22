@@ -113,28 +113,56 @@ describe('MOVE_STACK', () => {
     ).toThrow(/contiguous/i);
   });
 
-  it('rejects moves exceeding movement budget', () => {
+  it('rejects multi-hop paths that exceed the movement budget', () => {
     const s = startGameLoop(era3State());
     const current = s.era3CurrentPlayerId!;
     const stack = Object.values(s.era3Stacks!).find(st => st.ownerId === current)!;
 
-    // Walk straight in +q direction as many steps as possible past budget.
+    // Walk straight in +q direction; collect only passable unoccupied steps,
+    // then take enough to exceed movementLeft (must be >1 step to trigger the budget check).
     const steps: { q: number; r: number }[] = [];
     let cursor = stack.position;
-    for (let i = 0; i < stack.movementLeft + 3; i++) {
+    let accumulated = 0;
+    let overBudgetPath: { q: number; r: number }[] | null = null;
+    for (let i = 0; i < 20 && overBudgetPath === null; i++) {
       cursor = { q: cursor.q + 1, r: cursor.r };
+      const h = s.map!.hexes[hexKey(cursor)];
+      if (!h || getTerrainMoveCost(h.terrain) === Infinity || h.stackId) break;
       steps.push(cursor);
+      accumulated += getTerrainMoveCost(h.terrain);
+      if (accumulated > stack.movementLeft && steps.length > 1) {
+        overBudgetPath = [...steps];
+      }
     }
-    // Only keep steps that are on-map and passable (to isolate the budget check).
-    const valid = steps.filter(st => {
-      const h = s.map!.hexes[hexKey(st)];
-      return h && getTerrainMoveCost(h.terrain) < Infinity && !h.stackId;
-    });
-    if (valid.length > stack.movementLeft + 1) {
+    if (overBudgetPath) {
       expect(() =>
-        gameReducer(s, { type: 'MOVE_STACK', playerId: current, stackId: stack.id, path: valid }),
-      ).toThrow();
+        gameReducer(s, { type: 'MOVE_STACK', playerId: current, stackId: stack.id, path: overBudgetPath! }),
+      ).toThrow(/not enough movement/i);
     }
+  });
+
+  it('minimum-move guarantee: single-hop into expensive terrain is always allowed (exhausts movement)', () => {
+    const s = startGameLoop(era3State());
+    const current = s.era3CurrentPlayerId!;
+    const stack = Object.values(s.era3Stacks!).find(st => st.ownerId === current)!;
+
+    // Find an adjacent hex whose terrain cost exceeds movementLeft (e.g. swamp=4, forest/mountain=6 vs infantry budget=3).
+    const expensiveNeighbor = neighbors(stack.position).find(n => {
+      const h = s.map!.hexes[hexKey(n)];
+      if (!h || h.stackId) return false;
+      const c = getTerrainMoveCost(h.terrain);
+      return c > stack.movementLeft && c < Infinity;
+    });
+
+    if (!expensiveNeighbor) return; // map seed doesn't have an expensive neighbor — skip gracefully
+
+    const next = gameReducer(s, {
+      type: 'MOVE_STACK', playerId: current, stackId: stack.id, path: [expensiveNeighbor],
+    });
+    const moved = next.era3Stacks![stack.id];
+    expect(moved.position).toEqual(expensiveNeighbor);
+    // Movement is fully exhausted (capped at 0, never negative)
+    expect(moved.movementLeft).toBe(0);
   });
 });
 

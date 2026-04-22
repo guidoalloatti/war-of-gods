@@ -96,8 +96,8 @@ describe('ATTACK_STACK action', () => {
 
     // Wrought wiped.
     expect(next.era3Stacks![planted.id]).toBeUndefined();
-    // Attacker stays in place (did not advance).
-    expect(next.era3Stacks![playerStack.id].position).toEqual(playerStack.position);
+    // Attacker advances to the defeated defender's position.
+    expect(next.era3Stacks![playerStack.id].position).toEqual(adj);
     // Movement untouched.
     expect(next.era3Stacks![playerStack.id].movementLeft).toBe(movementBefore);
     // Combat log has kind='attack'.

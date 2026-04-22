@@ -74,15 +74,21 @@ export function resolveCombat(
   defender: Stack,
   at: HexCoord,
   turnNumber: number,
-  bonuses: { attackerPerUnit?: number; defenderPerUnit?: number; defenderDamageMult?: number } = {},
+  bonuses: {
+    attackerPerUnit?: number;
+    defenderPerUnit?: number;
+    defenderDamageMult?: number;
+    /** If true the defender deals zero retaliation damage (e.g. distance-2 ranged). */
+    noRetaliation?: boolean;
+  } = {},
 ): CombatResult {
   const attackerDamage = stackAttackPower(attacker, bonuses.attackerPerUnit ?? 0);
-  const defenderDamage = stackAttackPower(defender, bonuses.defenderPerUnit ?? 0);
-  // defenderDamageMult < 1 when defender is fortified/on fort (reduces incoming damage).
+  const rawDefenderDamage = bonuses.noRetaliation ? 0 : stackAttackPower(defender, bonuses.defenderPerUnit ?? 0);
+  // defenderDamageMult < 1 when defender is fortified/on fort (reduces incoming damage from attacker).
   const mult = bonuses.defenderDamageMult ?? 1;
   const effectiveAttackerDamage = Math.max(1, Math.floor(attackerDamage * mult));
 
-  const a = applyDamage(attacker.units, defenderDamage);
+  const a = applyDamage(attacker.units, rawDefenderDamage);
   const d = applyDamage(defender.units, effectiveAttackerDamage);
 
   const attackerWiped = a.units.length === 0;
@@ -103,7 +109,7 @@ export function resolveCombat(
     attackerOwnerId: attacker.ownerId,
     defenderOwnerId: defender.ownerId,
     attackerDamageDealt: effectiveAttackerDamage,
-    defenderDamageDealt: defenderDamage,
+    defenderDamageDealt: rawDefenderDamage,
     attackerUnitsLost: a.unitsLost,
     defenderUnitsLost: d.unitsLost,
     attackerWiped,
@@ -146,6 +152,7 @@ export function resolveFlankingCombat(
     defenderPerUnit?: number;
     flankerBonuses?: number[];
     defenderDamageMult?: number;
+    noRetaliation?: boolean;
   } = {},
 ): FlankingCombatResult {
   const defenderBonus = bonuses.defenderPerUnit ?? 0;
@@ -158,7 +165,7 @@ export function resolveFlankingCombat(
   const rawTotalDamage = primaryDamage + flankDamages.reduce((a, b) => a + b, 0);
   const totalAttackerDamage = Math.max(1, Math.floor(rawTotalDamage * mult));
 
-  const defenderDamage = stackAttackPower(defender, defenderBonus);
+  const defenderDamage = bonuses.noRetaliation ? 0 : stackAttackPower(defender, defenderBonus);
 
   // Split defender damage proportionally; round so total equals defenderDamage.
   const shares: number[] = [primaryDamage, ...flankDamages];

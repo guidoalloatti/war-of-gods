@@ -4,6 +4,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { useI18n } from '../i18n/index.js';
 import type { Locale, Theme } from '../i18n/index.js';
 import { useAuth } from '../stores/authStore.js';
+import { useGameStore } from '../stores/gameStore.js';
 
 type Props = {
   open: boolean;
@@ -156,11 +157,16 @@ export function SettingsSidebar({ open, onClose }: Props) {
   const setTheme = useI18n(s => s.setTheme);
   const mapFontScale = useI18n(s => s.mapFontScale);
   const setMapFontScale = useI18n(s => s.setMapFontScale);
+  const fogOfWar = useI18n(s => s.fogOfWar);
+  const setFogOfWar = useI18n(s => s.setFogOfWar);
   const user = useAuth(s => s.user);
   const login = useAuth(s => s.login);
   const logout = useAuth(s => s.logout);
+  const gameState = useGameStore(s => s.gameState);
+  const abandonGame = useGameStore(s => s.abandonGame);
   const [authError, setAuthError] = useState<string | null>(null);
   const [showProfile, setShowProfile] = useState(false);
+  const [showAbandonConfirm, setShowAbandonConfirm] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   // Escape to close
@@ -173,9 +179,12 @@ export function SettingsSidebar({ open, onClose }: Props) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [open, onClose]);
 
-  // Reset profile view when sidebar closes
+  // Reset profile view and abandon confirm when sidebar closes
   useEffect(() => {
-    if (!open) setShowProfile(false);
+    if (!open) {
+      setShowProfile(false);
+      setShowAbandonConfirm(false);
+    }
   }, [open]);
 
   return createPortal(
@@ -207,19 +216,19 @@ export function SettingsSidebar({ open, onClose }: Props) {
         ) : (
           <>
             {/* Header with close + toggles */}
-            <div className="px-3 py-3 border-b border-border-subtle flex items-center justify-between shrink-0">
+            <div className="px-3 py-2.5 border-b border-border-subtle flex items-center justify-between gap-2 shrink-0">
               <div className="flex items-center gap-2">
                 {/* Language toggle */}
-                <div className="flex items-center gap-0.5 bg-game-bg/40 rounded-md p-0.5 border border-border-subtle">
+                <div className="flex items-center gap-0.5 bg-game-bg/40 rounded-lg p-0.5 border border-border-subtle">
                   {LANGUAGES.map(lang => (
                     <button
                       key={lang.code}
                       type="button"
                       onClick={() => setLocale(lang.code)}
-                      className={`w-10 h-9 flex items-center justify-center rounded text-sm font-bold transition-all ${
+                      className={`w-9 h-8 flex items-center justify-center rounded-md text-xs font-bold tracking-wide transition-all ${
                         locale === lang.code
-                          ? 'bg-game-accent text-white'
-                          : 'text-text-muted hover:text-text-primary'
+                          ? 'bg-game-accent text-white shadow-sm'
+                          : 'text-text-muted hover:text-text-primary hover:bg-white/5'
                       }`}
                       title={lang.code === 'en' ? 'English' : 'Español'}
                     >
@@ -229,7 +238,7 @@ export function SettingsSidebar({ open, onClose }: Props) {
                 </div>
 
                 {/* Theme toggle */}
-                <div className="flex items-center gap-0.5 bg-game-bg/40 rounded-md p-0.5 border border-border-subtle">
+                <div className="flex items-center gap-0.5 bg-game-bg/40 rounded-lg p-0.5 border border-border-subtle">
                   {([
                     { code: 'dark' as Theme, icon: (
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -246,10 +255,10 @@ export function SettingsSidebar({ open, onClose }: Props) {
                       key={opt.code}
                       type="button"
                       onClick={() => setTheme(opt.code)}
-                      className={`w-7 h-6 flex items-center justify-center rounded transition-all ${
+                      className={`w-9 h-8 flex items-center justify-center rounded-md transition-all ${
                         theme === opt.code
-                          ? 'bg-game-accent text-white'
-                          : 'text-text-muted hover:text-text-primary'
+                          ? 'bg-game-accent text-white shadow-sm'
+                          : 'text-text-muted hover:text-text-primary hover:bg-white/5'
                       }`}
                       title={opt.code === 'dark' ? t.settings.dark : t.settings.light}
                     >
@@ -262,7 +271,7 @@ export function SettingsSidebar({ open, onClose }: Props) {
               <button
                 type="button"
                 onClick={onClose}
-                className="text-text-muted hover:text-text-primary w-10 h-10 flex items-center justify-center rounded-lg hover:bg-hover-bg transition-colors"
+                className="text-text-muted hover:text-text-primary w-9 h-9 flex items-center justify-center rounded-lg hover:bg-hover-bg transition-colors shrink-0"
                 aria-label={t.settings.close}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -279,7 +288,7 @@ export function SettingsSidebar({ open, onClose }: Props) {
                 <input
                   type="range"
                   min={0.6}
-                  max={2.0}
+                  max={2.5}
                   step={0.1}
                   value={mapFontScale}
                   onChange={e => setMapFontScale(parseFloat(e.target.value))}
@@ -288,16 +297,35 @@ export function SettingsSidebar({ open, onClose }: Props) {
                 <span className="text-text-faint text-[9px] shrink-0">{t.settings.mapFontSizeLarge}</span>
               </div>
               <div className="flex justify-between mt-1">
-                {[0.7, 1.0, 1.4, 2.0].map(v => (
+                {[0.7, 1.0, 1.4, 2.0, 2.5].map(v => (
                   <button
                     key={v}
                     type="button"
                     onClick={() => setMapFontScale(v)}
                     className={`text-[9px] px-1.5 py-0.5 rounded transition-colors ${Math.abs(mapFontScale - v) < 0.05 ? 'bg-game-gold/20 text-game-gold' : 'text-text-muted hover:text-text-primary'}`}
                   >
-                    {v === 0.7 ? 'XS' : v === 1.0 ? 'S' : v === 1.4 ? 'M' : 'L'}
+                    {v === 0.7 ? 'XS' : v === 1.0 ? 'S' : v === 1.4 ? 'M' : v === 2.0 ? 'L' : 'XL'}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Fog of War toggle */}
+            <div className="px-3 py-2 border-b border-border-subtle shrink-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-text-muted text-[10px] uppercase tracking-wider">{t.settings.fogOfWar}</div>
+                  <div className="text-text-faint text-[9px] mt-0.5">{t.settings.fogOfWarDesc}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFogOfWar(!fogOfWar)}
+                  className={`relative w-10 h-6 rounded-full transition-colors duration-200 focus:outline-none ${fogOfWar ? 'bg-game-gold' : 'bg-game-surface border border-border-subtle'}`}
+                  role="switch"
+                  aria-checked={fogOfWar}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${fogOfWar ? 'translate-x-4' : 'translate-x-0'}`} />
+                </button>
               </div>
             </div>
 
@@ -450,6 +478,44 @@ export function SettingsSidebar({ open, onClose }: Props) {
                 </div>
               </Accordion>
             </div>
+
+            {/* ── Abandon game — only shown when a game is active ── */}
+            {gameState && (
+              <div className="border-t border-border-subtle p-3 shrink-0">
+                {showAbandonConfirm ? (
+                  <div className="space-y-2">
+                    <p className="text-text-secondary text-[11px] leading-snug">{t.settings.abandonGameConfirm}</p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowAbandonConfirm(false)}
+                        className="flex-1 bg-game-surface/60 text-text-secondary py-1.5 rounded-lg text-xs border border-border-subtle hover:text-text-primary transition-colors"
+                      >
+                        {t.actions.back}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { void abandonGame(); onClose(); }}
+                        className="flex-1 bg-game-accent/90 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-game-accent transition-colors"
+                      >
+                        {t.settings.abandonGameConfirmBtn}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowAbandonConfirm(true)}
+                    className="w-full flex items-center justify-center gap-1.5 text-text-muted hover:text-error-text text-xs py-1.5 rounded-lg hover:bg-error-bg/20 transition-colors border border-transparent hover:border-error-bg/40"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    {t.settings.abandonGame}
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* ── Account section — fixed at bottom ── */}
             <div className="border-t border-border-subtle p-3 shrink-0">

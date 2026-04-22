@@ -93,13 +93,15 @@ describe('end-of-cycle in reducer', () => {
     expect(wrought.length).toBeGreaterThan(0);
   });
 
-  it('no Dhakhan activity on mid-cycle END_TURN', () => {
+  it('spawn zone produces troops on every END_TURN (including mid-cycle)', () => {
     let s = gameReducer(era3(), { type: 'START_ERA3_GAME_LOOP' });
     const firstPlayer = s.era3CurrentPlayerId!;
     s = gameReducer(s, { type: 'END_TURN', playerId: firstPlayer });
-    // Turn 1 still, no wrap → no Wrought spawned yet.
+    // Mid-cycle END_TURN: per-turn spawn fires, Dhakhan AI does NOT run yet.
     expect(s.era3TurnNumber).toBe(1);
     const wrought = Object.values(s.era3Stacks!).filter(st => st.ownerId === DHAKHAN_OWNER_ID && st.id !== BOSS_STACK_ID);
-    expect(wrought.length).toBe(0);
+    // Spawn zones should have produced at least one unit this turn.
+    const spawnZones = Object.values(s.map!.hexes).filter(h => h.isSpawnZone && !h.spawnZoneDestroyed);
+    expect(wrought.length).toBeGreaterThanOrEqual(spawnZones.length > 0 ? 1 : 0);
   });
 });

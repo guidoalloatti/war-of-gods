@@ -52,8 +52,8 @@ const TERRAIN_COLOR: Record<HexTerrain, string> = {
   forest: '#3d8553',
   swamp: '#6b4a20',
   desert: '#d9b97a',
-  lake: '#3a6ea5',
-  river: '#3a7ab5',
+  lake: '#2a6aaa',
+  river: '#2a6aaa',
   road: '#c9a571',
   ruins: '#b8805a',
   citadel: '#2a2340',
@@ -83,6 +83,18 @@ const UNIT_COLOR: Record<UnitType, string> = {
   flying: '#f472b6',
 };
 
+/** Race-based color palette: [primary, accent, skin, metal] */
+const RACE_COLORS: Record<string, [string, string, string, string]> = {
+  elf:      ['#22c55e', '#86efac', '#c8e8c0', '#a8d8a8'],  // green armor, pale green skin, leaf-metal
+  dwarf:    ['#d97706', '#fcd34d', '#c8a870', '#d4a017'],  // amber armor, tan skin, gold metal
+  human:    ['#3b82f6', '#93c5fd', '#e4c59e', '#c0c4cc'],  // blue armor, tan skin, silver metal
+  halfelf:  ['#a855f7', '#d8b4fe', '#d4c8e0', '#b09ac0'],  // violet armor, pale lavender skin
+  orc:      ['#ef4444', '#fca5a5', '#6a8a48', '#8b4040'],  // red armor, green skin, dark iron
+  giant:    ['#6b7280', '#d1d5db', '#a89878', '#909090'],  // grey armor, stone-brown skin, grey metal
+  goblin:   ['#84cc16', '#d9f99d', '#7a9a40', '#606820'],  // lime armor, dark green skin
+  halforc:  ['#f97316', '#fed7aa', '#7a7a50', '#804020'],  // orange armor, olive skin, rusty metal
+};
+
 function hexToWorld(q: number, r: number): [number, number] {
   // Flat-top axial → world (XZ plane, Y up).
   const x = HEX_RADIUS * SQRT3 * (q + r / 2);
@@ -96,11 +108,14 @@ export type HexContextAction =
   | { kind: 'terraform'; coord: HexCoord; stackId: string }
   | { kind: 'drain_water'; coord: HexCoord; stackId: string }
   | { kind: 'build_bridge'; coord: HexCoord; stackId: string }
+  | { kind: 'destroy_spawn_zone'; coord: HexCoord; stackId: string }
   | { kind: 'recruit'; coord: HexCoord; unitType: UnitType }
   | { kind: 'rest_stack'; stackId: string }
   | { kind: 'fortify_stack'; stackId: string }
   | { kind: 'unfortify_stack'; stackId: string }
-  | { kind: 'disband_unit'; stackId: string; unitId: string; unitType: UnitType };
+  | { kind: 'disband_unit'; stackId: string; unitId: string; unitType: UnitType }
+  | { kind: 'split_stack'; stackId: string; unitId: string }
+  | { kind: 'merge_stacks'; sourceStackId: string; targetStackId: string };
 
 type Props = {
   map: GameMap;
@@ -120,10 +135,20 @@ type Props = {
   onHexContextAction?: (action: HexContextAction) => void;
   /** Unit types the player can currently recruit (for context menu). */
   recruitableUnits?: UnitType[];
+  /** Unit types blocked by science tech level — shown greyed out. */
+  techLockedUnits?: UnitType[];
   /** Whether building a road is currently possible. */
   canBuildRoad?: boolean;
   /** Recently-resolved combats — rendered as brief impact bursts on the map. */
   recentCombats?: Array<{ q: number; r: number; id: string }>;
+  /** Hex keys explored by the local player (for fog of war). */
+  exploredHexes?: Record<string, true>;
+  /** When true, render unexplored hexes as fog. */
+  fogOfWar?: boolean;
+  /** Local player's capital coordinate — used to render the citadel direction arrow. */
+  playerCapitalCoord?: HexCoord | null;
+  /** Maps playerId → raceId for race-specific unit visuals. */
+  playerRaces?: Record<string, string>;
 };
 
 export function Era3HexMap3D(props: Props) {
@@ -131,16 +156,22 @@ export function Era3HexMap3D(props: Props) {
     map, stacks, localPlayerId, activePlayerId,
     selectedStackId, onSelectStack, onMoveStack, onAttackStack,
     buildingRoad = false, eligibleRoadHexes, onBuildRoad, onCancelBuildRoad,
-    onInspectHex, recentCombats, onHexContextAction, recruitableUnits, canBuildRoad,
+    onInspectHex, recentCombats, onHexContextAction, recruitableUnits, techLockedUnits, canBuildRoad,
+    exploredHexes, fogOfWar = false, playerCapitalCoord, playerRaces = {},
   } = props;
 
   // Context menu state — pixel position + which hex was right-clicked.
   const [ctxMenu, setCtxMenu] = useState<{
     x: number; y: number; hex: Hex;
   } | null>(null);
+  // When truthy, show unit picker submenu for split instead of main menu.
+  const [splitPickStackId, setSplitPickStackId] = useState<string | null>(null);
 
   // Hex info panel — shown in bottom-left on left-click.
   const [inspectedHex, setInspectedHex] = useState<Hex | null>(null);
+
+  // Track hovered hex key for sword cursor + enemy flicker.
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null);
 
   const t = useI18n(s => s.t);
   const mapFontScale = useI18n(s => s.mapFontScale);
@@ -158,7 +189,9 @@ export function Era3HexMap3D(props: Props) {
   const reach = useMemo(() => {
     if (!selectedStack || !onMoveStack) return null;
     if (!canControlStack(selectedStack)) return null;
-    const isFlying = selectedStack.units.length > 0 && selectedStack.units.every(u => u.type === 'flying');
+    if (selectedStack.units.length === 0) return null;
+    if (selectedStack.movementLeft <= 0) return null;
+    const isFlying = selectedStack.units.every(u => u.type === 'flying');
     return reachableHexes(map, stacks, selectedStack.id, selectedStack.position, selectedStack.movementLeft, isFlying);
   }, [selectedStack, map, stacks, onMoveStack, canControlStack]);
 
@@ -169,6 +202,7 @@ export function Era3HexMap3D(props: Props) {
       return new Set<string>();
     }
     const hasSiege = selectedStack.units.some(u => u.type === 'siege' && !u.hasAttackedThisTurn);
+    const hasRanged = selectedStack.units.some(u => u.type === 'ranged' && !u.hasAttackedThisTurn);
     const out = new Set<string>();
     // Adjacency (all units)
     for (const n of neighbors(selectedStack.position)) {
@@ -178,8 +212,8 @@ export function Era3HexMap3D(props: Props) {
       const s = stacks[h.stackId];
       if (s && s.ownerId === DHAKHAN_OWNER_ID) out.add(k);
     }
-    // Distance-2 (siege only)
-    if (hasSiege) {
+    // Distance-2 (siege + ranged)
+    if (hasSiege || hasRanged) {
       for (const n1 of neighbors(selectedStack.position)) {
         for (const n2 of neighbors(n1)) {
           const k = hexKey(n2);
@@ -202,10 +236,11 @@ export function Era3HexMap3D(props: Props) {
       else if (onCancelBuildRoad) onCancelBuildRoad();
       return;
     }
+    // Click on own controllable stack — select it (never deselect by clicking the same stack).
     if (hex.stackId) {
       const s = stacks[hex.stackId];
       if (s && canControlStack(s)) {
-        onSelectStack(selectedStackId === s.id ? null : s.id);
+        onSelectStack(s.id);
         return;
       }
     }
@@ -215,10 +250,6 @@ export function Era3HexMap3D(props: Props) {
         return;
       }
       if (onMoveStack && reach) {
-        if (k === hexKey(selectedStack.position)) {
-          onSelectStack(null);
-          return;
-        }
         if (reach.has(k) && (reach.get(k) ?? 0) > 0) {
           const isFlying = selectedStack.units.length > 0 && selectedStack.units.every(u => u.type === 'flying');
           const path = findPath(
@@ -227,20 +258,23 @@ export function Era3HexMap3D(props: Props) {
           );
           if (path && path.length > 0) {
             onMoveStack(selectedStack.id, path);
-            onSelectStack(null);
             return;
           }
         }
       }
-    }
-    if (hex.stackId && !selectedStackId) {
+      // Clicked an empty/unreachable hex while a stack is selected — deselect.
+      if (!hex.stackId) {
+        onSelectStack(null);
+      }
+    } else if (hex.stackId) {
+      // Select any stack the player taps (even non-controllable, for inspection).
       onSelectStack(hex.stackId);
     }
     // Always update info panel on left-click.
     setInspectedHex(hex);
   }, [
     buildingRoad, eligibleRoadHexes, onBuildRoad, onCancelBuildRoad,
-    stacks, canControlStack, onSelectStack, selectedStackId, selectedStack,
+    stacks, canControlStack, onSelectStack, selectedStack,
     attackable, onAttackStack, onMoveStack, reach, map,
   ]);
 
@@ -328,12 +362,70 @@ export function Era3HexMap3D(props: Props) {
     return () => window.removeEventListener('keydown', onKey);
   }, [buildingRoad, onCancelBuildRoad]);
 
-  const hexList = useMemo(() => Object.values(map.hexes), [map]);
+  const radius = map.radius ?? 10;
+
+  // Irregular shore mask: some outer-ring land hexes are treated as water
+  // to make the island look irregular rather than a perfect disc.
+  const shoreWaterKeys = useMemo(() => {
+    const masked = new Set<string>();
+    // For each hex at distance >= radius-1, apply noise to decide if it becomes water.
+    // Protected hexes (capitals, citadel, spawn zones) are never masked.
+    for (const h of Object.values(map.hexes)) {
+      const d = Math.max(Math.abs(h.coord.q), Math.abs(h.coord.r), Math.abs(h.coord.q + h.coord.r));
+      if (d < radius - 1) continue; // only outermost 2 rings
+      if (h.isCapital || h.isSpawnZone || h.terrain === 'citadel') continue;
+      const angle = Math.atan2(h.coord.r, h.coord.q);
+      // Multi-octave noise on angle + coord hash
+      const noise = Math.sin(angle * 3.7 + h.coord.q * 0.5 + h.coord.r * 0.7)
+        * 0.4 + Math.sin(angle * 7.3 + h.coord.q * 0.9) * 0.25
+        + Math.sin(angle * 1.9 + h.coord.r * 1.1) * 0.35;
+      // Farther hexes have a higher chance of becoming water
+      const threshold = d >= radius ? 0.1 : -0.15;
+      if (noise > threshold) masked.add(`${h.coord.q},${h.coord.r}`);
+    }
+    return masked;
+  }, [map, radius]);
+
+  const hexList = useMemo(
+    () => Object.values(map.hexes).filter(h => !shoreWaterKeys.has(`${h.coord.q},${h.coord.r}`)),
+    [map, shoreWaterKeys],
+  );
+
+  // Build water hexes: border outside map + shore-masked land hexes.
+  const waterHexes = useMemo(() => {
+    const out: Array<{ q: number; r: number }> = [];
+    const seen = new Set<string>();
+    // Masked land hexes become water
+    for (const key of shoreWaterKeys) {
+      const [q, r] = key.split(',').map(Number);
+      out.push({ q, r });
+      seen.add(key);
+    }
+    // Also add neighbors outside map boundary (extended to radius+4 for deeper sea)
+    for (const h of Object.values(map.hexes)) {
+      for (const d of DIRECTIONS) {
+        const nq = h.coord.q + d.q;
+        const nr = h.coord.r + d.r;
+        const nk = `${nq},${nr}`;
+        if (!map.hexes[nk] && !seen.has(nk)) {
+          const dist = Math.max(Math.abs(nq), Math.abs(nr), Math.abs(nq + nr));
+          if (dist <= radius + 4) {
+            seen.add(nk);
+            out.push({ q: nq, r: nr });
+          }
+        }
+      }
+    }
+    return out;
+  }, [map, shoreWaterKeys, radius]);
+
+  const swordCursor = hoveredKey != null && attackable.has(hoveredKey);
 
   return (
     <div
       id="era3-hex-map-3d"
       className="relative w-full h-full min-h-[420px] overflow-hidden select-none touch-manipulation rounded-lg"
+      style={{ cursor: swordCursor ? 'crosshair' : undefined }}
       onContextMenu={e => e.preventDefault()}
     >
       <FontScaleContext.Provider value={mapFontScale}>
@@ -381,15 +473,22 @@ export function Era3HexMap3D(props: Props) {
 
           {hexList.map(h => {
             const key = `${h.coord.q},${h.coord.r}`;
+            // When fog is active, a hex is explored only if it's in the explored dict.
+            // undefined exploredHexes with fog on = nothing explored yet.
+            const isExplored = !fogOfWar || (exploredHexes != null && !!exploredHexes[key]);
             const stack = h.stackId ? stacks[h.stackId] : null;
             const isLocalPlayer = !!stack && stack.ownerId === localPlayerId;
             const isWrought = !!stack && stack.ownerId === DHAKHAN_OWNER_ID && stack.id !== BOSS_STACK_ID;
             const isBoss = !!stack && stack.id === BOSS_STACK_ID;
             const isSelected = selectedStack?.id === h.stackId;
             const reachCost = reach?.get(key);
-            const isReachable = reachCost !== undefined && reachCost > 0;
-            const isAttackable = attackable.has(key);
-            const isRoadEligible = buildingRoad && (eligibleRoadHexes?.has(key) ?? false);
+            const isReachable = isExplored && reachCost !== undefined && reachCost > 0;
+            const isAttackable = isExplored && attackable.has(key);
+            const isRoadEligible = isExplored && buildingRoad && (eligibleRoadHexes?.has(key) ?? false);
+            // Flicker when this hex is hovered and attackable
+            const isFlickering = isAttackable && hoveredKey === key;
+            // Combat shake when this hex is an active combat site
+            const combatShake = !!(recentCombats?.some(c => `${c.q},${c.r}` === key));
             // Count same-terrain neighbors for decoration scaling.
             const neighborCount = DIRECTIONS.reduce((acc, d) => {
               const nk = hexKey({ q: h.coord.q + d.q, r: h.coord.r + d.r });
@@ -398,39 +497,69 @@ export function Era3HexMap3D(props: Props) {
             }, 0);
             // Compute which of the 6 neighbors share a road/capital/citadel
             // so RoadDecor can draw connectors toward them.
-            const roadDirs = h.terrain === 'road'
+            const isRoadHex = h.terrain === 'road' || h.hasRoadOverlay;
+            const roadDirs = isRoadHex
               ? DIRECTIONS.map((d, idx) => {
                   const nk = hexKey({ q: h.coord.q + d.q, r: h.coord.r + d.r });
                   const nh = map.hexes[nk];
                   if (!nh) return null;
-                  const connects = nh.terrain === 'road' || nh.isCapital || nh.terrain === 'citadel';
-                  return connects ? idx : null;
+                  const nConnects = nh.terrain === 'road' || nh.hasRoadOverlay || nh.isCapital || nh.terrain === 'citadel';
+                  return nConnects ? idx : null;
                 }).filter((v): v is number => v !== null)
               : [];
+            const [hx, hz] = hexToWorld(h.coord.q, h.coord.r);
             return (
-              <HexPrism
-                key={key}
-                hex={h}
-                stack={stack}
-                roadDirs={roadDirs}
-                neighborCount={neighborCount}
-                isLocalPlayer={isLocalPlayer}
-                isWrought={isWrought}
-                isBoss={isBoss}
-                isSelected={isSelected}
-                isReachable={isReachable}
-                isAttackable={isAttackable}
-                isRoadEligible={isRoadEligible}
-                onClick={() => handleHexClick(h)}
-                onContext={(e) => handleHexContext(h, e)}
-              />
+              <group key={key}>
+                <HexPrism
+                  hex={h}
+                  stack={isExplored ? stack : null}
+                  roadDirs={isExplored ? roadDirs : []}
+                  neighborCount={neighborCount}
+                  isLocalPlayer={isLocalPlayer}
+                  isWrought={isWrought}
+                  isBoss={isBoss}
+                  isSelected={isSelected}
+                  isReachable={isReachable}
+                  isAttackable={isAttackable}
+                  isRoadEligible={isRoadEligible}
+                  isUnexplored={!isExplored}
+                  isFlickering={isFlickering}
+                  combatShake={combatShake}
+                  stackRaceId={stack ? (playerRaces[stack.ownerId] ?? null) : null}
+                  onClick={() => isExplored && handleHexClick(h)}
+                  onContext={(e) => isExplored && handleHexContext(h, e)}
+                  onHover={k => setHoveredKey(k)}
+                />
+              </group>
             );
           })}
+
+          {waterHexes.map(({ q, r }) => {
+            const [wx, wz] = hexToWorld(q, r);
+            // A water hex is visible if fog is off, or if any of its 6 land neighbors is explored.
+            const waterVisible = !fogOfWar || (exploredHexes != null && DIRECTIONS.some(d => {
+              const nk = `${q + d.q},${r + d.r}`;
+              return !!exploredHexes[nk];
+            }));
+            if (!waterVisible) return <FogWaterHex key={`w${q},${r}`} x={wx} z={wz} q={q} r={r} />;
+            return <WaterHex key={`w${q},${r}`} x={wx} z={wz} q={q} r={r} />;
+          })}
+
+          {/* Full fog disc covering the outer area beyond the playable island */}
+          {fogOfWar && (
+            <FogOuterDisc radius={radius} />
+          )}
 
           {recentCombats?.map(c => {
             const [x, z] = hexToWorld(c.q, c.r);
             return <ImpactBurst key={c.id} x={x} z={z} />;
           })}
+
+          {/* Citadel direction arrow — floating above the player's capital, points toward (0,0) */}
+          {playerCapitalCoord && (() => {
+            const [cx, cz] = hexToWorld(playerCapitalCoord.q, playerCapitalCoord.r);
+            return <CitadelArrow capitalX={cx} capitalZ={cz} capitalQ={playerCapitalCoord.q} capitalR={playerCapitalCoord.r} />;
+          })()}
 
           <OrbitControls
             enablePan
@@ -488,8 +617,8 @@ export function Era3HexMap3D(props: Props) {
           {/* backdrop to dismiss */}
           <div
             className="absolute inset-0 z-40"
-            onClick={() => setCtxMenu(null)}
-            onContextMenu={e => { e.preventDefault(); setCtxMenu(null); }}
+            onClick={() => { setCtxMenu(null); setSplitPickStackId(null); }}
+            onContextMenu={e => { e.preventDefault(); setCtxMenu(null); setSplitPickStackId(null); }}
           />
           <div
             className="absolute z-50 min-w-[160px] rounded-xl border border-border-medium bg-game-surface/95 backdrop-blur-sm shadow-xl py-1 animate-scale-in"
@@ -516,11 +645,26 @@ export function Era3HexMap3D(props: Props) {
               </button>
             )}
 
-            {/* Terrain actions — build road overlay or terraform; require own adjacent/on stack */}
+            {/* Terrain actions — build road overlay or terraform; require own stack on or adjacent to hex */}
             {(() => {
-              const ctxStack2 = ctxMenu.hex.stackId ? stacks[ctxMenu.hex.stackId] ?? null : null;
-              const isOwnAdjacentStack = ctxStack2 && ctxStack2.ownerId === localPlayerId && ctxStack2.ownerId === activePlayerId;
-              if (!isOwnAdjacentStack || !ctxStack2 || ctxStack2.hasActedThisTurn) return null;
+              // First check stack on this hex; if not, check any adjacent own stack.
+              let ctxStack2 = ctxMenu.hex.stackId ? stacks[ctxMenu.hex.stackId] ?? null : null;
+              if (!ctxStack2 || ctxStack2.ownerId !== localPlayerId || ctxStack2.ownerId !== activePlayerId) {
+                // Look for an adjacent own active stack
+                ctxStack2 = null;
+                for (const d of DIRECTIONS) {
+                  const nk = hexKey({ q: ctxMenu.hex.coord.q + d.q, r: ctxMenu.hex.coord.r + d.r });
+                  const nh = map.hexes[nk];
+                  if (!nh?.stackId) continue;
+                  const ns = stacks[nh.stackId];
+                  if (ns && ns.ownerId === localPlayerId && ns.ownerId === activePlayerId && !ns.hasActedThisTurn) {
+                    ctxStack2 = ns;
+                    break;
+                  }
+                }
+              }
+              if (!ctxStack2 || ctxStack2.ownerId !== localPlayerId || ctxStack2.ownerId !== activePlayerId) return null;
+              if (ctxStack2.hasActedThisTurn) return null;
               const terrain = ctxMenu.hex.terrain;
               const canOverlay = (terrain === 'mountain' || terrain === 'desert') && !ctxMenu.hex.hasRoadOverlay;
               const canTerraform = terrain === 'desert' || terrain === 'mountain' || terrain === 'swamp';
@@ -598,19 +742,19 @@ export function Era3HexMap3D(props: Props) {
               );
             })()}
 
-            {/* Recruit units — only at own capital */}
-            {ctxMenu.hex.isCapital && ctxMenu.hex.capitalOwnerId === localPlayerId && recruitableUnits && recruitableUnits.length > 0 && (
+            {/* Recruit units — only at own capital; locked-by-tech shown greyed */}
+            {ctxMenu.hex.isCapital && ctxMenu.hex.capitalOwnerId === localPlayerId && (recruitableUnits || techLockedUnits) && (
               <>
-                <div className="px-3 py-1 text-[10px] text-text-muted uppercase tracking-wider">
+                <div className="px-3 py-1 text-[10px] text-text-muted uppercase tracking-wider border-t border-border-subtle mt-1">
                   {t.era3.recruit ?? 'Recruit'}
                 </div>
-                {recruitableUnits.map(ut => (
+                {(recruitableUnits ?? []).map(ut => (
                   <button
                     key={ut}
                     type="button"
                     className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-text-primary hover:bg-emerald-500/10 hover:text-emerald-300 transition-colors"
                     onClick={() => {
-                      onHexContextAction({ kind: 'recruit', coord: ctxMenu.hex.coord, unitType: ut });
+                      onHexContextAction!({ kind: 'recruit', coord: ctxMenu.hex.coord, unitType: ut });
                       setCtxMenu(null);
                     }}
                   >
@@ -619,8 +763,40 @@ export function Era3HexMap3D(props: Props) {
                     <span className="text-game-gold text-[11px]">💰{RECRUIT_COST_MAP[ut]}</span>
                   </button>
                 ))}
+                {(techLockedUnits ?? []).map(ut => (
+                  <div
+                    key={`locked-${ut}`}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm opacity-40 cursor-not-allowed"
+                    title={`🔬 ${t.tech?.scienceLocked?.replace('{req}', String(ERA3_RECRUIT_COSTS[ut])) ?? 'Tech required'}`}
+                  >
+                    <span>🔬</span>
+                    <span className="flex-1 line-through">{t.units[ut]}</span>
+                    <span className="text-[11px]">💰{RECRUIT_COST_MAP[ut]}</span>
+                  </div>
+                ))}
               </>
             )}
+
+            {/* Destroy spawn zone — available when own stack is on an active spawn zone */}
+            {(() => {
+              const ctxStack = ctxMenu.hex.stackId ? stacks[ctxMenu.hex.stackId] ?? null : null;
+              const isOwnCtxStack = ctxStack && ctxStack.ownerId === localPlayerId && ctxStack.ownerId === activePlayerId;
+              if (!isOwnCtxStack || !ctxStack) return null;
+              if (!ctxMenu.hex.isSpawnZone || ctxMenu.hex.spawnZoneDestroyed) return null;
+              return (
+                <button
+                  type="button"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-red-300 hover:bg-red-500/15 hover:text-red-200 transition-colors border-t border-border-subtle mt-1"
+                  onClick={() => {
+                    onHexContextAction({ kind: 'destroy_spawn_zone', coord: ctxMenu.hex.coord, stackId: ctxStack.id });
+                    setCtxMenu(null);
+                  }}
+                >
+                  <span>💥</span>
+                  <span className="flex-1 font-semibold">Destroy Spawn Zone</span>
+                </button>
+              );
+            })()}
 
             {/* Stack actions — available when right-clicking own stack */}
             {(() => {
@@ -684,6 +860,7 @@ export function Era3HexMap3D(props: Props) {
                       onClick={() => {
                         onHexContextAction({ kind: 'disband_unit', stackId: ctxStack.id, unitId: u.id, unitType: u.type });
                         setCtxMenu(null);
+                        setSplitPickStackId(null);
                       }}
                     >
                       <span>{UNIT_ICON_MAP[u.type]}</span>
@@ -691,6 +868,84 @@ export function Era3HexMap3D(props: Props) {
                       <span className="text-emerald-400 text-[11px]">+💰{Math.floor(RECRUIT_COST_MAP[u.type] * 2 / 3)}</span>
                     </button>
                   ))}
+                  {/* Split army — only visible when stack has >1 unit */}
+                  {ctxStack.units.length > 1 && (
+                    <>
+                      <div className="px-3 py-1 text-[10px] text-text-muted uppercase tracking-wider border-t border-border-subtle mt-1">
+                        {splitPickStackId === ctxStack.id
+                          ? (t.era3.stackActions?.splitArmyPick ?? 'Choose unit to split off')
+                          : (t.era3.stackActions?.splitArmy ?? 'Split army')}
+                      </div>
+                      {splitPickStackId === ctxStack.id ? (
+                        // Unit picker submenu
+                        ctxStack.units.map(u => (
+                          <button
+                            key={u.id}
+                            type="button"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-amber-200 hover:bg-amber-500/15 hover:text-amber-100 transition-colors"
+                            onClick={() => {
+                              onHexContextAction({ kind: 'split_stack', stackId: ctxStack.id, unitId: u.id });
+                              setCtxMenu(null);
+                              setSplitPickStackId(null);
+                            }}
+                          >
+                            <span>{UNIT_ICON_MAP[u.type]}</span>
+                            <span className="flex-1">{t.units[u.type]}</span>
+                            <span className="text-[11px] opacity-60">HP {u.currentHp}</span>
+                          </button>
+                        ))
+                      ) : (
+                        <button
+                          type="button"
+                          className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-amber-300 hover:bg-amber-500/10 hover:text-amber-200 transition-colors"
+                          onClick={() => setSplitPickStackId(ctxStack.id)}
+                        >
+                          <span>⚔️</span>
+                          <span className="flex-1">{t.era3.stackActions?.splitArmy ?? 'Split army'}</span>
+                          <span className="text-[11px] opacity-60">▶</span>
+                        </button>
+                      )}
+                    </>
+                  )}
+
+                  {/* Merge stacks — shown when another own stack is on same hex */}
+                  {(() => {
+                    const coStacks = Object.values(stacks).filter(
+                      s => s.ownerId === localPlayerId && s.id !== ctxStack.id &&
+                        s.position.q === ctxStack.position.q && s.position.r === ctxStack.position.r
+                    );
+                    if (coStacks.length === 0) return null;
+                    return (
+                      <>
+                        <div className="px-3 py-1 text-[10px] text-text-muted uppercase tracking-wider border-t border-border-subtle mt-1">
+                          {t.era3.stackActions?.mergeArmy ?? 'Merge armies'}
+                        </div>
+                        {coStacks.map(other => (
+                          <button
+                            key={other.id}
+                            type="button"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-emerald-300 hover:bg-emerald-500/10 hover:text-emerald-200 transition-colors"
+                            onClick={() => {
+                              onHexContextAction({ kind: 'merge_stacks', sourceStackId: ctxStack.id, targetStackId: other.id });
+                              setCtxMenu(null);
+                              setSplitPickStackId(null);
+                            }}
+                          >
+                            <span>⛓️</span>
+                            <span className="flex-1">
+                              {t.era3.stackActions?.mergeInto ?? 'Merge into'} ×{other.units.length}
+                            </span>
+                            <span className="text-[10px] opacity-60">
+                              {ctxStack.units.length + other.units.length > 6
+                                ? `→ 6 (+${ctxStack.units.length + other.units.length - 6} perdidas)`
+                                : `→ ×${ctxStack.units.length + other.units.length}`
+                              }
+                            </span>
+                          </button>
+                        ))}
+                      </>
+                    );
+                  })()}
                 </>
               );
             })()}
@@ -703,76 +958,149 @@ export function Era3HexMap3D(props: Props) {
       </div>
 
       {/* Hex info panel — bottom-left, shown on left-click */}
-      {inspectedHex && (
-        <div className="absolute bottom-8 left-2 z-20 min-w-[180px] max-w-[220px] rounded-xl border border-border-medium bg-game-surface/90 backdrop-blur-sm shadow-xl p-3 animate-scale-in text-xs">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-game-gold font-bold uppercase tracking-wider text-[10px]">
-              ({inspectedHex.coord.q}, {inspectedHex.coord.r})
-            </span>
-            <button
-              type="button"
-              className="text-text-muted hover:text-text-primary text-[10px] leading-none"
-              onClick={() => setInspectedHex(null)}
-            >✕</button>
-          </div>
-          <div className="text-text-primary font-semibold mb-1">
-            {t.era3.terrain?.[inspectedHex.terrain] ?? inspectedHex.terrain}
-            {inspectedHex.hasBridge && <span className="ml-1 text-amber-300">🌉</span>}
-            {inspectedHex.hasRoadOverlay && <span className="ml-1 text-amber-200">🛤️</span>}
-          </div>
-          <div className="space-y-0.5 text-text-secondary">
-            {inspectedHex.isCapital && (
-              <div>🏰 {t.era3.legend?.capital ?? 'Capital'}{inspectedHex.capitalOwnerId ? ` · ${inspectedHex.capitalOwnerId.slice(0, 8)}` : ''}</div>
-            )}
-            {inspectedHex.isSpawnZone && (
-              <div>{inspectedHex.spawnZoneDestroyed ? '💀 Zona destruida' : `☠ ${t.era3.legend?.spawnZone ?? 'Spawn zone'}`}</div>
-            )}
-            {inspectedHex.hasFort && <div>🛡️ Fortaleza</div>}
-            {inspectedHex.ruinsReward && !inspectedHex.ruinsLooted && (
-              <div>✨ Ruinas sin saquear</div>
-            )}
-            {inspectedHex.ruinsLooted && <div className="text-text-faint">{t.era3.ruinsModal?.empty ?? '—'}</div>}
-            {(() => {
-              const st = inspectedHex.stackId ? stacks[inspectedHex.stackId] : null;
-              if (!st) return null;
-              return (
-                <div className="mt-1 border-t border-border-subtle pt-1">
-                  <div className="text-text-primary font-medium mb-0.5">
-                    {st.ownerId === DHAKHAN_OWNER_ID ? `☠ ${t.era3.wrought}` : `${t.era3.stackInfo.units}: ${st.units.length}`}
-                  </div>
-                  {st.units.map(u => (
-                    <div key={u.id} className="flex items-center gap-1">
-                      <span>{UNIT_ICON_MAP[u.type]}</span>
-                      <span>{t.units[u.type]}</span>
-                      <span className="ml-auto text-emerald-400">{u.currentHp}hp</span>
-                    </div>
-                  ))}
-                  {st.fortified && <div className="text-amber-300 mt-0.5">🛡 {t.era3.stackActions.fortify}</div>}
+      {inspectedHex && (() => {
+        const st = inspectedHex.stackId ? stacks[inspectedHex.stackId] : null;
+        const isDhakhan = st?.ownerId === DHAKHAN_OWNER_ID;
+        const ownerRaceId = st && !isDhakhan ? (playerRaces[st.ownerId] ?? null) : null;
+        const raceColor = ownerRaceId ? (RACE_COLORS[ownerRaceId]?.[0] ?? '#f5c518') : null;
+        const hasStack = !!st;
+        return (
+          <div className={`absolute bottom-8 left-2 z-20 rounded-xl border border-border-medium bg-game-surface/90 backdrop-blur-sm shadow-xl p-3 animate-scale-in text-xs ${hasStack ? 'min-w-[220px] max-w-[260px]' : 'min-w-[180px] max-w-[220px]'}`}>
+            {/* Header: coords + close */}
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-game-gold font-bold uppercase tracking-wider text-[10px]">
+                ({inspectedHex.coord.q}, {inspectedHex.coord.r})
+              </span>
+              <button
+                type="button"
+                className="text-text-muted hover:text-text-primary text-[10px] leading-none"
+                onClick={() => setInspectedHex(null)}
+              >✕</button>
+            </div>
+
+            {/* ── STACK SECTION — shown first when there's a stack ── */}
+            {st && (
+              <div className="mb-2 pb-2 border-b border-border-subtle">
+                {/* Stack owner header */}
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  {raceColor && <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: raceColor }} />}
+                  <span className={`font-bold text-[11px] ${isDhakhan ? 'text-red-400' : 'text-text-primary'}`}>
+                    {isDhakhan ? `☠ ${t.era3.wrought}` : (st.ownerId === localPlayerId ? `${t.era3.stackInfo.units}` : st.ownerId.slice(0, 10))}
+                  </span>
+                  {st.movementLeft > 0 && !isDhakhan && (
+                    <span className="ml-auto text-sky-400 font-mono text-[10px]">
+                      MOV {Math.floor(st.movementLeft / 3)}
+                    </span>
+                  )}
+                  {st.movementLeft === 0 && !isDhakhan && (
+                    <span className="ml-auto text-text-faint text-[10px]">
+                      {t.era3.stackInfo?.exhausted ?? '—'}
+                    </span>
+                  )}
                 </div>
-              );
-            })()}
-            <div className="mt-1 border-t border-border-subtle pt-1 text-text-faint">
-              {t.era3.terrain?.[inspectedHex.terrain] === inspectedHex.terrain ? null : (
-                <span className="capitalize">{inspectedHex.terrain}</span>
+
+                {/* Status badges */}
+                {(st.fortified || st.generalId) && (
+                  <div className="flex gap-1 mb-1.5">
+                    {st.fortified && <span className="bg-amber-900/40 text-amber-200 px-1.5 py-0.5 rounded text-[9px] font-medium">🛡 {t.era3.stackActions.fortify}</span>}
+                    {st.generalId && <span className="bg-purple-900/40 text-purple-200 px-1.5 py-0.5 rounded text-[9px] font-medium">⭐ General</span>}
+                  </div>
+                )}
+
+                {/* Unit list */}
+                <div className="space-y-1">
+                  {st.units.map(u => {
+                    const def = UNIT_DEFINITIONS.find(d => d.id === u.type);
+                    const maxHp = def ? def.defense + 2 : 3;
+                    const hpRatio = maxHp > 0 ? Math.max(0, u.currentHp) / maxHp : 0;
+                    const hpColor = hpRatio > 0.6 ? '#4ade80' : hpRatio > 0.3 ? '#facc15' : '#f87171';
+                    return (
+                      <div key={u.id} className="flex items-center gap-1.5">
+                        <span className="text-[13px] leading-none">{UNIT_ICON_MAP[u.type]}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1">
+                            <span className="text-text-primary font-medium text-[10px]">
+                              {(t.units as Record<string, string>)[u.type] ?? u.type}
+                            </span>
+                            {def && (
+                              <span className="ml-auto text-text-faint text-[9px] font-mono tabular-nums">
+                                ⚔{def.attack} 🛡{def.defense}
+                              </span>
+                            )}
+                          </div>
+                          {/* HP bar */}
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <div className="flex-1 h-1 rounded-full bg-game-bg/80 border border-border-subtle overflow-hidden">
+                              <div style={{ width: `${hpRatio * 100}%`, background: hpColor, height: '100%', borderRadius: 9999 }} />
+                            </div>
+                            <span className="text-[8px] font-mono tabular-nums shrink-0" style={{ color: hpColor }}>
+                              {u.currentHp}/{maxHp}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* ── TERRAIN SECTION ── */}
+            <div className="text-text-primary font-semibold mb-1">
+              {inspectedHex.terrain === 'road' && inspectedHex.roadTerrain
+                ? `${t.era3.terrain?.[inspectedHex.roadTerrain] ?? inspectedHex.roadTerrain} (Road)`
+                : (t.era3.terrain?.[inspectedHex.terrain] ?? inspectedHex.terrain)}
+            </div>
+            {/* Improvements row */}
+            {(inspectedHex.hasRoadOverlay || inspectedHex.hasBridge || inspectedHex.hasFort || (inspectedHex.terrain === 'road')) && (
+              <div className="flex flex-wrap gap-1 mb-1">
+                {inspectedHex.terrain === 'road' && (
+                  <span className="bg-amber-900/40 text-amber-200 px-1.5 py-0.5 rounded text-[10px] font-medium">🛤️ Road</span>
+                )}
+                {inspectedHex.hasRoadOverlay && (
+                  <span className="bg-amber-900/40 text-amber-200 px-1.5 py-0.5 rounded text-[10px] font-medium">🛤️ Road Overlay</span>
+                )}
+                {inspectedHex.hasBridge && (
+                  <span className="bg-sky-900/40 text-sky-200 px-1.5 py-0.5 rounded text-[10px] font-medium">🌉 Bridge</span>
+                )}
+                {inspectedHex.hasFort && (
+                  <span className="bg-stone-800/60 text-stone-200 px-1.5 py-0.5 rounded text-[10px] font-medium">🛡️ Fort</span>
+                )}
+              </div>
+            )}
+            <div className="space-y-0.5 text-text-secondary">
+              {inspectedHex.isCapital && (
+                <div>🏰 {t.era3.legend?.capital ?? 'Capital'}{inspectedHex.capitalOwnerId ? ` · ${inspectedHex.capitalOwnerId.slice(0, 8)}` : ''}</div>
               )}
-              {inspectedHex.terrain === 'river' && !inspectedHex.hasBridge && (
-                <span className="text-red-400"> · No cruzable sin puente</span>
+              {inspectedHex.isSpawnZone && (
+                <div className={inspectedHex.spawnZoneDestroyed ? 'text-text-faint' : 'text-red-400 font-semibold'}>
+                  {inspectedHex.spawnZoneDestroyed ? '💀 Destroyed Spawn Zone' : '☠ Evil Spawn Zone (active)'}
+                </div>
               )}
-              {inspectedHex.terrain === 'river' && inspectedHex.hasBridge && (
-                <span className="text-green-400"> · Puente construido</span>
+              {inspectedHex.ruinsReward && !inspectedHex.ruinsLooted && (
+                <div className="text-amber-300">✨ Ruins (unlooted)</div>
+              )}
+              {inspectedHex.ruinsLooted && <div className="text-text-faint">— Ruins (looted)</div>}
+              {inspectedHex.terrain === 'river' && (
+                <div className="text-text-faint text-[10px]">
+                  {inspectedHex.hasBridge
+                    ? <span className="text-green-400">Bridge built — crossable</span>
+                    : <span className="text-red-400">River — impassable without bridge</span>}
+                </div>
               )}
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
 
 function HexPrism({
   hex, stack, roadDirs, neighborCount, isLocalPlayer, isWrought, isBoss,
-  isSelected, isReachable, isAttackable, isRoadEligible,
-  onClick, onContext,
+  isSelected, isReachable, isAttackable, isRoadEligible, isUnexplored, isFlickering, combatShake,
+  stackRaceId,
+  onClick, onContext, onHover,
 }: {
   hex: Hex;
   stack: Stack | null;
@@ -785,31 +1113,45 @@ function HexPrism({
   isReachable: boolean;
   isAttackable: boolean;
   isRoadEligible: boolean;
+  isUnexplored: boolean;
+  isFlickering: boolean;
+  combatShake: boolean;
+  stackRaceId: string | null;
   onClick: () => void;
   onContext: (e: MouseEvent) => void;
+  onHover: (key: string | null) => void;
 }) {
   const fontScale = useFontScale();
   const [x, z] = hexToWorld(hex.coord.q, hex.coord.r);
   const height = TERRAIN_HEIGHT[hex.terrain];
-  // Road hexes show a plain-grass base so the terrain is still visible under the road decor.
-  const color = hex.terrain === 'road' ? TERRAIN_COLOR.plain : TERRAIN_COLOR[hex.terrain];
+  // Road hexes show their original terrain base; fall back to plain if unknown.
+  const baseTerrainForColor = hex.terrain === 'road'
+    ? (hex.roadTerrain ?? 'plain')
+    : hex.terrain;
+  const color = isUnexplored ? '#0d0d1a' : (TERRAIN_COLOR[baseTerrainForColor] ?? TERRAIN_COLOR.plain);
   const [hovered, setHovered] = useState(false);
 
-  const outlineColor = isRoadEligible ? '#fbbf24'
+  const outlineColor = !isUnexplored && (isRoadEligible ? '#fbbf24'
     : isSelected ? '#fde68a'
     : isAttackable ? '#f87171'
     : isReachable ? '#60a5fa'
     : hex.isCapital ? '#f5c518'
     : hex.isSpawnZone ? '#ef4444'
-    : null;
+    : null);
 
   return (
     <group position={[x, 0, z]}>
       {/* Hex prism (cylinder with 6 sides) */}
       <mesh
         position={[0, height / 2, 0]}
-        onPointerOver={e => { e.stopPropagation(); setHovered(true); }}
-        onPointerOut={() => setHovered(false)}
+        onPointerOver={e => {
+          e.stopPropagation();
+          if (!isUnexplored) {
+            setHovered(true);
+            onHover(`${hex.coord.q},${hex.coord.r}`);
+          }
+        }}
+        onPointerOut={() => { setHovered(false); onHover(null); }}
         onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onClick(); }}
         onContextMenu={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); e.nativeEvent.preventDefault(); onContext(e.nativeEvent); }}
         castShadow
@@ -818,10 +1160,10 @@ function HexPrism({
         <cylinderGeometry args={[HEX_RADIUS * 0.98, HEX_RADIUS * 0.98, height, 6]} />
         <meshStandardMaterial
           color={color}
-          roughness={0.75}
+          roughness={isUnexplored ? 1.0 : 0.75}
           metalness={0.05}
-          emissive={hovered ? color : '#000'}
-          emissiveIntensity={hovered ? 0.25 : 0}
+          emissive={isUnexplored ? '#05050f' : (hovered ? color : '#000')}
+          emissiveIntensity={isUnexplored ? 0 : (hovered ? 0.25 : 0)}
         />
       </mesh>
 
@@ -842,7 +1184,7 @@ function HexPrism({
       )}
 
       {/* Capital castle */}
-      {hex.isCapital && (
+      {!isUnexplored && hex.isCapital && (
         <group position={[0, height, 0]}>
           <mesh position={[0, 0.25, 0]} castShadow>
             <boxGeometry args={[0.9, 0.5, 0.9]} />
@@ -860,7 +1202,7 @@ function HexPrism({
       )}
 
       {/* Citadel fortress */}
-      {hex.terrain === 'citadel' && (
+      {!isUnexplored && hex.terrain === 'citadel' && (
         <group position={[0, height, 0]}>
           <mesh position={[0, 0.3, 0]} castShadow>
             <boxGeometry args={[1.4, 0.6, 1.4]} />
@@ -878,22 +1220,11 @@ function HexPrism({
         </group>
       )}
 
-      {/* Spawn-zone: skull when active, black fortress when destroyed */}
-      {hex.isSpawnZone && !hex.spawnZoneDestroyed && !stack && (
-        <Text
-          position={[0, height + 0.05, 0]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          fontSize={1.4 * fontScale}
-          color="#fca5a5"
-          outlineColor="#450a0a"
-          outlineWidth={0.06}
-          anchorX="center"
-          anchorY="middle"
-        >
-          {'☠'}
-        </Text>
+      {/* Spawn-zone: 3D black evil fort when active, ruined fort when destroyed */}
+      {!isUnexplored && hex.isSpawnZone && !hex.spawnZoneDestroyed && (
+        <EvilFort height={height} />
       )}
-      {hex.isSpawnZone && hex.spawnZoneDestroyed && (
+      {!isUnexplored && hex.isSpawnZone && hex.spawnZoneDestroyed && (
         <group position={[0, height, 0]}>
           {/* Base */}
           <mesh position={[0, 0.2, 0]} castShadow>
@@ -920,7 +1251,7 @@ function HexPrism({
       )}
 
       {/* Standalone fort */}
-      {hex.hasFort && !hex.isCapital && !hex.isSpawnZone && hex.terrain !== 'citadel' && (
+      {!isUnexplored && hex.hasFort && !hex.isCapital && !hex.isSpawnZone && hex.terrain !== 'citadel' && (
         <group position={[0, height, 0]}>
           <mesh position={[0, 0.15, 0]} castShadow>
             <boxGeometry args={[0.7, 0.3, 0.7]} />
@@ -941,32 +1272,32 @@ function HexPrism({
       )}
 
       {/* Terrain decorations */}
-      {hex.terrain === 'plain' && !hex.isCapital && (
+      {!isUnexplored && hex.terrain === 'plain' && !hex.isCapital && (
         <PlainDecor q={hex.coord.q} r={hex.coord.r} height={height} neighborCount={neighborCount} />
       )}
-      {hex.terrain === 'forest' && !hex.isCapital && (
+      {!isUnexplored && hex.terrain === 'forest' && !hex.isCapital && (
         <ForestDecor q={hex.coord.q} r={hex.coord.r} height={height} neighborCount={neighborCount} />
       )}
-      {hex.terrain === 'mountain' && !hex.isCapital && (
+      {!isUnexplored && hex.terrain === 'mountain' && !hex.isCapital && (
         <MountainDecor q={hex.coord.q} r={hex.coord.r} height={height} neighborCount={neighborCount} />
       )}
-      {hex.terrain === 'ruins' && !hex.isSpawnZone && (
+      {!isUnexplored && hex.terrain === 'ruins' && !hex.isSpawnZone && (
         <RuinsDecor q={hex.coord.q} r={hex.coord.r} height={height} unlooted={!hex.ruinsLooted && !!hex.ruinsReward && hex.ruinsReward.kind !== 'empty'} />
       )}
-      {hex.terrain === 'swamp' && !hex.isCapital && (
+      {!isUnexplored && hex.terrain === 'swamp' && !hex.isCapital && (
         <SwampDecor q={hex.coord.q} r={hex.coord.r} height={height} neighborCount={neighborCount} />
       )}
-      {hex.terrain === 'desert' && !hex.isCapital && (
+      {!isUnexplored && hex.terrain === 'desert' && !hex.isCapital && (
         <DesertDecor q={hex.coord.q} r={hex.coord.r} height={height} />
       )}
-      {hex.terrain === 'lake' && (
+      {!isUnexplored && hex.terrain === 'lake' && (
         <LakeDecor q={hex.coord.q} r={hex.coord.r} height={height} />
       )}
-      {hex.terrain === 'river' && (
+      {!isUnexplored && hex.terrain === 'river' && (
         <RiverDecor q={hex.coord.q} r={hex.coord.r} height={height} />
       )}
       {/* Bridge structure on river hex */}
-      {hex.terrain === 'river' && hex.hasBridge && (
+      {!isUnexplored && hex.terrain === 'river' && hex.hasBridge && (
         <group position={[0, height + 0.02, 0]}>
           {/* Bridge deck */}
           <mesh position={[0, 0.03, 0]} castShadow>
@@ -991,69 +1322,211 @@ function HexPrism({
           ))}
         </group>
       )}
-      {hex.terrain === 'hill' && !hex.isCapital && (
+      {!isUnexplored && hex.terrain === 'hill' && !hex.isCapital && (
         <HillDecor q={hex.coord.q} r={hex.coord.r} height={height} neighborCount={neighborCount} />
       )}
-      {hex.terrain === 'road' && !hex.isCapital && (
-        <>
-          {/* Sparse grass under the road so terrain base is still visible */}
-          <PlainDecor q={hex.coord.q} r={hex.coord.r} height={height} neighborCount={0} />
-          <RoadDecor height={height} connections={roadDirs} />
-        </>
-      )}
-      {/* Road overlay on mountain/desert — thin path strip on top */}
-      {hex.hasRoadOverlay && hex.terrain !== 'road' && (
-        <RoadDecor height={height + 0.02} connections={roadDirs} overlay />
+      {!isUnexplored && hex.terrain === 'road' && !hex.isCapital && (() => {
+        const bt = hex.roadTerrain ?? 'plain';
+        return (
+          <>
+            {bt === 'plain' && <PlainDecor q={hex.coord.q} r={hex.coord.r} height={height} neighborCount={neighborCount} />}
+            {bt === 'forest' && <ForestDecor q={hex.coord.q} r={hex.coord.r} height={height} neighborCount={neighborCount} />}
+            {bt === 'swamp' && <SwampDecor q={hex.coord.q} r={hex.coord.r} height={height} neighborCount={neighborCount} />}
+            {bt === 'ruins' && <RuinsDecor q={hex.coord.q} r={hex.coord.r} height={height} unlooted={false} />}
+            {bt === 'mountain' && <MountainDecor q={hex.coord.q} r={hex.coord.r} height={height} neighborCount={neighborCount} />}
+            {bt === 'hill' && <HillDecor q={hex.coord.q} r={hex.coord.r} height={height} neighborCount={neighborCount} />}
+            {bt === 'desert' && <DesertDecor q={hex.coord.q} r={hex.coord.r} height={height} />}
+            {bt === 'lake' && <LakeDecor q={hex.coord.q} r={hex.coord.r} height={height} />}
+            {bt === 'river' && <RiverDecor q={hex.coord.q} r={hex.coord.r} height={height} />}
+            <RoadDecor height={height + 0.005} connections={roadDirs} overlay={false} onMountain={bt === 'mountain' || bt === 'hill'} />
+          </>
+        );
+      })()}
+      {/* Road overlay on any non-road terrain — thin path strip on top */}
+      {!isUnexplored && hex.hasRoadOverlay && hex.terrain !== 'road' && (
+        <RoadDecor height={height + 0.02} connections={roadDirs} overlay onMountain={hex.terrain === 'mountain' || hex.terrain === 'hill'} />
       )}
 
       {/* Stack visualization — up to 6 unit cylinders in a 3x2 grid, with veteran crown */}
       {stack && (
         <StackGroup
           stack={stack}
-          baseY={height}
+          baseY={height + (
+            hex.terrain === 'mountain' ? 0.95 :
+            hex.terrain === 'forest' ? 0.65 :
+            hex.terrain === 'hill' ? 0.25 :
+            hex.terrain === 'ruins' ? 0.1 :
+            0
+          )}
+          terrainScale={
+            hex.terrain === 'mountain' || hex.terrain === 'forest' ? 1.25 :
+            hex.terrain === 'hill' ? 1.1 :
+            1.0
+          }
           isLocalPlayer={isLocalPlayer}
           isWrought={isWrought}
           isBoss={isBoss}
           isSelected={isSelected}
+          isFlickering={isFlickering}
+          combatShake={combatShake}
+          raceId={stackRaceId}
         />
       )}
     </group>
   );
 }
 
+// 3D evil fort for active spawn zones — ominous black structure with pulsing red glow.
+function EvilFort({ height }: { height: number }) {
+  const glowRef = useRef<THREE.PointLight>(null);
+  useFrame(({ clock }) => {
+    if (!glowRef.current) return;
+    glowRef.current.intensity = 1.0 + Math.sin(clock.elapsedTime * 2.2) * 0.5;
+  });
+  return (
+    <group position={[0, height, 0]}>
+      {/* Outer wall base */}
+      <mesh position={[0, 0.15, 0]} castShadow>
+        <boxGeometry args={[1.1, 0.3, 1.1]} />
+        <meshStandardMaterial color="#080808" roughness={0.95} metalness={0.3} />
+      </mesh>
+      {/* Main keep */}
+      <mesh position={[0, 0.55, 0]} castShadow>
+        <boxGeometry args={[0.7, 0.65, 0.7]} />
+        <meshStandardMaterial color="#0a0a0a" roughness={0.9} metalness={0.35} />
+      </mesh>
+      {/* Central tower */}
+      <mesh position={[0, 1.1, 0]} castShadow>
+        <boxGeometry args={[0.4, 0.55, 0.4]} />
+        <meshStandardMaterial color="#060606" roughness={0.85} metalness={0.4} emissive="#1a0000" emissiveIntensity={0.3} />
+      </mesh>
+      {/* Battlements — 4 corner crenels on keep */}
+      {([ [-0.3, 0, -0.3], [0.3, 0, -0.3], [-0.3, 0, 0.3], [0.3, 0, 0.3] ] as [number, number, number][]).map(([px, py, pz], i) => (
+        <mesh key={i} position={[px, 0.93 + py, pz]} castShadow>
+          <boxGeometry args={[0.14, 0.16, 0.14]} />
+          <meshStandardMaterial color="#080808" roughness={0.95} metalness={0.3} />
+        </mesh>
+      ))}
+      {/* Top tower battlements */}
+      {([ [-0.17, 0, -0.17], [0.17, 0, -0.17], [-0.17, 0, 0.17], [0.17, 0, 0.17] ] as [number, number, number][]).map(([px, py, pz], i) => (
+        <mesh key={`t${i}`} position={[px, 1.4 + py, pz]} castShadow>
+          <boxGeometry args={[0.1, 0.13, 0.1]} />
+          <meshStandardMaterial color="#050505" roughness={0.95} />
+        </mesh>
+      ))}
+      {/* Corner towers */}
+      {([ [-0.44, 0, -0.44], [0.44, 0, -0.44], [-0.44, 0, 0.44], [0.44, 0, 0.44] ] as [number, number, number][]).map(([px, py, pz], i) => (
+        <group key={`ct${i}`} position={[px, py, pz]}>
+          <mesh position={[0, 0.45, 0]} castShadow>
+            <cylinderGeometry args={[0.14, 0.16, 0.9, 8]} />
+            <meshStandardMaterial color="#0a0a0a" roughness={0.9} metalness={0.35} />
+          </mesh>
+          <mesh position={[0, 0.97, 0]} castShadow>
+            <coneGeometry args={[0.15, 0.22, 8]} />
+            <meshStandardMaterial color="#1a0000" roughness={0.6} emissive="#3a0000" emissiveIntensity={0.4} />
+          </mesh>
+        </group>
+      ))}
+      {/* Red pulsing glow — emanates from the gate */}
+      <pointLight ref={glowRef} position={[0, 0.7, 0]} intensity={1.0} color="#cc0000" distance={4} />
+      {/* Subtle skull emblem on tower face */}
+      <Text
+        position={[0, 1.1, 0.22]}
+        fontSize={0.18}
+        color="#aa0000"
+        anchorX="center"
+        anchorY="middle"
+      >
+        {'☠'}
+      </Text>
+    </group>
+  );
+}
+
 function StackGroup({
-  stack, baseY, isLocalPlayer, isWrought, isBoss, isSelected,
+  stack, baseY, terrainScale = 1.0, isLocalPlayer, isWrought, isBoss, isSelected, isFlickering,
+  combatShake = false, raceId = null,
 }: {
   stack: Stack;
   baseY: number;
+  terrainScale?: number;
   isLocalPlayer: boolean;
   isWrought: boolean;
   isBoss: boolean;
   isSelected: boolean;
+  isFlickering: boolean;
+  combatShake?: boolean;
+  raceId?: string | null;
 }) {
   const fontScale = useFontScale();
   // Smooth animation of stack position (from-to target).
   const ref = useRef<THREE.Group>(null);
+  const flickerRef = useRef<THREE.PointLight>(null);
+  const combatLightRef = useRef<THREE.PointLight>(null);
   const [x, z] = hexToWorld(stack.position.q, stack.position.r);
-  const current = useRef<{ x: number; z: number }>({ x, z });
+  const current = useRef<{ x: number; z: number; moving: boolean }>({ x: 0, z: 0, moving: false });
+  // Track elapsed time since move started for arc animation
+  const moveTimeRef = useRef<number>(0);
 
-  useFrame((_state, dt) => {
+  useFrame(({ clock }, dt) => {
     const g = ref.current;
     if (!g) return;
-    // Lerp toward target world position. The parent <group> is already at the
-    // target hex; this translates relative offset back to zero smoothly so stacks
-    // "slide" when their hex changes.
-    current.current.x += (0 - current.current.x) * Math.min(1, dt * 6);
-    current.current.z += (0 - current.current.z) * Math.min(1, dt * 6);
-    g.position.x = current.current.x;
-    g.position.z = current.current.z;
+
+    if (current.current.moving) {
+      moveTimeRef.current += dt;
+      const t = Math.min(moveTimeRef.current, 1.0);
+      // Smooth step easing
+      const ease = t * t * (3 - 2 * t);
+      current.current.x = current.current.x * (1 - ease) + 0 * ease;
+      current.current.z = current.current.z * (1 - ease) + 0 * ease;
+      // Arc: rise and fall over 1s
+      const arc = Math.sin(t * Math.PI) * 0.8;
+      g.position.x = current.current.x;
+      g.position.z = current.current.z;
+      g.position.y = arc;
+      if (t >= 1.0) {
+        current.current.moving = false;
+        current.current.x = 0;
+        current.current.z = 0;
+        g.position.y = 0;
+      }
+    } else {
+      g.position.x = 0;
+      g.position.z = 0;
+    }
+
+    // Combat shake
+    if (combatShake) {
+      const shakeAmt = 0.06;
+      g.position.x += (Math.random() - 0.5) * shakeAmt;
+      g.position.z += (Math.random() - 0.5) * shakeAmt;
+    }
+
+    // Flicker light when hovered as attack target
+    if (flickerRef.current) {
+      flickerRef.current.intensity = isFlickering
+        ? 1.5 + Math.sin(clock.elapsedTime * 18) * 1.0
+        : 0;
+    }
+    // Combat flash light
+    if (combatLightRef.current) {
+      combatLightRef.current.intensity = combatShake
+        ? 3.0 + Math.sin(clock.elapsedTime * 30) * 2.0
+        : 0;
+    }
   });
 
   useEffect(() => {
-    // When the stack moves to a new hex, offset current so we animate in.
+    // When the stack moves to a new hex, record offset from previous position and start animation.
     const [nx, nz] = hexToWorld(stack.position.q, stack.position.r);
-    current.current.x = x - nx;
-    current.current.z = z - nz;
+    const dx = x - nx;
+    const dz = z - nz;
+    if (Math.abs(dx) > 0.01 || Math.abs(dz) > 0.01) {
+      current.current.x = dx;
+      current.current.z = dz;
+      current.current.moving = true;
+      moveTimeRef.current = 0;
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stack.position.q, stack.position.r]);
 
@@ -1080,21 +1553,21 @@ function StackGroup({
         </Text>
         {/* Boss aggregate HP bar */}
         <Html
-          position={[0, 2.1, 0]}
+          position={[0, 2.3, 0]}
           center
-          distanceFactor={10}
+          distanceFactor={8}
           zIndexRange={[20, 0]}
           style={{ pointerEvents: 'none' }}
         >
-          <div style={{ width: 80 * fontScale, textAlign: 'center' }}>
-            <div style={{ fontSize: 13 * fontScale, color: '#fca5a5', fontWeight: 700, marginBottom: 2, textShadow: '0 1px 3px #000' }}>
+          <div style={{ width: 100 * fontScale, textAlign: 'center' }}>
+            <div style={{ fontSize: 16 * fontScale, color: '#fca5a5', fontWeight: 800, marginBottom: 3, textShadow: '0 1px 4px #000, 0 0 8px #000', background: 'rgba(0,0,0,0.6)', borderRadius: 4, padding: `${1 * fontScale}px ${5 * fontScale}px` }}>
               💀 {totalHp}/{totalMaxHp}
             </div>
-            <div style={{ width: '100%', height: 7 * fontScale, background: '#1a0a0a', borderRadius: 3, border: '1px solid #7f1d1d', overflow: 'hidden' }}>
-              <div style={{ width: `${hpRatio * 100}%`, height: '100%', background: '#ef4444', borderRadius: 3, transition: 'width 0.3s' }} />
+            <div style={{ width: '100%', height: 8 * fontScale, background: '#1a0a0a', borderRadius: 4, border: '1.5px solid #7f1d1d', overflow: 'hidden', boxShadow: '0 0 8px #ef444455' }}>
+              <div style={{ width: `${hpRatio * 100}%`, height: '100%', background: '#ef4444', borderRadius: 4, transition: 'width 0.3s' }} />
             </div>
-            <div style={{ fontSize: 11 * fontScale, color: '#fca5a5', marginTop: 1, textShadow: '0 1px 3px #000' }}>
-              ×{stack.units.length}
+            <div style={{ fontSize: 13 * fontScale, color: '#fca5a5', marginTop: 2, textShadow: '0 1px 3px #000', fontWeight: 700 }}>
+              ×{stack.units.length} ejércitos
             </div>
           </div>
         </Html>
@@ -1102,18 +1575,62 @@ function StackGroup({
     );
   }
 
-  const primary = isWrought ? '#7f1d1d' : isLocalPlayer ? '#10b981' : '#3b82f6';
-  const accent = isWrought ? '#fca5a5' : isLocalPlayer ? '#86efac' : '#93c5fd';
+  // Race colors override generic local/enemy colors for player stacks.
+  const racePalette = raceId ? RACE_COLORS[raceId] : null;
+  const primary = isWrought ? '#2d5a1a' : (racePalette ? racePalette[0] : (isLocalPlayer ? '#10b981' : '#dc2626'));
+  const accent = isWrought ? '#7ec850' : (racePalette ? racePalette[1] : (isLocalPlayer ? '#86efac' : '#fca5a5'));
+  const raceSkin = racePalette ? racePalette[2] : '#e4c59e';
+  const raceMetal = racePalette ? racePalette[3] : '#c0c4cc';
 
-  // Place up to 6 unit tokens in a 3×2 grid.
+  // Layout: 1 unit centred, 2 side-by-side, 3+ in rows of 2.
+  // For counts 4-6 use a 3×2 grid at tighter spacing.
   const units = stack.units.slice(0, 6);
+  const n = units.length;
+
+  // Unit positions: single row for 1-3, two rows for 4-6.
+  const unitPositions: [number, number][] = (() => {
+    if (n === 1) return [[0, 0]];
+    if (n === 2) return [[-0.28, 0], [0.28, 0]];
+    if (n === 3) return [[-0.34, -0.2], [0, 0.22], [0.34, -0.2]];
+    if (n === 4) return [[-0.28, -0.25], [0.28, -0.25], [-0.28, 0.25], [0.28, 0.25]];
+    if (n === 5) return [[-0.34, -0.28], [0, -0.28], [0.34, -0.28], [-0.22, 0.28], [0.22, 0.28]];
+    return [[-0.34, -0.28], [0, -0.28], [0.34, -0.28], [-0.34, 0.28], [0, 0.28], [0.34, 0.28]];
+  })();
+
+  // Base unit scale: shrink slightly when many units to fit hex.
+  const unitScale = n <= 2 ? 1.5 : n <= 4 ? 1.25 : 1.05;
+  // HP bar Y offset above figure (varies with unit scale).
+  const hpBarY = unitScale * 0.82;
+
   return (
-    <group ref={ref} position={[0, baseY, 0]}>
+    <group ref={ref} position={[0, baseY, 0]} scale={[terrainScale, terrainScale, terrainScale]}>
+      {/* Flicker attack-target highlight — red point light, intensity driven by useFrame */}
+      <pointLight ref={flickerRef} position={[0, 1.5, 0]} color="#ff3333" intensity={0} distance={4} />
+      {/* Combat flash light */}
+      <pointLight ref={combatLightRef} position={[0, 2.2, 0]} color="#ffaa00" intensity={0} distance={6} />
+      {/* Ambient fill light to make unit colours pop */}
+      <pointLight position={[0, 0.9, 0.4]} color={primary} intensity={0.35} distance={2.8} />
+      {/* Base platform — solid disc so units are always readable on any terrain */}
+      <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <circleGeometry args={[0.62, 24]} />
+        <meshStandardMaterial
+          color={isBoss ? '#1a0000' : isWrought ? '#0d1a0a' : isLocalPlayer ? '#0a1a10' : '#1a0a0a'}
+          roughness={0.85}
+          transparent
+          opacity={0.82}
+        />
+      </mesh>
+      {/* Faction rim ring around the platform */}
+      <mesh position={[0, 0.015, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.60, 0.68, 24]} />
+        <meshBasicMaterial
+          color={isWrought ? '#4a7a2a' : primary}
+          transparent
+          opacity={0.65}
+        />
+      </mesh>
       {units.map((u, i) => {
-        const col = i % 3;
-        const row = Math.floor(i / 3);
-        const ox = (col - 1) * 0.32;
-        const oz = (row - 0.5) * 0.35;
+        const [ox, oz] = unitPositions[i];
         const dead = u.currentHp <= 0;
         const veteran = ((u as Unit & { wins?: number }).wins ?? 0) >= 3;
         const wrought = isWrought;
@@ -1121,21 +1638,22 @@ function StackGroup({
         const uRatio = uMaxHp > 0 ? Math.max(0, u.currentHp) / uMaxHp : 0;
         const uColor = uRatio > 0.6 ? '#4ade80' : uRatio > 0.3 ? '#facc15' : '#f87171';
         return (
-          <group key={u.id} position={[ox, 0, oz]} rotation={[0, hash2(i, units.length, 9) * Math.PI * 2, 0]}>
-            <UnitMesh type={u.type} primary={primary} accent={accent} veteran={veteran} dead={dead} wrought={wrought} />
-            {/* Per-unit HP bar — world-space plane above the figure */}
+          <group key={u.id} position={[ox, 0, oz]} scale={[unitScale, unitScale, unitScale]}
+            rotation={[0, hash2(i, units.length, 9) * 0.4 - 0.2, 0]}>
+            <UnitMesh type={u.type} primary={primary} accent={accent} skin={raceSkin} metal={raceMetal} veteran={veteran} dead={dead} wrought={wrought} />
+            {/* Per-unit HP bar */}
             <Html
-              position={[0, 0.88, 0]}
+              position={[0, hpBarY, 0]}
               center
-              distanceFactor={6}
+              distanceFactor={5}
               zIndexRange={[15, 0]}
               style={{ pointerEvents: 'none' }}
             >
-              <div style={{ width: 36 * fontScale }}>
-                <div style={{ width: '100%', height: 5 * fontScale, background: '#111', borderRadius: 2, border: '1px solid #333', overflow: 'hidden' }}>
-                  <div style={{ width: `${uRatio * 100}%`, height: '100%', background: uColor, borderRadius: 2, transition: 'width 0.3s' }} />
+              <div style={{ width: 44 * fontScale }}>
+                <div style={{ width: '100%', height: 6 * fontScale, background: '#0a0a0a', borderRadius: 3, border: `1px solid ${uColor}55`, overflow: 'hidden', boxShadow: `0 0 4px ${uColor}44` }}>
+                  <div style={{ width: `${uRatio * 100}%`, height: '100%', background: uColor, borderRadius: 3, transition: 'width 0.3s' }} />
                 </div>
-                <div style={{ fontSize: 11 * fontScale, color: uColor, textAlign: 'center', textShadow: '0 1px 2px #000', lineHeight: 1.2, fontWeight: 700 }}>
+                <div style={{ fontSize: 13 * fontScale, color: uColor, textAlign: 'center', textShadow: '0 1px 3px #000, 0 0 6px #000', lineHeight: 1.3, fontWeight: 800 }}>
                   {u.currentHp}/{uMaxHp}
                 </div>
               </div>
@@ -1145,32 +1663,59 @@ function StackGroup({
       })}
       {/* Stack aggregate HP + count badge */}
       <Html
-        position={[0, 1.35, 0]}
+        position={[0, unitScale * 1.72, 0]}
         center
-        distanceFactor={6}
+        distanceFactor={5}
         zIndexRange={[10, 0]}
         style={{ pointerEvents: 'none' }}
       >
-        <div style={{ width: 72 * fontScale, textAlign: 'center' }}>
-          <div style={{ fontSize: 13 * fontScale, color: '#fff', fontWeight: 700, marginBottom: 2, textShadow: '0 1px 3px #000', letterSpacing: '0.02em' }}>
-            ×{stack.units.length} · {totalHp}/{totalMaxHp}❤️
+        <div style={{ width: 92 * fontScale, textAlign: 'center' }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 * fontScale,
+            background: 'rgba(0,0,0,0.72)', borderRadius: 6 * fontScale,
+            border: `1.5px solid ${isLocalPlayer ? '#10b98166' : isWrought ? '#4a7a2a55' : '#dc262666'}`,
+            padding: `${2 * fontScale}px ${6 * fontScale}px`, marginBottom: 3 * fontScale,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.8)',
+          }}>
+            <span style={{
+              fontSize: 12 * fontScale, color: isLocalPlayer ? '#6ee7b7' : isWrought ? '#86efac' : '#fca5a5',
+              fontWeight: 900, letterSpacing: '0.04em',
+              textShadow: `0 0 6px ${isLocalPlayer ? '#10b981' : '#dc2626'}`,
+            }}>
+              ×{stack.units.length}
+            </span>
+            <span style={{ fontSize: 10 * fontScale, color: '#ffffff88', fontWeight: 600 }}>|</span>
+            <span style={{
+              fontSize: 11 * fontScale, color: hpColor, fontWeight: 800,
+              textShadow: `0 0 4px ${hpColor}88`,
+            }}>
+              {totalHp}<span style={{ color: '#ffffff44', fontWeight: 400 }}>/{totalMaxHp}</span>
+            </span>
+            <span style={{ fontSize: 10 * fontScale }}>❤️</span>
           </div>
-          <div style={{ width: '100%', height: 6 * fontScale, background: '#111827', borderRadius: 3, border: `1px solid ${isLocalPlayer ? '#10b981' : isWrought ? '#7f1d1d' : '#3b82f6'}`, overflow: 'hidden' }}>
-            <div style={{ width: `${hpRatio * 100}%`, height: '100%', background: hpColor, borderRadius: 3, transition: 'width 0.3s' }} />
+          <div style={{ width: '100%', height: 5 * fontScale, background: '#0a0f0a', borderRadius: 3, border: `1px solid ${hpColor}55`, overflow: 'hidden' }}>
+            <div style={{ width: `${hpRatio * 100}%`, height: '100%', background: `linear-gradient(90deg, ${hpColor}cc, ${hpColor})`, borderRadius: 3, transition: 'width 0.35s' }} />
           </div>
         </div>
       </Html>
       {isSelected && (
-        <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, Math.PI / 6, 0]}>
-          <ringGeometry args={[0.68, 0.85, 6]} />
-          <meshBasicMaterial color="#fde68a" side={THREE.DoubleSide} />
-        </mesh>
+        <>
+          <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, Math.PI / 6, 0]}>
+            <ringGeometry args={[0.74, 0.92, 6]} />
+            <meshBasicMaterial color="#fde68a" side={THREE.DoubleSide} />
+          </mesh>
+          {/* Gold glow ring — inner */}
+          <mesh position={[0, 0.025, 0]} rotation={[-Math.PI / 2, Math.PI / 6, 0]}>
+            <ringGeometry args={[0.58, 0.74, 6]} />
+            <meshBasicMaterial color="#fde68a" side={THREE.DoubleSide} transparent opacity={0.35} />
+          </mesh>
+        </>
       )}
       {/* Fortify shield ring — amber pulsing ring at base of stack */}
       {stack.fortified && (
-        <mesh position={[0, 0.03, 0]} rotation={[-Math.PI / 2, Math.PI / 6, 0]}>
-          <ringGeometry args={[0.52, 0.66, 6]} />
-          <meshBasicMaterial color="#f59e0b" side={THREE.DoubleSide} transparent opacity={0.85} />
+        <mesh position={[0, 0.04, 0]} rotation={[-Math.PI / 2, Math.PI / 6, 0]}>
+          <ringGeometry args={[0.56, 0.72, 6]} />
+          <meshBasicMaterial color="#f59e0b" side={THREE.DoubleSide} transparent opacity={0.9} />
         </mesh>
       )}
     </group>
@@ -1198,28 +1743,176 @@ function GroundDisc() {
   );
 }
 
-// Silhouetted distant mountain ring circling the playable disk, offering depth.
-function DistantMountains() {
-  const peaks = useMemo(() => {
-    const out: Array<{ a: number; r: number; h: number; c: string }> = [];
-    const n = 34;
-    for (let i = 0; i < n; i++) {
-      const a = (i / n) * Math.PI * 2 + (i * 0.17);
-      const r = 48 + ((i * 2654435761) % 100) / 100 * 8;
-      const h = 3 + ((i * 1103515245 + 12345) % 4000) / 1000;
-      const c = i % 3 === 0 ? '#3c3350' : i % 3 === 1 ? '#2f2a44' : '#352e48';
-      out.push({ a, r, h, c });
+function WaterHex({ x, z, q, r }: { x: number; z: number; q: number; r: number }) {
+  const matRef = useRef<THREE.MeshStandardMaterial>(null);
+  const wave1Ref = useRef<THREE.Mesh>(null);
+  const wave2Ref = useRef<THREE.Mesh>(null);
+  const phase = (q * 0.37 + r * 0.61) * Math.PI; // per-hex phase offset
+  useFrame(({ clock }) => {
+    const t = clock.elapsedTime;
+    if (matRef.current) {
+      matRef.current.emissiveIntensity = 0.22 + Math.sin(t * 0.8 + phase) * 0.06;
     }
-    return out;
+    // Wave rings expand outward and fade
+    if (wave1Ref.current) {
+      const cycle = ((t * 0.55 + phase) % 2) / 2; // 0..1
+      const s = 0.3 + cycle * 0.7;
+      wave1Ref.current.scale.set(s, 1, s);
+      (wave1Ref.current.material as THREE.MeshBasicMaterial).opacity = (1 - cycle) * 0.45;
+    }
+    if (wave2Ref.current) {
+      const cycle = ((t * 0.55 + phase + 1) % 2) / 2; // offset by 1s
+      const s = 0.3 + cycle * 0.7;
+      wave2Ref.current.scale.set(s, 1, s);
+      (wave2Ref.current.material as THREE.MeshBasicMaterial).opacity = (1 - cycle) * 0.35;
+    }
+  });
+  return (
+    <group position={[x, -0.04, z]}>
+      {/* Sea hex — medium blue prism */}
+      <mesh position={[0, HEX_HEIGHT / 2, 0]} receiveShadow>
+        <cylinderGeometry args={[HEX_RADIUS * 0.98, HEX_RADIUS * 0.98, HEX_HEIGHT, 6]} />
+        <meshStandardMaterial
+          ref={matRef}
+          color="#2a6aaa"
+          emissive="#1a4a80"
+          emissiveIntensity={0.22}
+          roughness={0.08}
+          metalness={0.5}
+        />
+      </mesh>
+      {/* Wave ring 1 */}
+      <mesh ref={wave1Ref} position={[0, HEX_HEIGHT + 0.006, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.12, 0.22, 10]} />
+        <meshBasicMaterial color="#6ac0f0" transparent opacity={0.4} side={THREE.DoubleSide} />
+      </mesh>
+      {/* Wave ring 2 — offset phase */}
+      <mesh ref={wave2Ref} position={[0, HEX_HEIGHT + 0.006, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.1, 0.18, 10]} />
+        <meshBasicMaterial color="#88d0ff" transparent opacity={0.3} side={THREE.DoubleSide} />
+      </mesh>
+    </group>
+  );
+}
+
+function FogWaterHex({ x, z, q, r }: { x: number; z: number; q: number; r: number }) {
+  const phase = (q * 0.37 + r * 0.61) * Math.PI;
+  const matRef = useRef<THREE.MeshStandardMaterial>(null);
+  useFrame(({ clock }) => {
+    if (matRef.current) {
+      matRef.current.emissiveIntensity = 0.02 + Math.sin(clock.elapsedTime * 0.3 + phase) * 0.01;
+    }
+  });
+  return (
+    <group position={[x, -0.04, z]}>
+      <mesh position={[0, HEX_HEIGHT / 2, 0]} receiveShadow>
+        <cylinderGeometry args={[HEX_RADIUS * 0.98, HEX_RADIUS * 0.98, HEX_HEIGHT, 6]} />
+        <meshStandardMaterial ref={matRef} color="#0d0d1a" emissive="#05050f" emissiveIntensity={0.02} roughness={1.0} metalness={0} />
+      </mesh>
+    </group>
+  );
+}
+
+// Dark ring that covers everything beyond the explored area, extending to the horizon.
+function FogOuterDisc({ radius }: { radius: number }) {
+  const innerR = (radius + 1) * HEX_RADIUS * SQRT3;
+  const outerR = 110;
+  return (
+    <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <ringGeometry args={[innerR, outerR, 64]} />
+      <meshBasicMaterial color="#0d0d1a" transparent opacity={0.97} side={THREE.DoubleSide} depthWrite={false} />
+    </mesh>
+  );
+}
+
+// Beautiful horizon with layered distant mountains, atmospheric haze, and aurora-like glow.
+function DistantMountains() {
+  const hazeRef = useRef<THREE.Mesh>(null);
+  const auroraRef = useRef<THREE.Mesh>(null);
+
+  useFrame(({ clock }) => {
+    if (hazeRef.current) {
+      const m = hazeRef.current.material as THREE.MeshBasicMaterial;
+      m.opacity = 0.18 + Math.sin(clock.elapsedTime * 0.15) * 0.04;
+    }
+    if (auroraRef.current) {
+      const m = auroraRef.current.material as THREE.MeshBasicMaterial;
+      m.opacity = 0.06 + Math.abs(Math.sin(clock.elapsedTime * 0.22)) * 0.08;
+    }
+  });
+
+  // Three layers of peaks: far (faint blue), mid (dark purple), near (silhouette)
+  const layers = useMemo(() => {
+    return [
+      { n: 52, ringR: 80, spread: 12, maxH: 14, minH: 6, colors: ['#1e1b3a', '#2a2548', '#1a1830'], yOff: -3 },
+      { n: 44, ringR: 64, spread: 8, maxH: 10, minH: 4, colors: ['#2d2850', '#352e58', '#27224a'], yOff: -1.5 },
+      { n: 38, ringR: 55, spread: 5, maxH: 7, minH: 2.5, colors: ['#3a3460', '#3f386a', '#302c52'], yOff: -0.5 },
+    ].map(({ n, ringR, spread, maxH, minH, colors, yOff }) => {
+      const peaks: Array<{ x: number; z: number; h: number; w: number; c: string; sides: number }> = [];
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2 + i * 0.23;
+        const r = ringR + ((i * 2654435761) % 1000) / 1000 * spread - spread / 2;
+        const h = minH + ((i * 1103515245) % 1000) / 1000 * (maxH - minH);
+        const w = 1.8 + ((i * 999983) % 1000) / 1000 * 2.2;
+        const c = colors[i % colors.length];
+        const sides = 4 + (i % 3);
+        peaks.push({ x: Math.cos(a) * r, z: Math.sin(a) * r, h, w, c, sides });
+      }
+      return { peaks, yOff };
+    });
   }, []);
+
   return (
     <group>
-      {peaks.map((p, i) => (
-        <mesh key={i} position={[Math.cos(p.a) * p.r, p.h / 2 - 0.4, Math.sin(p.a) * p.r]} castShadow>
-          <coneGeometry args={[1.6 + (i % 4) * 0.3, p.h, 5]} />
-          <meshStandardMaterial color={p.c} roughness={1} flatShading />
-        </mesh>
-      ))}
+      {/* Ground plane that extends to horizon */}
+      <mesh position={[0, -0.5, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[120, 64]} />
+        <meshStandardMaterial color="#0e0c1c" roughness={1} />
+      </mesh>
+
+      {/* Horizon atmospheric haze ring */}
+      <mesh ref={hazeRef} position={[0, 3, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[42, 90, 64]} />
+        <meshBasicMaterial color="#3a4880" transparent opacity={0.18} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
+
+      {/* Aurora-like glow band above far horizon */}
+      <mesh ref={auroraRef} position={[0, 9, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[60, 100, 48]} />
+        <meshBasicMaterial color="#5b3a8a" transparent opacity={0.06} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
+
+      {/* Layered mountain silhouettes — far to near */}
+      {layers.map((layer, li) =>
+        layer.peaks.map((p, i) => (
+          <mesh key={`${li}-${i}`} position={[p.x, p.h / 2 + layer.yOff, p.z]}>
+            <coneGeometry args={[p.w, p.h, p.sides]} />
+            <meshStandardMaterial color={p.c} roughness={1} flatShading />
+          </mesh>
+        )),
+      )}
+
+      {/* Snow caps on tallest near-layer peaks */}
+      {layers[2].peaks
+        .filter(p => p.h > 5)
+        .map((p, i) => (
+          <mesh key={`snow${i}`} position={[p.x, p.h + layers[2].yOff - 0.5, p.z]}>
+            <coneGeometry args={[p.w * 0.3, p.h * 0.22, p.sides]} />
+            <meshStandardMaterial color="#e8e5f0" roughness={0.9} />
+          </mesh>
+        ))}
+
+      {/* Thin ground fog wisps at base of mountains */}
+      {Array.from({ length: 20 }, (_, i) => {
+        const a = (i / 20) * Math.PI * 2;
+        const r = 50 + i * 1.3;
+        return (
+          <mesh key={`fog${i}`} position={[Math.cos(a) * r, 0.2, Math.sin(a) * r]} rotation={[-Math.PI / 2, 0, a]}>
+            <planeGeometry args={[18 + i % 7 * 2, 2.5]} />
+            <meshBasicMaterial color="#1e2040" transparent opacity={0.22} side={THREE.DoubleSide} depthWrite={false} />
+          </mesh>
+        );
+      })}
     </group>
   );
 }
@@ -1438,6 +2131,19 @@ function RuinsDecor({ q, r, height, unlooted }: { q: number; r: number; height: 
           </Text>
         </>
       )}
+      {!unlooted && (
+        /* Looted marker — faint grey X on the ground */
+        <Text
+          position={[0, 0.08, 0]}
+          fontSize={0.22}
+          color="#555555"
+          anchorX="center"
+          anchorY="middle"
+          rotation={[-Math.PI / 2, 0, 0]}
+        >
+          {'✕'}
+        </Text>
+      )}
     </group>
   );
 }
@@ -1600,40 +2306,53 @@ function DesertDecor({ q, r, height }: { q: number; r: number; height: number })
 
 function LakeDecor({ q, r, height }: { q: number; r: number; height: number }) {
   const matRef = useRef<THREE.MeshStandardMaterial>(null);
-  const rippleRef = useRef<THREE.Mesh>(null);
+  const wave1Ref = useRef<THREE.Mesh>(null);
+  const wave2Ref = useRef<THREE.Mesh>(null);
+  const phase = (q * 0.37 + r * 0.61) * Math.PI;
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
     if (matRef.current) {
-      matRef.current.emissiveIntensity = 0.35 + Math.sin(t * 1.5 + q * 0.3 + r * 0.2) * 0.08;
+      matRef.current.emissiveIntensity = 0.22 + Math.sin(t * 0.9 + phase) * 0.07;
     }
-    if (rippleRef.current) {
-      const s = 1 + ((t + q * 0.5 + r * 0.3) % 2) * 0.3;
-      rippleRef.current.scale.set(s, s, s);
-      const m = rippleRef.current.material as THREE.MeshBasicMaterial;
-      m.opacity = Math.max(0, 0.5 - ((t + q * 0.5 + r * 0.3) % 2) * 0.25);
+    if (wave1Ref.current) {
+      const cycle = ((t * 0.6 + phase) % 2) / 2;
+      const s = 0.25 + cycle * 0.75;
+      wave1Ref.current.scale.set(s, 1, s);
+      (wave1Ref.current.material as THREE.MeshBasicMaterial).opacity = (1 - cycle) * 0.45;
+    }
+    if (wave2Ref.current) {
+      const cycle = ((t * 0.6 + phase + 1) % 2) / 2;
+      const s = 0.25 + cycle * 0.75;
+      wave2Ref.current.scale.set(s, 1, s);
+      (wave2Ref.current.material as THREE.MeshBasicMaterial).opacity = (1 - cycle) * 0.35;
     }
   });
   const lily = hash2(q, r, 810) > 0.6;
   return (
     <group position={[0, height + 0.02, 0]}>
-      {/* water surface */}
+      {/* Lake water surface — same blue as sea/river */}
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.92, 20]} />
+        <circleGeometry args={[0.96, 20]} />
         <meshStandardMaterial
           ref={matRef}
-          color="#2c5a99"
-          emissive="#1e3e7a"
-          emissiveIntensity={0.35}
-          roughness={0.15}
-          metalness={0.55}
+          color="#2a6aaa"
+          emissive="#1a4a80"
+          emissiveIntensity={0.22}
+          roughness={0.08}
+          metalness={0.5}
           transparent
-          opacity={0.92}
+          opacity={0.96}
         />
       </mesh>
-      {/* ripple ring */}
-      <mesh ref={rippleRef} position={[hash2(q, r, 820) * 0.4 - 0.2, 0.005, hash2(q, r, 830) * 0.4 - 0.2]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.08, 0.11, 18]} />
-        <meshBasicMaterial color="#a5d6ff" transparent opacity={0.5} side={THREE.DoubleSide} />
+      {/* Wave ring 1 */}
+      <mesh ref={wave1Ref} position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.1, 0.2, 12]} />
+        <meshBasicMaterial color="#6ac0f0" transparent opacity={0.4} side={THREE.DoubleSide} />
+      </mesh>
+      {/* Wave ring 2 */}
+      <mesh ref={wave2Ref} position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.08, 0.16, 12]} />
+        <meshBasicMaterial color="#88d0ff" transparent opacity={0.3} side={THREE.DoubleSide} />
       </mesh>
       {lily && (
         <group position={[hash2(q, r, 840) * 0.5 - 0.25, 0.015, hash2(q, r, 850) * 0.5 - 0.25]}>
@@ -1664,46 +2383,54 @@ const ROAD_DIR_ANGLES: number[] = (() => {
   return out;
 })();
 
-// River flows in one of 3 axis directions based on hex coords (deterministic)
-function getRiverAngle(q: number, r: number): number {
-  const axis = Math.floor(hash2(q, r, 900) * 3); // 0=horizontal, 1=diagonal-left, 2=diagonal-right
-  return (axis * Math.PI) / 3;
-}
-
 function RiverDecor({ q, r, height }: { q: number; r: number; height: number }) {
   const matRef = useRef<THREE.MeshStandardMaterial>(null);
-  const angle = getRiverAngle(q, r);
+  const wave1Ref = useRef<THREE.Mesh>(null);
+  const wave2Ref = useRef<THREE.Mesh>(null);
+  const phase = (q * 0.37 + r * 0.61) * Math.PI;
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
     if (matRef.current) {
-      matRef.current.emissiveIntensity = 0.25 + Math.sin(t * 2.2 + q * 0.4 + r * 0.5) * 0.1;
+      matRef.current.emissiveIntensity = 0.22 + Math.sin(t * 1.1 + phase) * 0.08;
+    }
+    if (wave1Ref.current) {
+      const cycle = ((t * 0.65 + phase) % 2) / 2;
+      const s = 0.25 + cycle * 0.7;
+      wave1Ref.current.scale.set(s, 1, s);
+      (wave1Ref.current.material as THREE.MeshBasicMaterial).opacity = (1 - cycle) * 0.45;
+    }
+    if (wave2Ref.current) {
+      const cycle = ((t * 0.65 + phase + 1) % 2) / 2;
+      const s = 0.25 + cycle * 0.7;
+      wave2Ref.current.scale.set(s, 1, s);
+      (wave2Ref.current.material as THREE.MeshBasicMaterial).opacity = (1 - cycle) * 0.35;
     }
   });
   return (
-    <group position={[0, height + 0.02, 0]}>
-      {/* Main river channel — oriented along river direction */}
-      <mesh rotation={[-Math.PI / 2, 0, angle]}>
-        <planeGeometry args={[0.38, 1.85]} />
+    <group position={[0, height + 0.01, 0]}>
+      {/* Full hex surface — same blue as lake/sea */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[HEX_RADIUS * 0.99, 6]} />
         <meshStandardMaterial
           ref={matRef}
-          color="#2c6fa3"
-          emissive="#1a4a7a"
-          emissiveIntensity={0.25}
-          roughness={0.1}
-          metalness={0.6}
+          color="#2a6aaa"
+          emissive="#1a4a80"
+          emissiveIntensity={0.22}
+          roughness={0.06}
+          metalness={0.5}
           transparent
-          opacity={0.88}
+          opacity={0.97}
         />
       </mesh>
-      {/* Shore banks — subtle dark strips along sides of river */}
-      <mesh rotation={[-Math.PI / 2, 0, angle]} position={[0, 0, 0.001]}>
-        <planeGeometry args={[0.5, 1.85]} />
-        <meshStandardMaterial color="#1a4a2a" roughness={0.9} transparent opacity={0.35} />
+      {/* Wave ring 1 */}
+      <mesh ref={wave1Ref} position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.1, 0.2, 10]} />
+        <meshBasicMaterial color="#6ac0f0" transparent opacity={0.4} side={THREE.DoubleSide} />
       </mesh>
-      {/* Flow arrow — small triangle pointing downstream */}
-      <mesh position={[0, 0.003, 0]} rotation={[-Math.PI / 2, 0, angle + Math.PI / 2]}>
-        <coneGeometry args={[0.07, 0.18, 3]} />
-        <meshBasicMaterial color="#60b4f0" transparent opacity={0.75} />
+      {/* Wave ring 2 */}
+      <mesh ref={wave2Ref} position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.08, 0.16, 10]} />
+        <meshBasicMaterial color="#88d0ff" transparent opacity={0.3} side={THREE.DoubleSide} />
       </mesh>
     </group>
   );
@@ -1729,10 +2456,52 @@ function HillDecor({ q, r, height, neighborCount }: { q: number; r: number; heig
   );
 }
 
-function RoadDecor({ height, connections, overlay = false }: { height: number; connections: number[]; overlay?: boolean }) {
-  // If the road hex has no connected neighbors (e.g., an orphan segment), draw
-  // a simple clearing with pebbles instead of spokes.
+function RoadDecor({
+  height,
+  connections,
+  overlay = false,
+  onMountain = false,
+}: {
+  height: number;
+  connections: number[];
+  overlay?: boolean;
+  onMountain?: boolean;
+}) {
   const hasConnections = connections.length > 0;
+  // Mountain road: thinner, darker carved-stone look; no wide clearing
+  if (onMountain) {
+    const stoneColor = '#6b5a44';
+    return (
+      <group position={[0, height + 0.008, 0]}>
+        {/* Narrow carved stone path spokes — no central clearing on mountains */}
+        {hasConnections && connections.map(dirIdx => {
+          const angle = ROAD_DIR_ANGLES[dirIdx];
+          return (
+            <group key={dirIdx} rotation={[0, -angle, 0]}>
+              <mesh position={[0.5, 0.001, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+                <planeGeometry args={[1.0, 0.18]} />
+                <meshStandardMaterial color={stoneColor} roughness={0.98} />
+              </mesh>
+              {/* Stone slabs along path */}
+              {[0.15, 0.4, 0.65, 0.88].map((t, i) => (
+                <mesh key={i} position={[t, 0.012, 0]}>
+                  <boxGeometry args={[0.14, 0.024, 0.15]} />
+                  <meshStandardMaterial color="#5a4a38" roughness={0.99} />
+                </mesh>
+              ))}
+            </group>
+          );
+        })}
+        {/* Small hub where paths meet */}
+        {hasConnections && (
+          <mesh position={[0, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <circleGeometry args={[0.2, 10]} />
+            <meshStandardMaterial color={stoneColor} roughness={0.98} />
+          </mesh>
+        )}
+      </group>
+    );
+  }
   const color = overlay ? '#d4a870' : '#b89666';
   const stoneColor = overlay ? '#9a7040' : '#8c7147';
   return (
@@ -1780,17 +2549,114 @@ type UnitMeshProps = {
   type: UnitType;
   primary: string;
   accent: string;
+  skin?: string;
+  metal?: string;
   veteran: boolean;
   dead: boolean;
   wrought: boolean;
 };
 
+// Zombie/Wrought unit — grotesque undead figure with green rot tones and exposed bones.
+function ZombieMesh({ type, dead }: { type: UnitType; dead: boolean }) {
+  const matRef = useRef<THREE.MeshStandardMaterial>(null);
+  const eyeRef = useRef<THREE.MeshStandardMaterial>(null);
+  useFrame(({ clock }) => {
+    const t = clock.elapsedTime;
+    if (matRef.current) {
+      matRef.current.emissiveIntensity = 0.12 + Math.sin(t * 1.8) * 0.08;
+    }
+    if (eyeRef.current) {
+      eyeRef.current.emissiveIntensity = 0.8 + Math.sin(t * 3.5) * 0.4;
+    }
+  });
+
+  const isMounted = type === 'mounted';
+  const isSiege = type === 'siege';
+  const isFlying = type === 'flying';
+
+  return (
+    <group scale={dead ? 0.55 : 1}>
+      {/* Rotted torso */}
+      <mesh position={[0, 0.25, 0]} castShadow>
+        <boxGeometry args={isSiege ? [0.55, 0.45, 0.4] : [0.22, 0.28, 0.16]} />
+        <meshStandardMaterial ref={matRef} color="#2a4a1a" roughness={0.95} emissive="#1a3a0a" emissiveIntensity={0.12} />
+      </mesh>
+      {/* Skull head */}
+      <mesh position={[0, 0.52, 0]} castShadow>
+        <sphereGeometry args={[isSiege ? 0.14 : 0.10, 8, 6]} />
+        <meshStandardMaterial color="#c8c4a0" roughness={0.8} />
+      </mesh>
+      {/* Glowing eyes */}
+      <mesh position={[-0.03, 0.535, 0.08]}>
+        <sphereGeometry args={[0.022, 6, 5]} />
+        <meshStandardMaterial ref={eyeRef} color="#00ff44" emissive="#00ff44" emissiveIntensity={0.9} roughness={0} />
+      </mesh>
+      <mesh position={[0.03, 0.535, 0.08]}>
+        <sphereGeometry args={[0.022, 6, 5]} />
+        <meshStandardMaterial color="#00ff44" emissive="#00ff44" emissiveIntensity={0.9} roughness={0} />
+      </mesh>
+      {/* Exposed bone arm reaching forward */}
+      <mesh position={[0.18, 0.28, 0.04]} rotation={[0, 0, -0.6]} castShadow>
+        <cylinderGeometry args={[0.025, 0.02, 0.22, 6]} />
+        <meshStandardMaterial color="#c8c4a0" roughness={0.85} />
+      </mesh>
+      {/* Legs */}
+      {!isSiege && (
+        <>
+          <mesh position={[-0.055, 0.07, 0]} castShadow>
+            <cylinderGeometry args={[0.035, 0.028, 0.14, 6]} />
+            <meshStandardMaterial color="#1e3812" roughness={0.95} />
+          </mesh>
+          <mesh position={[0.055, 0.07, 0]} castShadow>
+            <cylinderGeometry args={[0.035, 0.028, 0.14, 6]} />
+            <meshStandardMaterial color="#1e3812" roughness={0.95} />
+          </mesh>
+        </>
+      )}
+      {/* Siege: rotten catapult frame */}
+      {isSiege && (
+        <mesh position={[0, 0.05, 0]} castShadow>
+          <boxGeometry args={[0.7, 0.08, 0.35]} />
+          <meshStandardMaterial color="#1a2a10" roughness={0.98} />
+        </mesh>
+      )}
+      {/* Mounted: bone horse silhouette */}
+      {isMounted && (
+        <mesh position={[0, -0.05, 0]} castShadow>
+          <boxGeometry args={[0.35, 0.22, 0.14]} />
+          <meshStandardMaterial color="#1c3010" roughness={0.95} emissive="#0a1a06" emissiveIntensity={0.1} />
+        </mesh>
+      )}
+      {/* Flying: tattered dark wings */}
+      {isFlying && (
+        <>
+          <mesh position={[-0.32, 0.28, 0]} rotation={[0, 0, 0.5]} castShadow>
+            <boxGeometry args={[0.28, 0.06, 0.18]} />
+            <meshStandardMaterial color="#1a3010" roughness={0.98} emissive="#0a1a06" emissiveIntensity={0.1} />
+          </mesh>
+          <mesh position={[0.32, 0.28, 0]} rotation={[0, 0, -0.5]} castShadow>
+            <boxGeometry args={[0.28, 0.06, 0.18]} />
+            <meshStandardMaterial color="#1a3010" roughness={0.98} emissive="#0a1a06" emissiveIntensity={0.1} />
+          </mesh>
+        </>
+      )}
+      {/* Green miasma glow at base */}
+      <pointLight position={[0, 0.1, 0]} color="#22c55e" intensity={0.3} distance={1.2} />
+    </group>
+  );
+}
+
 function UnitMesh(props: UnitMeshProps) {
-  const { type, primary, accent, veteran, dead, wrought } = props;
-  const bodyEmissive = veteran ? '#f5c518' : wrought ? '#450a0a' : '#000';
-  const bodyEmissiveI = veteran ? 0.35 : wrought ? 0.25 : 0;
-  const skin = wrought ? '#7a3434' : '#e4c59e';
-  const metal = wrought ? '#3a2a2a' : '#c0c4cc';
+  const { type, primary, accent, skin: skinProp, metal: metalProp, veteran, dead, wrought } = props;
+
+  if (wrought) {
+    return <ZombieMesh type={type} dead={dead} />;
+  }
+
+  const bodyEmissive = veteran ? '#f5c518' : '#000';
+  const bodyEmissiveI = veteran ? 0.35 : 0;
+  const skin = skinProp ?? '#e4c59e';
+  const metal = metalProp ?? '#c0c4cc';
 
   return (
     <group scale={dead ? 0.6 : 1}>
@@ -2230,6 +3096,64 @@ function ImpactBurst({ x, z }: { x: number; z: number }) {
   );
 }
 
+/**
+ * Floating directional arrow above the player's capital pointing toward the citadel at (0,0).
+ * Bobs gently up-down, rotates to face the citadel in world XZ space.
+ */
+function CitadelArrow({ capitalX, capitalZ, capitalQ, capitalR }: { capitalX: number; capitalZ: number; capitalQ: number; capitalR: number }) {
+  const ref = useRef<THREE.Group>(null);
+  const [citadelX, citadelZ] = hexToWorld(0, 0);
+
+  // Angle in XZ plane from capital → citadel (three.js Y-up, so we use atan2 on X/Z).
+  const dx = citadelX - capitalX;
+  const dz = citadelZ - capitalZ;
+  const angle = Math.atan2(dx, dz); // rotation around Y to face citadel
+
+  useFrame(({ clock }) => {
+    if (!ref.current) return;
+    ref.current.position.y = 2.8 + Math.sin(clock.elapsedTime * 1.8) * 0.18;
+  });
+
+  return (
+    <group ref={ref} position={[capitalX, 2.8, capitalZ]} rotation={[0, angle, 0]}>
+      {/* Glow light */}
+      <pointLight position={[0, 0, 0]} color="#f5c518" intensity={0.8} distance={3} />
+      {/* Shaft */}
+      <mesh position={[0, 0, 0.35]} castShadow>
+        <cylinderGeometry args={[0.06, 0.06, 0.7, 8]} />
+        <meshStandardMaterial color="#f5c518" emissive="#f5c518" emissiveIntensity={0.6} metalness={0.4} roughness={0.3} />
+      </mesh>
+      {/* Arrowhead — cone pointing toward citadel (+Z in local space) */}
+      <mesh position={[0, 0, 0.82]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <coneGeometry args={[0.15, 0.35, 8]} />
+        <meshStandardMaterial color="#fde68a" emissive="#f5c518" emissiveIntensity={0.8} metalness={0.3} roughness={0.2} />
+      </mesh>
+      {/* Tail fin — small cross at back */}
+      <mesh position={[0, 0, -0.02]}>
+        <boxGeometry args={[0.28, 0.04, 0.04]} />
+        <meshStandardMaterial color="#f5c518" emissive="#f5c518" emissiveIntensity={0.4} />
+      </mesh>
+      <mesh position={[0, 0, -0.02]}>
+        <boxGeometry args={[0.04, 0.28, 0.04]} />
+        <meshStandardMaterial color="#f5c518" emissive="#f5c518" emissiveIntensity={0.4} />
+      </mesh>
+      {/* Label */}
+      <Text
+        position={[0, 0.45, 0.35]}
+        fontSize={0.22}
+        color="#fde68a"
+        outlineColor="#78350f"
+        outlineWidth={0.018}
+        anchorX="center"
+        anchorY="middle"
+        rotation={[0, 0, 0]}
+      >
+        {'☠'}
+      </Text>
+    </group>
+  );
+}
+
 function FlyingMesh({ primary, accent, skin, bodyEmissive, bodyEmissiveI }: CommonProps) {
   const ref = useRef<THREE.Group>(null);
   const wingLRef = useRef<THREE.Mesh>(null);
@@ -2319,3 +3243,4 @@ function FlyingMesh({ primary, accent, skin, bodyEmissive, bodyEmissiveI }: Comm
     </group>
   );
 }
+

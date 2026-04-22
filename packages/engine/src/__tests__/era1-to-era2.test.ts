@@ -72,31 +72,31 @@ describe('initPlayerEra2State', () => {
   it('uses default cost and transfer modifiers', () => {
     const s = initPlayerEra2State(makePlayer());
     expect(s.costModifiers.minCostPerLevel).toBe(1);
-    expect(s.costModifiers.flat).toEqual({ war: 0, science: 0, resources: 0, economy: 0 });
-    expect(s.costModifiers.perLevel).toEqual({ war: 0, science: 0, resources: 0, economy: 0 });
+    expect(s.costModifiers.flat).toEqual({ war: 0, science: 0, resources: 0, economy: 0, religion: 0 });
+    expect(s.costModifiers.perLevel).toEqual({ war: 0, science: 0, resources: 0, economy: 0, religion: 0 });
     expect(s.transferModifiers.giveRatio).toBe(0.5);
     expect(s.transferModifiers.receiveRatio).toBe(1);
     expect(s.transferModifiers.surplusRatio).toBe(0.5);
   });
 
   it('folds Era I freeTechLevels into techLevels, stacking on racial', () => {
-    // Human: racial is science +1. Add a free_tech_level grant for science +1 → total 2.
+    // Human: racial is economy +1. Add a free_tech_level grant for economy +1 → total 2.
     const s = initPlayerEra2State(makePlayer({
       raceId: 'human',
-      freeTechLevels: [{ tech: 'science', level: 1 }],
+      freeTechLevels: [{ tech: 'economy', level: 1 }],
     }));
-    expect(s.techLevels.science).toBe(2);
+    expect(s.techLevels.economy).toBe(2);
   });
 
   it('multiple free tech grants to same tech accumulate', () => {
     const s = initPlayerEra2State(makePlayer({
-      raceId: 'elf', // resources +1
+      raceId: 'elf', // religion +1
       freeTechLevels: [
-        { tech: 'resources', level: 1 },
-        { tech: 'resources', level: 1 },
+        { tech: 'religion', level: 1 },
+        { tech: 'religion', level: 1 },
       ],
     }));
-    expect(s.techLevels.resources).toBe(3);
+    expect(s.techLevels.religion).toBe(3);
   });
 
   it('caps folded free tech levels at 5 (level 6 is gated)', () => {
@@ -109,27 +109,28 @@ describe('initPlayerEra2State', () => {
 
   it('distributes free tech grants across different techs', () => {
     const s = initPlayerEra2State(makePlayer({
-      raceId: 'dwarf', // economy +1
+      raceId: 'dwarf', // resources +1
       freeTechLevels: [
         { tech: 'war', level: 1 },
         { tech: 'science', level: 2 },
       ],
     }));
-    expect(s.techLevels).toEqual({ war: 1, science: 2, resources: 0, economy: 1 });
+    expect(s.techLevels).toEqual({ war: 1, science: 2, resources: 1, economy: 0, religion: 0 });
   });
 
   it('techLevels default to 0 for unassigned tracks', () => {
-    // Elf: resources +1. war/science/economy should all be 0.
+    // Elf: religion +1. war/science/resources/economy should all be 0.
     const s = initPlayerEra2State(makePlayer({ raceId: 'elf' }));
     expect(s.techLevels.war).toBe(0);
     expect(s.techLevels.science).toBe(0);
     expect(s.techLevels.economy).toBe(0);
-    expect(s.techLevels.resources).toBe(1);
+    expect(s.techLevels.resources).toBe(0);
+    expect(s.techLevels.religion).toBe(1);
   });
 
   it('freeLevelsRemaining starts at zero for all techs', () => {
     const s = initPlayerEra2State(makePlayer());
-    expect(s.freeLevelsRemaining).toEqual({ war: 0, science: 0, resources: 0, economy: 0 });
+    expect(s.freeLevelsRemaining).toEqual({ war: 0, science: 0, resources: 0, economy: 0, religion: 0 });
   });
 
   it('does not mutate the input player', () => {

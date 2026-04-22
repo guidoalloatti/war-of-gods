@@ -5,9 +5,12 @@ import {
   TECH_COSTS,
   TECH_BENEFITS,
   RACIAL_BONUSES,
+  RACE_TECH_MAX,
   calculateTechCost,
+  getIncrementalCost,
   computeTransferDelta,
   getRaceById,
+  isEra2PhaseComplete,
 } from '@war-of-gods/engine';
 import type {
   Era2Phase,
@@ -23,7 +26,7 @@ import { useGameStore } from '../stores/gameStore.js';
 import { useI18n } from '../i18n/index.js';
 import { GameCard } from '../components/GameCard.js';
 import { EffectModal } from '../components/EffectModal.js';
-import { TechSlider } from '../components/era2/TechSlider.js';
+import { TechPentagon } from '../components/TechPentagon.js';
 import { PointsCounter } from '../components/era2/PointsCounter.js';
 import { KingsTableModal } from '../components/era2/KingsTableModal.js';
 import { DoomClockDisplay } from '../components/era2/DoomClockDisplay.js';
@@ -55,6 +58,8 @@ const PHASE_ICONS: Record<Era2Phase, string> = {
 };
 
 const AUTO_ADVANCE_PHASES = new Set<Era2Phase>(['apply_penalties', 'apply_era1_effects']);
+// These phases auto-advance once isEra2PhaseComplete is true (all players, incl. bots, acted)
+const BOT_COMPLETE_PHASES = new Set<Era2Phase>(['era_cards_deal', 'kings_table', 'convert_surplus']);
 
 export function Era2Screen() {
   const { gameState, localPlayerId, dispatch, runBots, error, gameMode, setScreen } = useGameStore(
@@ -99,11 +104,28 @@ export function Era2Screen() {
     return () => clearTimeout(timer);
   }, [phase, gameState, dispatch, anyPendingEffect]);
 
-  // Run bots on phase entry so they take their actions
+  // Run bots on every state change so they respond within the same phase
+  // (e.g. bot picks their Era II card right after the human picks theirs)
   useEffect(() => {
     if (!phase) return;
     runBots();
-  }, [phase, runBots]);
+  }, [phase, gameState, runBots]);
+
+  // Auto-advance phases once all players (incl. bots) have acted.
+  // Runs after bots finish so the human never has to click "Next" just to unblock.
+  const botCompleteAdvancedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!phase || !gameState) return;
+    if (!BOT_COMPLETE_PHASES.has(phase)) return;
+    if (!isEra2PhaseComplete(gameState)) return;
+    const key = `${phase}-${JSON.stringify(gameState.players.map(p => p.era2State?.chosenEra2Card?.id ?? p.era2State?.hasConvertedSurplus ?? (gameState.kingsTableReady ?? []).includes(p.id)))}`;
+    if (botCompleteAdvancedRef.current === key) return;
+    botCompleteAdvancedRef.current = key;
+    const timer = setTimeout(() => {
+      dispatch({ type: 'ADVANCE_ERA2_PHASE' });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [phase, gameState, dispatch]);
 
   const handleResolveEffect = useCallback(
     (resolution: Record<string, unknown>) => {
@@ -126,8 +148,6 @@ export function Era2Screen() {
         <EffectModal player={player} onResolve={handleResolveEffect} />
       )}
 
-      <Era2Timeline currentPhase={phase!} t={t} />
-
       {/* Mobile sidebar toggle */}
       <button
         type="button"
@@ -147,13 +167,13 @@ export function Era2Screen() {
         />
       )}
 
-      <div className="flex flex-row min-h-screen relative z-10 pt-14">
+      <div className="flex flex-row min-h-screen relative z-10 pt-12">
         {/* LEFT SIDEBAR */}
         <div
           className={`
             fixed lg:static inset-y-0 left-0 z-40 lg:z-auto
             lg:w-80 xl:w-[22rem] w-72 shrink-0 border-r border-border-subtle p-4 pl-14 space-y-4 overflow-y-auto
-            h-screen lg:max-h-[calc(100vh-3.5rem)] lg:h-auto
+            h-screen lg:max-h-[calc(100vh-6rem)] lg:h-auto
             bg-game-bg lg:bg-transparent
             transition-transform duration-300 ease-in-out
             ${showSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
@@ -241,57 +261,6 @@ export function Era2Screen() {
   );
 }
 
-// ── Era II Timeline ─────────────────────────────────────────────
-
-function Era2Timeline({ currentPhase, t }: { currentPhase: Era2Phase; t: Translations }) {
-  const currentIdx = ERA2_PHASES.indexOf(currentPhase);
-
-  return (
-    <div className="fixed top-0 left-0 right-0 z-30 bg-game-bg/90 backdrop-blur-sm border-b border-border-subtle">
-      <div className="max-w-3xl mx-auto px-4 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-1 text-xs text-game-gold font-bold uppercase tracking-wider">
-          <span>{t.menu.era} II</span>
-        </div>
-        <div className="flex items-center gap-1 overflow-x-auto">
-          {ERA2_PHASES.map((phase, i) => {
-            const isActive = i === currentIdx;
-            const isDone = i < currentIdx;
-            return (
-              <div key={phase} className="flex items-center shrink-0">
-                <div
-                  className={`flex items-center gap-1 px-2 py-1 rounded-full transition-all duration-300 ${
-                    isActive
-                      ? 'bg-game-gold/15 border border-game-gold/30'
-                      : isDone
-                        ? 'opacity-60'
-                        : 'opacity-30'
-                  }`}
-                >
-                  <span className="text-sm">{PHASE_ICONS[phase]}</span>
-                  <span
-                    className={`text-xs font-medium hidden md:inline ${
-                      isActive ? 'text-game-gold' : isDone ? 'text-text-secondary' : 'text-text-faint'
-                    }`}
-                  >
-                    {t.era2.phases[phase]}
-                  </span>
-                </div>
-                {i < ERA2_PHASES.length - 1 && (
-                  <div
-                    className={`w-3 h-px mx-0.5 transition-colors ${
-                      isDone ? 'bg-game-gold/40' : 'bg-border-subtle'
-                    }`}
-                  />
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ── Phase main content switch ──────────────────────────────────
 
 function PhaseMain({
@@ -328,14 +297,7 @@ function PhaseMain({
       const alreadyChose = era2?.chosenEra2Card != null;
       if (!era2) return <WaitingView t={t} />;
       if (alreadyChose) {
-        return (
-          <CentredMessage
-            title={t.era2.waiting}
-            hint={t.era2.phases.era_cards_deal}
-            onContinue={() => dispatch({ type: 'ADVANCE_ERA2_PHASE' })}
-            continueLabel={t.actions.next}
-          />
-        );
+        return <WaitingView t={t} />;
       }
       if (choices.length === 0) {
         return <WaitingView t={t} />;
@@ -411,6 +373,11 @@ function PhaseMain({
 
     case 'convert_surplus': {
       if (!era2) return <WaitingView t={t} />;
+      const surplus = era2.constructionPoints + era2.pointsReceived - era2.pointsGiven - era2.pointsSpent;
+      if (surplus <= 0) {
+        setTimeout(() => dispatch({ type: 'ADVANCE_ERA2_PHASE' }), 0);
+        return <WaitingView t={t} />;
+      }
       return (
         <ConvertSurplusView
           era2={era2}
@@ -711,8 +678,11 @@ function TechAllocationView({
     era2.reallocationsAllowed === 0 || era2.reallocationsUsed < era2.reallocationsAllowed;
   const racialTech = RACIAL_BONUSES[player.raceId as keyof typeof RACIAL_BONUSES]?.freeTech.tech;
 
+  const raceTechMax = (RACE_TECH_MAX as Record<string, Record<TechType, number>>)[player.raceId]
+    ?? Object.fromEntries(TECH_TYPES.map(t => [t, 5])) as Record<TechType, number>;
+
   return (
-    <div className="w-full max-w-3xl mx-auto py-4 space-y-5 animate-fade-in-up">
+    <div className="w-full max-w-3xl mx-auto py-4 space-y-4 animate-fade-in-up">
       <header className="text-center">
         <div className="text-5xl mb-2">🏗️</div>
         <h2 className="text-2xl font-bold text-game-gold mb-1">{t.era2.phases.tech_allocation}</h2>
@@ -729,25 +699,94 @@ function TechAllocationView({
         />
       </div>
 
-      <div className="space-y-3">
-        {TECH_TYPES.map(tech => (
-          <TechSlider
-            key={tech}
-            tech={tech}
+      {/* Pentagon + tech summary side by side on wider screens */}
+      <div className="flex flex-col lg:flex-row items-center lg:items-start gap-4">
+        <div className="flex-shrink-0">
+          <TechPentagon
+            techLevels={era2.techLevels}
             era2={era2}
-            isRacial={tech === racialTech}
-            disabled={era2.hasConfirmed || era2.lockedOutTech === tech}
-            onChange={target =>
-              dispatch({
-                type: 'SET_TECH_LEVEL',
-                playerId: player.id,
-                tech,
-                targetLevel: target,
-              })
-            }
+            raceTechMax={raceTechMax}
             t={t}
+            size={280}
+            disabled={era2.hasConfirmed}
+            confirmed={era2.hasConfirmed}
+            onChange={(tech, targetLevel) => {
+              if (era2.lockedOutTech === tech) return;
+              dispatch({ type: 'SET_TECH_LEVEL', playerId: player.id, tech, targetLevel });
+            }}
           />
-        ))}
+        </div>
+
+        {/* Tech level detail list */}
+        <div className="flex-1 w-full space-y-1.5">
+          {TECH_TYPES.map(tech => {
+            const lvl = era2.techLevels[tech];
+            const baseline = era2.baselineTechLevels[tech] ?? 0;
+            const isRacial = tech === racialTech;
+            const isLocked = era2.lockedOutTech === tech;
+            const benefits = TECH_BENEFITS[tech];
+            const benefitValue = benefits.values[Math.min(lvl, benefits.values.length - 1)];
+            const nextCostVal = lvl < (era2.allowLevel6 ? 6 : 5)
+              ? getIncrementalCost(tech, lvl + 1)
+              : null;
+            const color = {
+              war: '#e94560', science: '#38bdf8', resources: '#4ade80',
+              economy: '#fbbf24', religion: '#c084fc',
+            }[tech];
+
+            return (
+              <div
+                key={tech}
+                className="flex items-center gap-2 rounded-lg px-3 py-2 border text-sm"
+                style={{
+                  borderColor: isLocked ? '#3a3a4e' : `${color}30`,
+                  background: `${color}08`,
+                  opacity: isLocked ? 0.4 : 1,
+                }}
+              >
+                <span className="text-base w-5 text-center">
+                  {{ war: '⚔️', science: '🔬', resources: '🌾', economy: '💰', religion: '✨' }[tech]}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-text-primary">{t.tech[tech]}</span>
+                    {isRacial && (
+                      <span className="text-[9px] text-game-gold border border-game-gold/30 px-1 rounded">★</span>
+                    )}
+                    {isLocked && (
+                      <span className="text-[9px] text-red-400 border border-red-400/30 px-1 rounded">🔒</span>
+                    )}
+                  </div>
+                  <div className="text-[10px] text-text-muted">{benefits.label}: {benefitValue}</div>
+                </div>
+                {/* Level dots */}
+                <div className="flex gap-0.5">
+                  {Array.from({ length: era2.allowLevel6 ? 6 : 5 }, (_, i) => i + 1).map(lvli => (
+                    <button
+                      key={lvli}
+                      type="button"
+                      disabled={era2.hasConfirmed || isLocked || lvli < baseline}
+                      onClick={() => !era2.hasConfirmed && !isLocked && dispatch({ type: 'SET_TECH_LEVEL', playerId: player.id, tech, targetLevel: lvli })}
+                      className="w-5 h-5 rounded text-[9px] font-bold transition-colors"
+                      style={{
+                        background: lvli <= lvl ? color : lvli <= baseline ? `${color}30` : '#1a1a2a',
+                        color: lvli <= lvl ? '#0a0a1a' : '#555',
+                        border: `1px solid ${lvli <= lvl ? color : '#2a2a3a'}`,
+                        cursor: era2.hasConfirmed || isLocked || lvli < baseline ? 'not-allowed' : 'pointer',
+                      }}
+                      title={`${t.tech[tech]} ${lvli}`}
+                    >
+                      {lvli <= baseline ? '★' : lvli}
+                    </button>
+                  ))}
+                </div>
+                <div className="text-[10px] text-text-muted w-12 text-right">
+                  {nextCostVal != null ? `→${nextCostVal}` : '✓ max'}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div className="flex gap-2">
@@ -758,6 +797,49 @@ function TechAllocationView({
           className="flex-1 bg-game-surface/80 border border-border-subtle text-text-secondary hover:text-text-primary py-2.5 rounded-xl text-base transition-colors disabled:opacity-30"
         >
           {t.era2.resetAllocation}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            const racial = RACIAL_BONUSES[player.raceId as keyof typeof RACIAL_BONUSES]?.freeTech.tech;
+            const BASE_ORDER: TechType[] = ['economy', 'war', 'science', 'resources', 'religion'];
+            const withRacialFirst = racial
+              ? [racial, ...BASE_ORDER.filter(tt => tt !== racial)]
+              : BASE_ORDER;
+
+            let currentEra2 = era2;
+            let spent = currentEra2.pointsSpent;
+            const totalBudget = currentEra2.constructionPoints + currentEra2.pointsReceived - currentEra2.pointsGiven;
+
+            let advanced = true;
+            while (advanced) {
+              advanced = false;
+              const levels = currentEra2.techLevels;
+              for (const tech of withRacialFirst) {
+                const current = levels[tech];
+                if (current >= 5 && !currentEra2.allowLevel6) continue;
+                if (current >= 6) continue;
+                if (currentEra2.lockedOutTech === tech) continue;
+                const target = current + 1;
+                const { totalCost } = calculateTechCost(
+                  tech, current, target,
+                  currentEra2.freeLevelsRemaining[tech],
+                  { flat: 0, perLevel: currentEra2.costModifiers.perLevel[tech], minCostPerLevel: currentEra2.costModifiers.minCostPerLevel },
+                  currentEra2.allowLevel6,
+                );
+                if (totalCost > totalBudget - spent) continue;
+                dispatch({ type: 'SET_TECH_LEVEL', playerId: player.id, tech, targetLevel: target });
+                spent += totalCost;
+                currentEra2 = { ...currentEra2, techLevels: { ...currentEra2.techLevels, [tech]: target }, pointsSpent: spent };
+                advanced = true;
+                break;
+              }
+            }
+          }}
+          disabled={era2.hasConfirmed || remaining <= 0}
+          className="flex-1 bg-game-surface/80 border border-game-gold/30 text-game-gold hover:bg-game-gold/10 py-2.5 rounded-xl text-base font-semibold transition-colors disabled:opacity-30"
+        >
+          {t.era2.autoAssign}
         </button>
         <button
           type="button"

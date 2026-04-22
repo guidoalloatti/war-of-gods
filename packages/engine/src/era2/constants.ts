@@ -12,6 +12,7 @@ export const TECH_COSTS: Record<TechType, readonly number[]> = {
   science:   [1, 3, 6, 11, 19, 19 + 2 * (19 - 11)],       // 1, 3, 6, 11, 19, 35
   resources: [1, 3, 6, 10, 17, 17 + 2 * (17 - 10)],       // 1, 3, 6, 10, 17, 31
   economy:   [2, 5, 9, 14, 20, 20 + 2 * (20 - 14)],       // 2, 5, 9, 14, 20, 32
+  religion:  [2, 4, 8, 13, 19, 19 + 2 * (19 - 13)],       // 2, 4, 8, 13, 19, 31
 };
 
 /**
@@ -32,6 +33,7 @@ export const TECH_BENEFITS: Record<TechType, { label: string; values: readonly n
   science:   { label: 'Tipos de unidad',     values: [1, 1, 2, 3, 4, 5] },
   resources: { label: 'Alimento máximo',     values: [2, 4, 8, 11, 14, 16] },
   economy:   { label: 'Monedas por turno',   values: [1, 3, 4, 5, 6, 7] },
+  religion:  { label: 'Bonus de moral',      values: [0, 1, 2, 3, 5, 8] },
 };
 
 /**
@@ -47,6 +49,22 @@ export const SCIENCE_UNLOCK_ORDER: readonly UnitType[] = [
 ];
 
 /**
+ * Per-race maximum tech level for each development (4–6).
+ * Each race has a unique profile: strengths cap at 6, average at 5, weak at 4.
+ */
+export const RACE_TECH_MAX: Record<RaceId, Record<TechType, number>> = {
+  //                  war  sci  res  eco  rel
+  elf:     { war: 4, science: 5, resources: 6, economy: 5, religion: 6 },
+  dwarf:   { war: 5, science: 6, resources: 6, economy: 4, religion: 4 },
+  human:   { war: 5, science: 5, resources: 5, economy: 6, religion: 5 },
+  halfelf: { war: 6, science: 6, resources: 4, economy: 4, religion: 5 },
+  orc:     { war: 6, science: 4, resources: 5, economy: 4, religion: 5 },
+  giant:   { war: 6, science: 4, resources: 6, economy: 4, religion: 4 },
+  goblin:  { war: 4, science: 6, resources: 4, economy: 5, religion: 6 },
+  halforc: { war: 5, science: 4, resources: 5, economy: 6, religion: 5 },
+};
+
+/**
  * Racial bonuses applied at the start of Era II:
  *  - freeTech: one tech level granted for free (stackable with card bonuses)
  *  - freeUnit: one unit accumulated for Era III
@@ -55,11 +73,11 @@ export const RACIAL_BONUSES: Record<RaceId, {
   freeTech: { tech: TechType; level: number };
   freeUnit: { unit: UnitType; count: number };
 }> = {
-  elf:     { freeTech: { tech: 'resources', level: 1 }, freeUnit: { unit: 'ranged',   count: 1 } },
-  dwarf:   { freeTech: { tech: 'economy',   level: 1 }, freeUnit: { unit: 'infantry', count: 1 } },
-  human:   { freeTech: { tech: 'science',   level: 1 }, freeUnit: { unit: 'mounted',  count: 1 } },
-  halfelf: { freeTech: { tech: 'war',       level: 1 }, freeUnit: { unit: 'infantry', count: 1 } },
-  orc:     { freeTech: { tech: 'resources', level: 1 }, freeUnit: { unit: 'mounted',  count: 1 } },
+  elf:     { freeTech: { tech: 'religion',  level: 1 }, freeUnit: { unit: 'ranged',   count: 1 } },
+  dwarf:   { freeTech: { tech: 'resources', level: 1 }, freeUnit: { unit: 'infantry', count: 1 } },
+  human:   { freeTech: { tech: 'economy',   level: 1 }, freeUnit: { unit: 'mounted',  count: 1 } },
+  halfelf: { freeTech: { tech: 'science',   level: 1 }, freeUnit: { unit: 'infantry', count: 1 } },
+  orc:     { freeTech: { tech: 'war',       level: 1 }, freeUnit: { unit: 'mounted',  count: 1 } },
   giant:   { freeTech: { tech: 'war',       level: 1 }, freeUnit: { unit: 'siege',    count: 1 } },
   goblin:  { freeTech: { tech: 'science',   level: 1 }, freeUnit: { unit: 'flying',   count: 1 } },
   halforc: { freeTech: { tech: 'economy',   level: 1 }, freeUnit: { unit: 'infantry', count: 1 } },

@@ -44,6 +44,8 @@ export type Player = {
   freeUnits?: FreeUnitGrant[];
   /** Extra relics the player is entitled to pick (from `extra_relic`). Default 1 via normal flow. */
   extraRelicsAllowed?: number;
+  /** Era I kingdom board layout — axial coords relative to (0,0), saved at placement */
+  era1BoardCells?: Array<{ q: number; r: number; terrain: string | null }>;
   /** Era II state (populated at transition from Era I) */
   era2State?: PlayerEra2State;
   /** Era III state (populated at transition from Era II) */

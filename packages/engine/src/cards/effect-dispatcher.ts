@@ -160,10 +160,26 @@ export function applyEffect(
       return applyEra3FreeRecruit(state, effect, ctx);
     case 'era3_gold_bonus':
       return applyEra3GoldBonus(state, effect, ctx);
+    case 'era3_food_bonus':
+      return applyEra3FoodBonus(state, effect, ctx);
     case 'era3_extra_movement':
       return applyEra3ExtraMovement(state, effect, ctx);
     case 'era3_global_passive_atk':
       return applyEra3GlobalPassiveAtk(state, effect);
+    case 'era3_defense_boost':
+      return applyEra3DefenseBoost(state, effect, ctx);
+    case 'era3_free_recruit_two':
+      return applyEra3FreeRecruitTwo(state, effect, ctx);
+    case 'era3_permanent_gold_income':
+      return applyEra3PermanentGoldIncome(state, effect, ctx);
+    case 'era3_permanent_food_income':
+      return applyEra3PermanentFoodIncome(state, effect, ctx);
+    case 'era3_tech_upgrade':
+      return applyEra3TechUpgrade(state, effect, ctx);
+    case 'era3_heal_all_stacks':
+      return applyEra3HealAllStacks(state, effect, ctx);
+    case 'era3_fortify_stack':
+      return applyEra3FortifyStack(state, ctx);
 
     default: {
       // Exhaustive check — if TypeScript adds a new type, this fails at compile time
@@ -1449,4 +1465,155 @@ function applyEra3GlobalPassiveAtk(
     ...state,
     era3PassiveAttackBonus: (state.era3PassiveAttackBonus ?? 0) + effect.bonus,
   };
+}
+
+function applyEra3FoodBonus(
+  state: GameState,
+  effect: Extract<CardEffect, { type: 'era3_food_bonus' }>,
+  ctx: EffectContext,
+): GameState {
+  const targets = getTargetPlayerIds(state, ctx);
+  return {
+    ...state,
+    players: state.players.map(p => {
+      if (!targets.includes(p.id) || !p.era3State) return p;
+      return {
+        ...p,
+        era3State: { ...p.era3State, foodReserves: p.era3State.foodReserves + effect.amount },
+      };
+    }),
+  };
+}
+
+function applyEra3DefenseBoost(
+  state: GameState,
+  effect: Extract<CardEffect, { type: 'era3_defense_boost' }>,
+  ctx: EffectContext,
+): GameState {
+  const s = ensureTurnEffects(state);
+  const te = s.era3TurnEffects!;
+  const targets = getTargetPlayerIds(state, ctx);
+  // Store defense boost parallel to attack boost
+  const defenseBoost = { ...(te.defenseBoost ?? {}) };
+  for (const pid of targets) defenseBoost[pid] = (defenseBoost[pid] ?? 0) + effect.bonus;
+  return { ...s, era3TurnEffects: { ...te, defenseBoost } };
+}
+
+function applyEra3FreeRecruitTwo(
+  state: GameState,
+  effect: Extract<CardEffect, { type: 'era3_free_recruit_two' }>,
+  ctx: EffectContext,
+): GameState {
+  const targets = getTargetPlayerIds(state, ctx);
+  let s = ensureTurnEffects(state);
+  for (const pid of targets) {
+    s = freeRecruitFor(s, pid, effect.unit);
+    s = freeRecruitFor(s, pid, effect.unit);
+  }
+  return s;
+}
+
+function applyEra3PermanentGoldIncome(
+  state: GameState,
+  effect: Extract<CardEffect, { type: 'era3_permanent_gold_income' }>,
+  ctx: EffectContext,
+): GameState {
+  const targets = getTargetPlayerIds(state, ctx);
+  return {
+    ...state,
+    players: state.players.map(p => {
+      if (!targets.includes(p.id) || !p.era3State) return p;
+      return {
+        ...p,
+        era3State: {
+          ...p.era3State,
+          permanentGoldBonus: (p.era3State.permanentGoldBonus ?? 0) + effect.amount,
+        },
+      };
+    }),
+  };
+}
+
+function applyEra3PermanentFoodIncome(
+  state: GameState,
+  effect: Extract<CardEffect, { type: 'era3_permanent_food_income' }>,
+  ctx: EffectContext,
+): GameState {
+  const targets = getTargetPlayerIds(state, ctx);
+  return {
+    ...state,
+    players: state.players.map(p => {
+      if (!targets.includes(p.id) || !p.era3State) return p;
+      return {
+        ...p,
+        era3State: {
+          ...p.era3State,
+          permanentFoodBonus: (p.era3State.permanentFoodBonus ?? 0) + effect.amount,
+        },
+      };
+    }),
+  };
+}
+
+function applyEra3TechUpgrade(
+  state: GameState,
+  effect: Extract<CardEffect, { type: 'era3_tech_upgrade' }>,
+  ctx: EffectContext,
+): GameState {
+  const targets = getTargetPlayerIds(state, ctx);
+  return {
+    ...state,
+    players: state.players.map(p => {
+      if (!targets.includes(p.id) || !p.era3State) return p;
+      const current = p.era3State.techLevels[effect.tech] ?? 0;
+      return {
+        ...p,
+        era3State: {
+          ...p.era3State,
+          techLevels: { ...p.era3State.techLevels, [effect.tech]: Math.min(current + 1, 6) },
+        },
+      };
+    }),
+  };
+}
+
+function applyEra3HealAllStacks(
+  state: GameState,
+  effect: Extract<CardEffect, { type: 'era3_heal_all_stacks' }>,
+  ctx: EffectContext,
+): GameState {
+  if (!state.era3Stacks) return state;
+  const owners = getTargetPlayerIds(state, ctx);
+  const stacks = { ...state.era3Stacks };
+  for (const [sid, stack] of Object.entries(stacks)) {
+    if (!owners.includes(stack.ownerId)) continue;
+    stacks[sid] = {
+      ...stack,
+      units: stack.units.map(u => ({
+        ...u,
+        currentHp: Math.min(u.currentHp + effect.hpAmount, unitMaxHp(u.type as never)),
+      })),
+    };
+  }
+  return { ...state, era3Stacks: stacks };
+}
+
+function applyEra3FortifyStack(state: GameState, ctx: EffectContext): GameState {
+  if (!state.era3Stacks) return state;
+  const targetId = ctx.targetStackId;
+  const owners = getTargetPlayerIds(state, ctx);
+  const stacks = { ...state.era3Stacks };
+  if (targetId) {
+    const stack = stacks[targetId];
+    if (stack && owners.includes(stack.ownerId)) {
+      stacks[targetId] = { ...stack, fortified: true };
+    }
+  } else {
+    // Fortify all owned stacks
+    for (const [sid, stack] of Object.entries(stacks)) {
+      if (!owners.includes(stack.ownerId)) continue;
+      stacks[sid] = { ...stack, fortified: true };
+    }
+  }
+  return { ...state, era3Stacks: stacks };
 }

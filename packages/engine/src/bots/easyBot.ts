@@ -4,7 +4,7 @@ import type { TerrainType } from '../types/terrain.js';
 import type { TechType } from '../types/era2.js';
 import type { HexCoord } from '../types/era3.js';
 import { TECH_TYPES } from '../types/era2.js';
-import { RACIAL_BONUSES } from '../era2/constants.js';
+import { RACIAL_BONUSES, RACE_TECH_MAX } from '../era2/constants.js';
 import { calculateTechCost } from '../era2/costs.js';
 import {
   distance, hexKey, neighbors,
@@ -151,13 +151,19 @@ export class EasyBot implements Bot {
     if (state.era3CurrentPlayerId !== playerId) return null;
     if (!state.map || !state.era3Stacks) return null;
 
+    // 0. Pick a pending card offer (always take the first one).
+    const offers = state.era3CardOffers?.[playerId] ?? [];
+    if (offers.length > 0) {
+      return { type: 'PICK_CARD_OFFER', playerId, cardId: offers[0].id };
+    }
+
     const player = state.players.find(p => p.id === playerId);
     if (!player?.era3State || player.era3State.eliminated) {
       return { type: 'END_TURN', playerId };
     }
 
-    // 2. Play a card (once per turn).
-    if (!state.era3CardPlayedThisTurn?.[playerId]) {
+    // 2. Play a card (up to 2 per turn).
+    if ((state.era3CardPlayedThisTurn?.[playerId] ?? 0) < 2) {
       const hand = state.era3Hands?.[playerId] ?? [];
       if (hand.length > 0) {
         // Heal cards need a target stack; pick our most wounded stack.
@@ -256,8 +262,12 @@ export class EasyBot implements Bot {
       ? [racial, ...TECH_TYPES.filter(t => t !== racial)]
       : [...TECH_TYPES];
 
+    const raceTechMax = RACE_TECH_MAX[player.raceId as keyof typeof RACE_TECH_MAX];
+
     for (const tech of priority) {
       const current = era2.techLevels[tech];
+      const raceMax = raceTechMax?.[tech] ?? 5;
+      if (current >= raceMax) continue;
       if (current >= 5 && !era2.allowLevel6) continue;
       if (current >= 6) continue;
       if (era2.lockedOutTech === tech) continue;

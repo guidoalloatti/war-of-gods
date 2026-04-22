@@ -1,5 +1,5 @@
 import type { GameState, Stack, General, UnitType } from '@war-of-gods/engine';
-import { GENERAL_MIN_STACK_SIZE, UNIT_DEFINITIONS, MAX_STACK_SIZE, ERA3_RECRUIT_COSTS } from '@war-of-gods/engine';
+import { GENERAL_MIN_STACK_SIZE, UNIT_DEFINITIONS, MAX_STACK_SIZE, ERA3_RECRUIT_COSTS, totalFoodConsumed, maxFoodCapacity, unitFoodCost } from '@war-of-gods/engine';
 import { useI18n } from '../../i18n/index.js';
 
 const UNIT_ICONS: Record<string, string> = {
@@ -67,9 +67,17 @@ export function ArmyPanel({
   const totalUnits = playerStacks.reduce((s, st) => s + st.units.length, 0);
   const totalSlots = playerStacks.reduce((s, _) => s + MAX_STACK_SIZE, 0);
 
-  // Per-unit-type affordable recruit check
+  // Food supply
+  const foodConsumed = totalFoodConsumed(gameState.era3Stacks ?? {}, localPlayerId);
+  const foodMax = maxFoodCapacity(player);
+  const foodAvailable = foodMax - foodConsumed;
+  const foodRatio = foodMax > 0 ? Math.min(foodConsumed / foodMax, 1) : 0;
+  const foodColor = foodRatio >= 1 ? '#f87171' : foodRatio >= 0.8 ? '#facc15' : '#4ade80';
+
+  // Per-unit-type affordable recruit check (also considers food cap)
   const affordableTypes = (Object.keys(ERA3_RECRUIT_COSTS) as UnitType[]).filter(
-    ut => ERA3_RECRUIT_COSTS[ut] <= goldCoins && recruitsThisTurn < 3,
+    ut => ERA3_RECRUIT_COSTS[ut] <= goldCoins && recruitsThisTurn < 3
+      && foodConsumed + unitFoodCost(ut) <= foodMax,
   );
 
   if (playerStacks.length === 0 && generals.length === 0) {
@@ -92,6 +100,43 @@ export function ArmyPanel({
           const maxHp = playerStacks.flatMap(s => s.units).reduce((s, u) => s + unitMaxHp(u.type), 0);
           return <HpBar current={hp} max={maxHp} />;
         })()}
+
+        {/* ── Food supply ── */}
+        <div className="pt-1 border-t border-border-subtle/60 space-y-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] text-text-muted uppercase tracking-wider flex items-center gap-1">
+              🌾 {t.era3.food}
+            </span>
+            <span className="text-[10px] font-bold tabular-nums" style={{ color: foodColor }}>
+              {foodConsumed}/{foodMax}
+            </span>
+          </div>
+          {/* Food bar */}
+          <div className="rounded-full overflow-hidden bg-game-bg/80 border border-border-subtle" style={{ height: 5 }}>
+            <div
+              style={{ width: `${foodRatio * 100}%`, height: '100%', background: foodColor, borderRadius: 9999, transition: 'width 0.25s' }}
+            />
+          </div>
+          {/* Three stat cells */}
+          <div className="grid grid-cols-3 gap-1 pt-0.5">
+            <div className="text-center">
+              <div className="text-[8px] text-text-muted uppercase tracking-wider">{t.era3.foodConsumed}</div>
+              <div className="text-[11px] font-bold tabular-nums" style={{ color: foodColor }}>{foodConsumed}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-[8px] text-text-muted uppercase tracking-wider">{t.era3.foodMax}</div>
+              <div className="text-[11px] font-bold tabular-nums text-text-primary">{foodMax}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-[8px] text-text-muted uppercase tracking-wider">{t.era3.foodAvailable}</div>
+              <div className={`text-[11px] font-bold tabular-nums ${foodAvailable <= 0 ? 'text-red-400' : 'text-emerald-400'}`}>{foodAvailable}</div>
+            </div>
+          </div>
+          {foodAvailable <= 0 && (
+            <div className="text-[9px] text-red-400 text-center font-semibold">{t.era3.foodCapExceeded}</div>
+          )}
+        </div>
+
         {/* Turn resource bars */}
         {isMyTurn && (
           <div className="grid grid-cols-2 gap-1 pt-1 border-t border-border-subtle/60">
@@ -133,10 +178,11 @@ export function ArmyPanel({
                 <div
                   key={ut}
                   className={`rounded p-1 text-center border ${canAfford ? 'border-emerald-500/40 bg-emerald-500/10' : 'border-border-subtle bg-game-bg/60 opacity-50'}`}
-                  title={`${t.units[ut]} — 💰${cost}`}
+                  title={`${t.units[ut]} — 💰${cost} · 🌾${unitFoodCost(ut)}`}
                 >
                   <div className="text-sm">{UNIT_ICONS[ut]}</div>
                   <div className="text-game-gold text-[9px] tabular-nums font-bold">💰{cost}</div>
+                  <div className="text-emerald-400 text-[8px] tabular-nums">🌾{unitFoodCost(ut)}</div>
                 </div>
               );
             })}

@@ -61,13 +61,31 @@ describe('canEnterHex', () => {
     expect(canEnterHex(hexPlain, {}, 's1')).toBe(true);
   });
 
-  it('rejects hex occupied by another stack', () => {
+  it('rejects hex occupied by another stack (no movingStack provided)', () => {
     expect(canEnterHex(hexOccupied, { s2: {} as Stack }, 's1')).toBe(false);
   });
 
   it('accepts hex occupied by the moving stack itself', () => {
     const hex: Hex = { ...hexPlain, stackId: 's1' };
     expect(canEnterHex(hex, { s1: {} as Stack }, 's1')).toBe(true);
+  });
+
+  it('accepts friendly stack with room when movingStack provided', () => {
+    const mover = { id: 's1', ownerId: 'p1', units: [{ id: 'u1' }] } as unknown as Stack;
+    const host = { id: 's2', ownerId: 'p1', units: [{ id: 'u2' }, { id: 'u3' }] } as unknown as Stack;
+    expect(canEnterHex(hexOccupied, { s2: host }, 's1', false, mover)).toBe(true);
+  });
+
+  it('rejects friendly stack that would exceed MAX_STACK_SIZE', () => {
+    const mover = { id: 's1', ownerId: 'p1', units: Array(4).fill({ id: 'x' }) } as unknown as Stack;
+    const host = { id: 's2', ownerId: 'p1', units: Array(4).fill({ id: 'y' }) } as unknown as Stack;
+    expect(canEnterHex(hexOccupied, { s2: host }, 's1', false, mover)).toBe(false);
+  });
+
+  it('rejects enemy stack even when movingStack provided', () => {
+    const mover = { id: 's1', ownerId: 'p1', units: [{ id: 'u1' }] } as unknown as Stack;
+    const enemy = { id: 's2', ownerId: 'p2', units: [{ id: 'u2' }] } as unknown as Stack;
+    expect(canEnterHex(hexOccupied, { s2: enemy }, 's1', false, mover)).toBe(false);
   });
 });
 

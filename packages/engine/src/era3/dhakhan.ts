@@ -15,13 +15,6 @@ import { hexKey, distance, neighbors } from './hex.js';
 import { canEnterHex, getTerrainMoveCost } from './pathing.js';
 import { resolveCombat } from './combat.js';
 
-/**
- * Sentinel counter used so Dhakhan-spawned unit and stack IDs don't collide
- * with player units. Seeded from the current turn.
- */
-function spawnIds(seed: number, turnNumber: number, n: number): string {
-  return `${seed}_d${turnNumber}_${n}`;
-}
 
 function defaultWroughtHp(type: Unit['type']): number {
   const def = UNIT_DEFINITIONS.find(d => d.id === type);
@@ -38,22 +31,20 @@ export function spawnWroughtForCycle(state: GameState): GameState {
   const hexes = state.map.hexes;
   const stacks = { ...(state.era3Stacks ?? {}) };
   const newHexes = { ...hexes };
-  const turnNumber = state.era3TurnNumber ?? 1;
-  const seed = state.seed;
-  let counter = 0;
+  let seq = state.era3UnitSeq ?? 0;
 
   for (const hex of Object.values(hexes)) {
-    if (!hex.isSpawnZone) continue;
+    if (!hex.isSpawnZone || hex.spawnZoneDestroyed) continue;
     for (let i = 0; i < WROUGHT_PER_SPAWN_PER_CYCLE; i++) {
+      seq++;
       const unit: Unit = {
-        id: `unit_${spawnIds(seed, turnNumber, counter)}`,
+        id: `unit_d_${seq}`,
         type: 'infantry',
         ownerId: DHAKHAN_OWNER_ID,
         currentHp: defaultWroughtHp('infantry'),
         hasMovedThisTurn: false,
         hasAttackedThisTurn: false,
       };
-      counter++;
 
       const existingStackId = newHexes[hexKey(hex.coord)].stackId;
       const existing = existingStackId ? stacks[existingStackId] : null;
@@ -61,8 +52,8 @@ export function spawnWroughtForCycle(state: GameState): GameState {
       if (existing && existing.ownerId === DHAKHAN_OWNER_ID && existing.units.length < MAX_STACK_SIZE) {
         stacks[existing.id] = { ...existing, units: [...existing.units, unit] };
       } else if (!existing) {
-        const newStackId = `stack_${spawnIds(seed, turnNumber, counter)}`;
-        counter++;
+        seq++;
+        const newStackId = `stack_d_${seq}`;
         const newStack: Stack = {
           id: newStackId,
           ownerId: DHAKHAN_OWNER_ID,
@@ -79,7 +70,55 @@ export function spawnWroughtForCycle(state: GameState): GameState {
     }
   }
 
-  return { ...state, map: { ...state.map, hexes: newHexes }, era3Stacks: stacks };
+  return { ...state, map: { ...state.map, hexes: newHexes }, era3Stacks: stacks, era3UnitSeq: seq };
+}
+
+/**
+ * Spawn 1 infantry per active (non-destroyed) spawn zone each turn.
+ * Called at end of every player turn.
+ */
+export function spawnWroughtPerTurn(state: GameState): GameState {
+  if (!state.map) return state;
+  const hexes = state.map.hexes;
+  const stacks = { ...(state.era3Stacks ?? {}) };
+  const newHexes = { ...hexes };
+  let seq = state.era3UnitSeq ?? 0;
+
+  for (const hex of Object.values(hexes)) {
+    if (!hex.isSpawnZone || hex.spawnZoneDestroyed) continue;
+    seq++;
+    const unit: Unit = {
+      id: `unit_d_${seq}`,
+      type: 'infantry',
+      ownerId: DHAKHAN_OWNER_ID,
+      currentHp: defaultWroughtHp('infantry'),
+      hasMovedThisTurn: false,
+      hasAttackedThisTurn: false,
+    };
+
+    const existingStackId = newHexes[hexKey(hex.coord)].stackId;
+    const existing = existingStackId ? stacks[existingStackId] : null;
+
+    if (existing && existing.ownerId === DHAKHAN_OWNER_ID && existing.units.length < MAX_STACK_SIZE) {
+      stacks[existing.id] = { ...existing, units: [...existing.units, unit] };
+    } else if (!existing) {
+      seq++;
+      const newStackId = `stack_d_${seq}`;
+      const newStack: Stack = {
+        id: newStackId,
+        ownerId: DHAKHAN_OWNER_ID,
+        units: [unit],
+        position: hex.coord,
+        movementLeft: 0,
+      };
+      stacks[newStackId] = newStack;
+      const k = hexKey(hex.coord);
+      newHexes[k] = { ...newHexes[k], stackId: newStackId };
+    }
+    // If player stack occupies spawn hex, unit cannot spawn there this turn.
+  }
+
+  return { ...state, map: { ...state.map, hexes: newHexes }, era3Stacks: stacks, era3UnitSeq: seq };
 }
 
 /**

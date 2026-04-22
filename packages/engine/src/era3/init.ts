@@ -3,7 +3,7 @@ import type { FreeUnitGrant, TechType } from '../types/era2.js';
 import { TECH_TYPES } from '../types/era2.js';
 import { UNIT_DEFINITIONS } from '../era2/constants.js';
 import type { HexCoord, PlayerEra3State, Stack, Unit } from '../types/era3.js';
-import { MAX_STACK_SIZE } from './constants.js';
+import { MAX_STACK_SIZE, ERA3_FOOD_RESERVES_INITIAL } from './constants.js';
 
 /**
  * Session 3 baseline unit HP: defense + 2. Gives:
@@ -30,13 +30,14 @@ export function initPlayerEra3State(player: Player, capitalCoord: HexCoord): Pla
   const era2 = player.era2State;
 
   const techSnapshot: Record<TechType, number> = {
-    war: 0, science: 0, resources: 0, economy: 0,
+    war: 0, science: 0, resources: 0, economy: 0, religion: 0,
   };
   for (const t of TECH_TYPES) techSnapshot[t] = era2.techLevels[t];
 
   return {
     capitalCoord,
     goldCoins: era2.goldCoins,
+    foodReserves: ERA3_FOOD_RESERVES_INITIAL,
     techLevels: techSnapshot,
   };
 }

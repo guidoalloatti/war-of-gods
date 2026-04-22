@@ -1,7 +1,7 @@
 import type { HexTerrain } from '../types/era3.js';
 
-/** Disk radius for the Era III map (331 hexes total). */
-export const MAP_RADIUS = 10;
+/** Disk radius for the Era III map. Expanded from 10→12 for irregular island shape. */
+export const MAP_RADIUS = 12;
 
 /** Distance from citadel (0,0) where capitals sit, equispaced by angle. */
 export const CAPITAL_RING_RADIUS = 8;
@@ -111,6 +111,13 @@ export const ERA3_RECRUITS_PER_TURN = 3;
 export const ERA3_RESOURCES_STACK_SIZE_PER_LEVEL: readonly number[] = [2, 3, 4, 5, 6, 6];
 
 /**
+ * Maximum food supply (total food units supportable) by Resources tech level (index = level 0–5).
+ * Each unit type consumes food: infantry/ranged=1, mounted=2, siege/flying=3.
+ * Resources tech increases the food ceiling so larger armies can be sustained.
+ */
+export const ERA3_FOOD_CAPACITY_PER_LEVEL: readonly number[] = [4, 6, 8, 10, 14, 18];
+
+/**
  * Science tech → unit unlock table.
  * scienceReq per unit type: infantry=0, ranged=1, mounted=2, siege=3, flying=4.
  * Player's science level must be >= scienceReq to recruit that unit type.
@@ -187,3 +194,37 @@ export const BUILD_BRIDGE_COST = 5;
  * Multiplier applied to `getIncrementalCost(tech, nextLevel)`, rounded up.
  */
 export const ERA3_TECH_UPGRADE_MULTIPLIER = 1.5;
+
+/**
+ * Food production per turn by Economy tech level (index = level 0–5).
+ * Food surplus accumulates in reserves; deficit drains reserves.
+ * When reserves drop below 0 one unit is lost to starvation.
+ * Economy 0 → 1 food/turn; Economy 5 → 6 food/turn.
+ */
+export const ERA3_FOOD_PRODUCTION_PER_LEVEL: readonly number[] = [1, 2, 3, 4, 5, 6];
+
+/**
+ * Starting food reserves for a player entering Era III.
+ */
+export const ERA3_FOOD_RESERVES_INITIAL = 5;
+
+/**
+ * Spirituality (religion) tech effects for Era III.
+ *
+ * Defense reduction: reduces incoming attacker damage fraction.
+ *   index = level 0–5. Level 0 = no reduction, Level 5 = 27% damage reduction.
+ *
+ * Rest heal bonus: extra HP healed per unit when a stack rests (on top of REST_HEAL_FRACTION).
+ *   index = level 0–5. Level 0 = 0, Level 5 = +3 HP.
+ *
+ * Fortify defense bonus: flat per-unit defense bonus added when stack is fortified.
+ *   index = level 0–5. Level 0 = 0, Level 5 = +3 defense.
+ *
+ * Rout threshold: attacker power must exceed this multiple of defender power
+ *   for defender's morale to break. Level 0 = 2.0×, Level 5 = 3.0×.
+ */
+export const ERA3_RELIGION_DEFENSE_REDUCTION: readonly number[] = [0, 0.04, 0.08, 0.13, 0.19, 0.27];
+export const ERA3_RELIGION_MORALE_HEAL: readonly number[] = [0, 0, 0, 1, 1, 2];
+export const ERA3_RELIGION_REST_HEAL_BONUS: readonly number[] = [0, 0, 1, 1, 2, 3];
+export const ERA3_RELIGION_FORTIFY_DEF_BONUS: readonly number[] = [0, 0, 0, 1, 2, 3];
+export const ERA3_RELIGION_ROUT_THRESHOLD: readonly number[] = [2.0, 2.1, 2.2, 2.4, 2.7, 3.0];

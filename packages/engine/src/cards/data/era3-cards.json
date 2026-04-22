@@ -1,9 +1,10 @@
 {
-  "version": "1.0.0",
-  "description": "Era III tactical cards. Each player is dealt 3 at the start of Era III and may play one per turn during game_loop.",
+  "version": "2.0.0",
+  "description": "Era III tactical cards. Three tiers: common (basic bonuses), rare (medium power), legendary (permanent/powerful effects). Players receive 2 card offers per turn and keep 1.",
   "cards": [
     {
       "id": "era3_01",
+      "rarity": "rare",
       "name": "Carga Heroica",
       "name_en": "Heroic Charge",
       "type": "era3",
@@ -17,6 +18,7 @@
     },
     {
       "id": "era3_02",
+      "rarity": "rare",
       "name": "Bálsamo Élfico",
       "name_en": "Elven Balm",
       "type": "era3",
@@ -30,6 +32,7 @@
     },
     {
       "id": "era3_03",
+      "rarity": "common",
       "name": "Leva del Pueblo",
       "name_en": "People's Levy",
       "type": "era3",
@@ -43,6 +46,7 @@
     },
     {
       "id": "era3_04",
+      "rarity": "common",
       "name": "Arcas del Rey",
       "name_en": "King's Coffers",
       "type": "era3",
@@ -56,6 +60,7 @@
     },
     {
       "id": "era3_05",
+      "rarity": "common",
       "name": "Viento Favorable",
       "name_en": "Following Wind",
       "type": "era3",
@@ -69,6 +74,7 @@
     },
     {
       "id": "era3_06",
+      "rarity": "rare",
       "name": "Jinetes de la Pradera",
       "name_en": "Plainsriders",
       "type": "era3",
@@ -82,6 +88,7 @@
     },
     {
       "id": "era3_07",
+      "rarity": "rare",
       "name": "Furia del Asedio",
       "name_en": "Siege Fury",
       "type": "era3",
@@ -95,6 +102,7 @@
     },
     {
       "id": "era3_08",
+      "rarity": "common",
       "name": "Consejo del Dragón",
       "name_en": "Dragon's Counsel",
       "type": "era3",
@@ -105,6 +113,471 @@
       "effects": [
         { "type": "era3_gold_bonus", "trigger": "on_era3_play", "amount": 2 },
         { "type": "era3_attack_boost", "trigger": "on_era3_play", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "era3_09",
+      "rarity": "common",
+      "name": "Cosecha Temprana",
+      "name_en": "Early Harvest",
+      "type": "era3",
+      "flavorText": "Los graneros se llenan antes de la tormenta.",
+      "flavorText_en": "Barns fill before the storm.",
+      "mechanicalText": "Ganas 2 de comida.",
+      "mechanicalText_en": "Gain 2 food.",
+      "effects": [
+        { "type": "era3_food_bonus", "trigger": "on_era3_play", "amount": 2 }
+      ]
+    },
+    {
+      "id": "era3_10",
+      "rarity": "common",
+      "name": "Caza Abundante",
+      "name_en": "Bountiful Hunt",
+      "type": "era3",
+      "flavorText": "Los cazadores regresan con el doble de lo esperado.",
+      "flavorText_en": "The hunters return with twice what was hoped.",
+      "mechanicalText": "Ganas 1 de oro y 1 de comida.",
+      "mechanicalText_en": "Gain 1 gold and 1 food.",
+      "effects": [
+        { "type": "era3_gold_bonus", "trigger": "on_era3_play", "amount": 1 },
+        { "type": "era3_food_bonus", "trigger": "on_era3_play", "amount": 1 }
+      ]
+    },
+    {
+      "id": "era3_11",
+      "rarity": "common",
+      "name": "Recrutas Voluntarios",
+      "name_en": "Volunteer Recruits",
+      "type": "era3",
+      "flavorText": "La fama del reino llama a los valientes.",
+      "flavorText_en": "The kingdom's fame calls the brave.",
+      "mechanicalText": "Recluta 1 arquero gratis en tu capital.",
+      "mechanicalText_en": "Recruit 1 ranged unit free in your capital.",
+      "effects": [
+        { "type": "era3_free_recruit", "trigger": "on_era3_play", "unit": "ranged" }
+      ]
+    },
+    {
+      "id": "era3_12",
+      "rarity": "common",
+      "name": "Tributo de los Vasallos",
+      "name_en": "Vassal Tribute",
+      "type": "era3",
+      "flavorText": "Los pueblos conquistados envían sus diezmos.",
+      "flavorText_en": "Conquered towns send their tithe.",
+      "mechanicalText": "Ganas 3 monedas de oro.",
+      "mechanicalText_en": "Gain 3 gold.",
+      "effects": [
+        { "type": "era3_gold_bonus", "trigger": "on_era3_play", "amount": 3 }
+      ]
+    },
+    {
+      "id": "era3_13",
+      "rarity": "common",
+      "name": "Provisiones de Marcha",
+      "name_en": "March Provisions",
+      "type": "era3",
+      "flavorText": "El ejército avanza bien alimentado.",
+      "flavorText_en": "The army marches well fed.",
+      "mechanicalText": "Ganas 3 de comida.",
+      "mechanicalText_en": "Gain 3 food.",
+      "effects": [
+        { "type": "era3_food_bonus", "trigger": "on_era3_play", "amount": 3 }
+      ]
+    },
+    {
+      "id": "era3_14",
+      "rarity": "common",
+      "name": "Escudo del Hogar",
+      "name_en": "Hearth Shield",
+      "type": "era3",
+      "flavorText": "Luchan por lo que aman, y eso los hace invencibles.",
+      "flavorText_en": "They fight for what they love, and that makes them unbreakable.",
+      "mechanicalText": "+1 defensa a todas tus unidades este turno.",
+      "mechanicalText_en": "+1 defense to all your units this turn.",
+      "effects": [
+        { "type": "era3_defense_boost", "trigger": "on_era3_play", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "era3_15",
+      "rarity": "common",
+      "name": "Marcha Rápida",
+      "name_en": "Swift March",
+      "type": "era3",
+      "flavorText": "El camino cede ante sus botas.",
+      "flavorText_en": "The road yields to their boots.",
+      "mechanicalText": "+3 movimiento a todos tus stacks este turno.",
+      "mechanicalText_en": "+3 movement to all your stacks this turn.",
+      "effects": [
+        { "type": "era3_extra_movement", "trigger": "on_era3_play", "bonus": 3 }
+      ]
+    },
+    {
+      "id": "era3_16",
+      "rarity": "rare",
+      "name": "Alquimia de Guerra",
+      "name_en": "War Alchemy",
+      "type": "era3",
+      "flavorText": "El fuego griego ilumina la oscuridad.",
+      "flavorText_en": "Greek fire lights the darkness.",
+      "mechanicalText": "+3 ataque y +1 defensa a tus unidades este turno.",
+      "mechanicalText_en": "+3 attack and +1 defense to your units this turn.",
+      "effects": [
+        { "type": "era3_attack_boost", "trigger": "on_era3_play", "bonus": 3 },
+        { "type": "era3_defense_boost", "trigger": "on_era3_play", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "era3_17",
+      "rarity": "rare",
+      "name": "Mercenarios del Norte",
+      "name_en": "Northern Mercenaries",
+      "type": "era3",
+      "flavorText": "El oro habla más que la lealtad.",
+      "flavorText_en": "Gold speaks louder than loyalty.",
+      "mechanicalText": "Ganas 4 de oro y recluta 1 caballería gratis.",
+      "mechanicalText_en": "Gain 4 gold and recruit 1 mounted unit free.",
+      "effects": [
+        { "type": "era3_gold_bonus", "trigger": "on_era3_play", "amount": 4 },
+        { "type": "era3_free_recruit", "trigger": "on_era3_play", "unit": "mounted" }
+      ]
+    },
+    {
+      "id": "era3_18",
+      "rarity": "rare",
+      "name": "Brigada de Asedio",
+      "name_en": "Siege Brigade",
+      "type": "era3",
+      "flavorText": "Las murallas caen ante la ingeniería.",
+      "flavorText_en": "Walls fall before engineering.",
+      "mechanicalText": "Recluta 1 unidad de asedio gratis en tu capital.",
+      "mechanicalText_en": "Recruit 1 siege unit free in your capital.",
+      "effects": [
+        { "type": "era3_free_recruit", "trigger": "on_era3_play", "unit": "siege" }
+      ]
+    },
+    {
+      "id": "era3_19",
+      "rarity": "rare",
+      "name": "Curación en Masa",
+      "name_en": "Mass Healing",
+      "type": "era3",
+      "flavorText": "Los curanderos trabajan incansables bajo la luna.",
+      "flavorText_en": "The healers work tirelessly under the moon.",
+      "mechanicalText": "Todos tus stacks recuperan 2 HP por unidad.",
+      "mechanicalText_en": "All your stacks recover 2 HP per unit.",
+      "effects": [
+        { "type": "era3_heal_all_stacks", "trigger": "on_era3_play", "hpAmount": 2 }
+      ]
+    },
+    {
+      "id": "era3_20",
+      "rarity": "rare",
+      "name": "Patrulla Doble",
+      "name_en": "Double Patrol",
+      "type": "era3",
+      "flavorText": "Dos batallones donde había uno.",
+      "flavorText_en": "Two battalions where there was one.",
+      "mechanicalText": "Recluta 2 arqueros gratis en tu capital.",
+      "mechanicalText_en": "Recruit 2 ranged units free in your capital.",
+      "effects": [
+        { "type": "era3_free_recruit_two", "trigger": "on_era3_play", "unit": "ranged" }
+      ]
+    },
+    {
+      "id": "era3_21",
+      "rarity": "rare",
+      "name": "Fortaleza Temporal",
+      "name_en": "Temporary Fortress",
+      "type": "era3",
+      "flavorText": "La tierra se levanta como un muro.",
+      "flavorText_en": "The earth rises like a wall.",
+      "mechanicalText": "Fortifica todos tus stacks este turno (+2 defensa, no pueden moverse).",
+      "mechanicalText_en": "Fortify all your stacks this turn (+2 defense, cannot move).",
+      "effects": [
+        { "type": "era3_fortify_stack", "trigger": "on_era3_play" }
+      ]
+    },
+    {
+      "id": "era3_22",
+      "rarity": "rare",
+      "name": "Festín del Guerrero",
+      "name_en": "Warrior's Feast",
+      "type": "era3",
+      "flavorText": "Comen como reyes antes de la batalla.",
+      "flavorText_en": "They eat like kings before the battle.",
+      "mechanicalText": "Ganas 4 de comida y +1 ataque a tus unidades este turno.",
+      "mechanicalText_en": "Gain 4 food and +1 attack to your units this turn.",
+      "effects": [
+        { "type": "era3_food_bonus", "trigger": "on_era3_play", "amount": 4 },
+        { "type": "era3_attack_boost", "trigger": "on_era3_play", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "era3_23",
+      "rarity": "rare",
+      "name": "Exploración Estratégica",
+      "name_en": "Strategic Scouting",
+      "type": "era3",
+      "flavorText": "Los exploradores regresan con mapas y tesoros.",
+      "flavorText_en": "The scouts return with maps and treasure.",
+      "mechanicalText": "Ganas 3 de oro, 2 de comida y +2 movimiento este turno.",
+      "mechanicalText_en": "Gain 3 gold, 2 food and +2 movement this turn.",
+      "effects": [
+        { "type": "era3_gold_bonus", "trigger": "on_era3_play", "amount": 3 },
+        { "type": "era3_food_bonus", "trigger": "on_era3_play", "amount": 2 },
+        { "type": "era3_extra_movement", "trigger": "on_era3_play", "bonus": 2 }
+      ]
+    },
+    {
+      "id": "era3_24",
+      "rarity": "rare",
+      "name": "Caballería Élite",
+      "name_en": "Elite Cavalry",
+      "type": "era3",
+      "flavorText": "Los mejores jinetes del reino entran en combate.",
+      "flavorText_en": "The kingdom's finest riders enter the fray.",
+      "mechanicalText": "Recluta 2 unidades de caballería gratis en tu capital.",
+      "mechanicalText_en": "Recruit 2 mounted units free in your capital.",
+      "effects": [
+        { "type": "era3_free_recruit_two", "trigger": "on_era3_play", "unit": "mounted" }
+      ]
+    },
+    {
+      "id": "era3_25",
+      "rarity": "legendary",
+      "name": "Minas de Oro Eternas",
+      "name_en": "Eternal Gold Mines",
+      "type": "era3",
+      "flavorText": "Las venas del mundo nunca se agotan para los elegidos.",
+      "flavorText_en": "The veins of the world never run dry for the chosen.",
+      "mechanicalText": "+2 de oro permanente por ciclo. También ganas 2 de oro ahora.",
+      "mechanicalText_en": "+2 permanent gold per cycle. Also gain 2 gold now.",
+      "effects": [
+        { "type": "era3_permanent_gold_income", "trigger": "on_era3_play", "amount": 2 },
+        { "type": "era3_gold_bonus", "trigger": "on_era3_play", "amount": 2 }
+      ]
+    },
+    {
+      "id": "era3_26",
+      "rarity": "legendary",
+      "name": "Granjas Benditas",
+      "name_en": "Blessed Farmlands",
+      "type": "era3",
+      "flavorText": "La diosa de la tierra sonríe y los campos florecen.",
+      "flavorText_en": "The earth goddess smiles and the fields bloom.",
+      "mechanicalText": "+2 de comida permanente por ciclo. También ganas 3 de comida ahora.",
+      "mechanicalText_en": "+2 permanent food per cycle. Also gain 3 food now.",
+      "effects": [
+        { "type": "era3_permanent_food_income", "trigger": "on_era3_play", "amount": 2 },
+        { "type": "era3_food_bonus", "trigger": "on_era3_play", "amount": 3 }
+      ]
+    },
+    {
+      "id": "era3_27",
+      "rarity": "legendary",
+      "name": "Antiguo Tratado de Guerra",
+      "name_en": "Ancient War Pact",
+      "type": "era3",
+      "flavorText": "Los pergaminos sellados en sangre otorgan poder ancestral.",
+      "flavorText_en": "Scrolls sealed in blood grant ancestral power.",
+      "mechanicalText": "Sube tu tecnología de Guerra en 1 nivel permanente.",
+      "mechanicalText_en": "Permanently raise your War tech by 1 level.",
+      "effects": [
+        { "type": "era3_tech_upgrade", "trigger": "on_era3_play", "tech": "war" }
+      ]
+    },
+    {
+      "id": "era3_28",
+      "rarity": "legendary",
+      "name": "Iluminación de los Sabios",
+      "name_en": "Scholar's Illumination",
+      "type": "era3",
+      "flavorText": "El conocimiento acumulado se cristaliza en un instante.",
+      "flavorText_en": "Accumulated knowledge crystallizes in an instant.",
+      "mechanicalText": "Sube tu tecnología de Ciencia en 1 nivel permanente.",
+      "mechanicalText_en": "Permanently raise your Science tech by 1 level.",
+      "effects": [
+        { "type": "era3_tech_upgrade", "trigger": "on_era3_play", "tech": "science" }
+      ]
+    },
+    {
+      "id": "era3_29",
+      "rarity": "legendary",
+      "name": "Pacto con los Elementos",
+      "name_en": "Pact with the Elements",
+      "type": "era3",
+      "flavorText": "Los espíritus de la tierra prometen su ayuda eterna.",
+      "flavorText_en": "The earth spirits promise their eternal aid.",
+      "mechanicalText": "Sube tu tecnología de Recursos en 1 nivel permanente.",
+      "mechanicalText_en": "Permanently raise your Resources tech by 1 level.",
+      "effects": [
+        { "type": "era3_tech_upgrade", "trigger": "on_era3_play", "tech": "resources" }
+      ]
+    },
+    {
+      "id": "era3_30",
+      "rarity": "legendary",
+      "name": "Reformas del Imperio",
+      "name_en": "Imperial Reforms",
+      "type": "era3",
+      "flavorText": "El edicto del trono transforma la economía del reino.",
+      "flavorText_en": "The throne's edict transforms the kingdom's economy.",
+      "mechanicalText": "Sube tu tecnología de Economía en 1 nivel permanente.",
+      "mechanicalText_en": "Permanently raise your Economy tech by 1 level.",
+      "effects": [
+        { "type": "era3_tech_upgrade", "trigger": "on_era3_play", "tech": "economy" }
+      ]
+    },
+    {
+      "id": "era3_31",
+      "rarity": "legendary",
+      "name": "El Dragón Despertado",
+      "name_en": "The Dragon Awakens",
+      "type": "era3",
+      "flavorText": "Desde las montañas eternas, el señor del fuego responde al llamado.",
+      "flavorText_en": "From the eternal mountains, the lord of fire answers the call.",
+      "mechanicalText": "Recluta 1 unidad voladora gratis. +4 ataque a tus unidades este turno.",
+      "mechanicalText_en": "Recruit 1 flying unit free. +4 attack to your units this turn.",
+      "effects": [
+        { "type": "era3_free_recruit", "trigger": "on_era3_play", "unit": "flying" },
+        { "type": "era3_attack_boost", "trigger": "on_era3_play", "bonus": 4 }
+      ]
+    },
+    {
+      "id": "era3_32",
+      "rarity": "legendary",
+      "name": "Armada de Conquista",
+      "name_en": "Conquest Armada",
+      "type": "era3",
+      "flavorText": "Todo el reino marcha bajo una sola bandera.",
+      "flavorText_en": "All the kingdom marches under a single banner.",
+      "mechanicalText": "Recluta 1 unidad de asedio gratis. +3 ataque y +2 movimiento este turno.",
+      "mechanicalText_en": "Recruit 1 siege unit free. +3 attack and +2 movement this turn.",
+      "effects": [
+        { "type": "era3_free_recruit", "trigger": "on_era3_play", "unit": "siege" },
+        { "type": "era3_attack_boost", "trigger": "on_era3_play", "bonus": 3 },
+        { "type": "era3_extra_movement", "trigger": "on_era3_play", "bonus": 2 }
+      ]
+    },
+    {
+      "id": "era3_33",
+      "rarity": "legendary",
+      "name": "Prosperidad Eterna",
+      "name_en": "Eternal Prosperity",
+      "type": "era3",
+      "flavorText": "El reino florece incluso en los tiempos más oscuros.",
+      "flavorText_en": "The kingdom flourishes even in the darkest times.",
+      "mechanicalText": "+1 de oro permanente y +1 de comida permanente por ciclo.",
+      "mechanicalText_en": "+1 permanent gold per cycle and +1 permanent food per cycle.",
+      "effects": [
+        { "type": "era3_permanent_gold_income", "trigger": "on_era3_play", "amount": 1 },
+        { "type": "era3_permanent_food_income", "trigger": "on_era3_play", "amount": 1 }
+      ]
+    },
+    {
+      "id": "era3_34",
+      "rarity": "legendary",
+      "name": "Milagro del Campo de Batalla",
+      "name_en": "Battlefield Miracle",
+      "type": "era3",
+      "flavorText": "Los dioses intervienen una sola vez, pero esa vez es suficiente.",
+      "flavorText_en": "The gods intervene but once, and once is enough.",
+      "mechanicalText": "Sana completamente todos tus stacks. +2 ataque a tus unidades este turno.",
+      "mechanicalText_en": "Fully heal all your stacks. +2 attack to your units this turn.",
+      "effects": [
+        { "type": "era3_heal_all_stacks", "trigger": "on_era3_play", "hpAmount": 99 },
+        { "type": "era3_attack_boost", "trigger": "on_era3_play", "bonus": 2 }
+      ]
+    },
+    {
+      "id": "era3_35",
+      "rarity": "common",
+      "name": "Patrulla de Frontera",
+      "name_en": "Border Patrol",
+      "type": "era3",
+      "flavorText": "Los vigías no duermen jamás.",
+      "flavorText_en": "The watchmen never sleep.",
+      "mechanicalText": "+1 ataque a tus unidades y +1 movimiento este turno.",
+      "mechanicalText_en": "+1 attack to your units and +1 movement this turn.",
+      "effects": [
+        { "type": "era3_attack_boost", "trigger": "on_era3_play", "bonus": 1 },
+        { "type": "era3_extra_movement", "trigger": "on_era3_play", "bonus": 1 }
+      ]
+    },
+    {
+      "id": "era3_36",
+      "rarity": "common",
+      "name": "Pago de Deudas",
+      "name_en": "Debt Payment",
+      "type": "era3",
+      "flavorText": "La deuda se saldo en monedas de plata.",
+      "flavorText_en": "The debt is settled in silver coins.",
+      "mechanicalText": "Ganas 2 de oro.",
+      "mechanicalText_en": "Gain 2 gold.",
+      "effects": [
+        { "type": "era3_gold_bonus", "trigger": "on_era3_play", "amount": 2 }
+      ]
+    },
+    {
+      "id": "era3_37",
+      "rarity": "common",
+      "name": "Herbas Medicinales",
+      "name_en": "Medicinal Herbs",
+      "type": "era3",
+      "flavorText": "El bosque ofrece lo que la batalla destruyó.",
+      "flavorText_en": "The forest offers what the battle destroyed.",
+      "mechanicalText": "Todos tus stacks recuperan 1 HP por unidad.",
+      "mechanicalText_en": "All your stacks recover 1 HP per unit.",
+      "effects": [
+        { "type": "era3_heal_all_stacks", "trigger": "on_era3_play", "hpAmount": 1 }
+      ]
+    },
+    {
+      "id": "era3_38",
+      "rarity": "common",
+      "name": "Forja del Armero",
+      "name_en": "Armorer's Forge",
+      "type": "era3",
+      "flavorText": "El martillo golpea sin descanso hasta el amanecer.",
+      "flavorText_en": "The hammer strikes without rest until dawn.",
+      "mechanicalText": "+2 defensa a tus unidades este turno.",
+      "mechanicalText_en": "+2 defense to your units this turn.",
+      "effects": [
+        { "type": "era3_defense_boost", "trigger": "on_era3_play", "bonus": 2 }
+      ]
+    },
+    {
+      "id": "era3_39",
+      "rarity": "rare",
+      "name": "Maniobra Envolvente",
+      "name_en": "Encircling Maneuver",
+      "type": "era3",
+      "flavorText": "El enemigo mira al frente mientras el flanco cede.",
+      "flavorText_en": "The enemy watches the front while the flank gives way.",
+      "mechanicalText": "+2 ataque, +2 defensa y +2 movimiento este turno.",
+      "mechanicalText_en": "+2 attack, +2 defense and +2 movement this turn.",
+      "effects": [
+        { "type": "era3_attack_boost", "trigger": "on_era3_play", "bonus": 2 },
+        { "type": "era3_defense_boost", "trigger": "on_era3_play", "bonus": 2 },
+        { "type": "era3_extra_movement", "trigger": "on_era3_play", "bonus": 2 }
+      ]
+    },
+    {
+      "id": "era3_40",
+      "rarity": "rare",
+      "name": "Caravana de Abastecimiento",
+      "name_en": "Supply Caravan",
+      "type": "era3",
+      "flavorText": "Los mulos cargan más oro y grano del que parece posible.",
+      "flavorText_en": "The mules carry more gold and grain than seems possible.",
+      "mechanicalText": "Ganas 4 de oro y 4 de comida.",
+      "mechanicalText_en": "Gain 4 gold and 4 food.",
+      "effects": [
+        { "type": "era3_gold_bonus", "trigger": "on_era3_play", "amount": 4 },
+        { "type": "era3_food_bonus", "trigger": "on_era3_play", "amount": 4 }
       ]
     }
   ]

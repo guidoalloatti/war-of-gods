@@ -5,30 +5,51 @@ import { distance, hexKey, neighbors } from './hex.js';
 import { getTerrainMoveCost, pathCost } from './pathing.js';
 import { initGameLoopTurnState, nextTurn, resetStacksForTurn } from './turn.js';
 import { resolveCombat, resolveFlankingCombat } from './combat.js';
-import { isBossAlive, runDhakhanTurn, spawnWroughtForCycle } from './dhakhan.js';
+import { isBossAlive, runDhakhanTurn, spawnWroughtForCycle, spawnWroughtPerTurn } from './dhakhan.js';
 import {
   BOSS_STACK_ID, CITADEL_COORD, DHAKHAN_OWNER_ID, MAX_STACK_SIZE,
   REST_HEAL_FRACTION, DISBAND_REFUND_FRACTION, ERA3_RECRUIT_COSTS,
   TERRAFORM_COST, BUILD_ROAD_OVERLAY_COST, DRAIN_WATER_COST, BUILD_BRIDGE_COST,
   ERA3_TECH_UPGRADE_MULTIPLIER,
 } from './constants.js';
-import { getIncrementalCost } from '../era2/constants.js';
-import { applyCycleIncome, recruitUnit, totalAttackBonus } from './economy.js';
-import { playEra3Card, drawEra3Card, clearTurnEffectsFor } from './cards.js';
+import { getIncrementalCost, RACE_TECH_MAX } from '../era2/constants.js';
+import { applyCycleIncome, recruitUnit, totalAttackBonus, religionDefenseMultiplier, applyMoraleHeal, applyFoodCycle, spiritualityRestHealBonus, spiritualityFortifyDefBonus } from './economy.js';
+import { playEra3Card, dealCardOffers, pickCardOffer, discardCardOffer, clearTurnEffectsFor } from './cards.js';
 import { buildRoad } from './build-road.js';
 import { applyRuinsLoot } from './ruins.js';
+import { updateExploredHexes, updateAllExploredHexes } from './fog.js';
 import { assignGeneral, unassignGeneral } from './generals.js';
 import { UNIT_DEFINITIONS } from '../era2/constants.js';
 import { FORTIFY_DEFENSE_MULT, FORT_DEFENSE_MULT } from './constants.js';
 
-/** Returns a damage multiplier (<1) when the defender is fortified or on a fort hex. */
+/**
+ * Per-unit attack bonus for defender's retaliation, including spirituality
+ * fortify bonus when the stack is fortified.
+ */
+function defenderRetalBonus(stack: Stack, state: GameState): number {
+  const base = totalAttackBonus(stack, state);
+  const defBoost = state.era3TurnEffects?.defenseBoost?.[stack.ownerId] ?? 0;
+  if (stack.fortified) {
+    return base + defBoost + spiritualityFortifyDefBonus(stack, state.players);
+  }
+  return base + defBoost;
+}
+
+/**
+ * Returns a damage multiplier (<1) applied to attacker's damage dealt to defender.
+ * Combines fortification (halved when fortified or on fort hex) and
+ * religion morale defense (stacks multiplicatively).
+ */
 function defenderDamageMult(state: GameState, defender: Stack): number {
   const fortified = defender.fortified ?? false;
   const hexFort = state.map?.hexes[hexKey(defender.position)]?.hasFort ?? false;
-  if (fortified && hexFort) return 1 / (FORTIFY_DEFENSE_MULT * FORT_DEFENSE_MULT);
-  if (fortified) return 1 / FORTIFY_DEFENSE_MULT;
-  if (hexFort) return 1 / FORT_DEFENSE_MULT;
-  return 1;
+  let mult = 1;
+  if (fortified && hexFort) mult *= 1 / (FORTIFY_DEFENSE_MULT * FORT_DEFENSE_MULT);
+  else if (fortified) mult *= 1 / FORTIFY_DEFENSE_MULT;
+  else if (hexFort) mult *= 1 / FORT_DEFENSE_MULT;
+  // Religion morale: reduces incoming damage further
+  mult *= religionDefenseMultiplier(defender, state.players);
+  return mult;
 }
 
 /**
@@ -42,10 +63,10 @@ export function era3Reducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'START_ERA3_GAME_LOOP': {
       if (state.era3Phase !== 'awaiting_next_session') return state;
-      return {
-        ...initGameLoopTurnState(state),
-        era3Phase: 'game_loop',
-      };
+      let loopState: GameState = { ...initGameLoopTurnState(state), era3Phase: 'game_loop' as const };
+      // Apply first-turn income so gold is available immediately on turn 1.
+      loopState = { ...loopState, players: applyCycleIncome(loopState.players) };
+      return updateAllExploredHexes(loopState);
     }
 
     case 'MOVE_STACK':
@@ -102,8 +123,59 @@ export function era3Reducer(state: GameState, action: GameAction): GameState {
     case 'BUILD_BRIDGE':
       return handleBuildBridge(state, action);
 
+    case 'DESTROY_SPAWN_ZONE':
+      return handleDestroySpawnZone(state, action);
+
     case 'ERA3_UPGRADE_TECH':
       return handleEra3UpgradeTech(state, action);
+
+    case 'ERA3_CONTINUE_ETERNAL': {
+      // Remove the turn cap and resume game loop.
+      if (state.era3Phase !== 'defeat') return state;
+      const order = state.era3TurnOrder ?? [];
+      // Find the first non-eliminated player to give the next turn.
+      const nextContinueId = order.find(pid => {
+        const p = state.players.find(pp => pp.id === pid);
+        return p && !p.era3State?.eliminated;
+      }) ?? (order[0] ?? null);
+      let cont: GameState = {
+        ...state,
+        era3Phase: 'game_loop' as const,
+        era3MaxTurns: undefined,
+        era3CurrentPlayerId: nextContinueId,
+      };
+      if (nextContinueId) {
+        cont = clearTurnEffectsFor(cont, nextContinueId);
+        cont = {
+          ...cont,
+          players: cont.players.map(p =>
+            p.id === nextContinueId && p.era3State
+              ? { ...p, era3State: { ...p.era3State, recruitsThisTurn: 0, roadsBuiltThisTurn: 0 } }
+              : p,
+          ),
+          era3Stacks: resetStacksForTurn(cont.era3Stacks ?? {}, nextContinueId),
+        };
+      }
+      return updateAllExploredHexes(cont);
+    }
+
+    case 'PICK_CARD_OFFER':
+      return pickCardOffer(state, action.playerId, action.cardId);
+
+    case 'DISCARD_CARD_OFFER':
+      return discardCardOffer(state, action.playerId);
+
+    case 'MERGE_STACKS':
+      return handleMergeStacks(state, action);
+
+    case 'TRADE_GOLD_FOR_FOOD':
+      return handleTradeGoldForFood(state, action);
+
+    case 'TRADE_FOOD_FOR_GOLD':
+      return handleTradeFoodForGold(state, action);
+
+    case 'DISBAND_UNIT_STARVATION':
+      return handleDisbandUnitStarvation(state, action);
 
     default:
       return state;
@@ -155,6 +227,39 @@ function handleSplitStack(
   };
 }
 
+function handleMergeStacks(
+  state: GameState,
+  action: Extract<GameAction, { type: 'MERGE_STACKS' }>,
+): GameState {
+  if (state.era3Phase !== 'game_loop' && state.era3Phase !== 'final_heroic_turn') return state;
+  if (!state.map || !state.era3Stacks) return state;
+  if (state.era3CurrentPlayerId !== action.playerId) throw new Error('Not your turn');
+
+  const source = state.era3Stacks[action.sourceStackId];
+  const target = state.era3Stacks[action.targetStackId];
+  if (!source) throw new Error(`Unknown source stack ${action.sourceStackId}`);
+  if (!target) throw new Error(`Unknown target stack ${action.targetStackId}`);
+  if (source.ownerId !== action.playerId) throw new Error('You do not own the source stack');
+  if (target.ownerId !== action.playerId) throw new Error('You do not own the target stack');
+  if (source.id === target.id) return state;
+
+  const combinedUnits = [...target.units, ...source.units].slice(0, MAX_STACK_SIZE);
+  const mergedStack: Stack = { ...target, units: combinedUnits };
+
+  const newStacks = { ...state.era3Stacks };
+  newStacks[target.id] = mergedStack;
+  delete newStacks[source.id];
+
+  // Clear the hex pointer if it was pointing to the source stack
+  const newHexes = { ...state.map.hexes };
+  const srcKey = hexKey(source.position);
+  if (newHexes[srcKey]?.stackId === source.id) {
+    newHexes[srcKey] = { ...newHexes[srcKey], stackId: target.id };
+  }
+
+  return { ...state, map: { ...state.map, hexes: newHexes }, era3Stacks: newStacks };
+}
+
 function handleRangedAttack(
   state: GameState,
   action: Extract<GameAction, { type: 'RANGED_ATTACK' }>,
@@ -180,7 +285,7 @@ function handleRangedAttack(
   }
 
   // Ranged combat: only the firing units deal damage, and defender retaliates
-  // only if adjacent (distance 1). At distance 2 it's a free volley.
+  // only if adjacent (distance 1). At distance 2 it's a free volley — no retaliation.
   const firingStack: Stack = { ...attacker, units: ranged };
   const result = resolveCombat(
     firingStack,
@@ -189,8 +294,9 @@ function handleRangedAttack(
     state.era3TurnNumber ?? 1,
     {
       attackerPerUnit: totalAttackBonus(firingStack, state),
-      defenderPerUnit: dist === 1 ? totalAttackBonus(defender, state) : 0,
+      defenderPerUnit: dist === 1 ? defenderRetalBonus(defender, state) : 0,
       defenderDamageMult: defenderDamageMult(state, defender),
+      noRetaliation: dist === 2,
     },
   );
   result.entry.kind = 'ranged';
@@ -297,22 +403,25 @@ function handleMoveStack(
   const cost = isFlying
     ? action.path.length * 3
     : pathCost(state.map, action.path);
-  // Minimum-move guarantee: a single adjacent step is always allowed regardless of terrain cost,
-  // as long as the stack has any movement left.
-  const isMinimumMove = action.path.length === 1 && stack.movementLeft > 0;
+
+  // Minimum-move guarantee: a single adjacent hop is always allowed even when
+  // the terrain cost exceeds the remaining budget. The stack exhausts all
+  // remaining movement (movementLeft becomes 0) rather than going negative.
+  const isMinimumMove = action.path.length === 1;
   if (cost > stack.movementLeft && !isMinimumMove) {
-    throw new Error('Not enough movement');
+    throw new Error(`Not enough movement (need ${cost}, have ${stack.movementLeft})`);
   }
+  const effectiveCost = isMinimumMove ? Math.min(cost, stack.movementLeft) : cost;
 
   // Case A: destination is empty or contains our own stack → regular move.
   if (!destStack || destStack.id === stack.id) {
-    return commitSimpleMove(state, stack, destination, cost);
+    return commitSimpleMove(state, stack, destination, effectiveCost);
   }
 
   // Case A2: destination has a friendly stack owned by the same player →
   // merge into it (respecting MAX_STACK_SIZE). The moving stack disappears.
   if (destStack.ownerId === stack.ownerId) {
-    return commitMergeMove(state, stack, destStack, destination, cost);
+    return commitMergeMove(state, stack, destStack, destination, effectiveCost);
   }
 
   // Case B: destination has another player's stack (not Dhakhan, not us) → blocked.
@@ -324,7 +433,7 @@ function handleMoveStack(
 
   // Case C: destination has a Wrought stack → attack with this stack only
   // (multi-step attacks are allowed — we've already validated intermediates).
-  return commitAttack(state, stack, destStack, action.path, cost);
+  return commitAttack(state, stack, destStack, action.path, effectiveCost);
 }
 
 function commitSimpleMove(
@@ -361,6 +470,7 @@ function commitSimpleMove(
   // `applyRuinsLoot` sees the up-to-date stack occupancy.
   if (stack.ownerId !== DHAKHAN_OWNER_ID) {
     next = applyRuinsLoot(next, stack.ownerId, stack.id, destination);
+    next = updateExploredHexes(next, stack.ownerId);
   }
 
   return next;
@@ -447,7 +557,7 @@ function commitAttack(
     state.era3TurnNumber ?? 1,
     {
       attackerPerUnit: totalAttackBonus(movedAttacker, state),
-      defenderPerUnit: totalAttackBonus(defender, state),
+      defenderPerUnit: defenderRetalBonus(defender, state),
       defenderDamageMult: defenderDamageMult(state, defender),
     },
   );
@@ -522,8 +632,8 @@ function handleEndTurn(
   );
   const wrapped = nextTurnNumber !== (state.era3TurnNumber ?? 1);
 
-  // Draw one card for the player whose turn just ended.
-  let next: GameState = drawEra3Card(state, action.playerId);
+  // Deal 2-card offer to the player whose turn just ended (they pick one next turn start).
+  let next: GameState = dealCardOffers(state, action.playerId);
 
   next = {
     ...next,
@@ -539,17 +649,30 @@ function handleEndTurn(
     if (triggered) next = { ...next, era3HeroicTurnTriggered: true };
   }
 
+  // Spawn 1 infantry per active fort every turn (unconditional, before cycle events).
+  next = spawnWroughtPerTurn(next);
+
   // End-of-cycle: gold income → Dhakhan spawn → Dhakhan move.
   // Skip Dhakhan turn if we are about to enter the heroic phase.
   const enteringHeroic = wrapped && next.era3HeroicTurnTriggered;
   if (wrapped && !enteringHeroic) {
     next = { ...next, players: applyCycleIncome(next.players) };
+    // Religion passive morale heal: each living unit restores HP per religion level
+    next = { ...next, era3Stacks: applyMoraleHeal(next.era3Stacks ?? {}, next.players) };
+    // Food cycle: produce food, subtract upkeep, kill one unit if starving
+    const foodResult = applyFoodCycle(next.era3Stacks ?? {}, next.players);
+    next = { ...next, era3Stacks: foodResult.stacks, players: foodResult.players };
     next = spawnWroughtForCycle(next);
     next = runDhakhanTurn(next);
   }
 
   // Defeat: all player capitals fallen.
   if (next.players.every(p => p.era3State?.eliminated)) {
+    return { ...next, era3Phase: 'defeat' };
+  }
+
+  // Defeat: turn limit reached (only when a finite limit is set).
+  if (wrapped && next.era3MaxTurns !== undefined && nextTurnNumber > next.era3MaxTurns && !next.era3HeroicTurnTriggered) {
     return { ...next, era3Phase: 'defeat' };
   }
 
@@ -592,6 +715,9 @@ function handleEndTurn(
     ),
     era3Stacks: resetStacksForTurn(next.era3Stacks ?? {}, nextPlayerId),
   };
+
+  // Update fog of war for the incoming player at their turn start.
+  next = updateExploredHexes(next, nextPlayerId);
 
   return next;
 }
@@ -680,11 +806,12 @@ function handleAttackStack(
     throw new Error('Can only attack Dhakhan stacks');
   }
 
-  // Siege units can fire at distance 2; otherwise require adjacency.
+  // Siege and ranged units can fire at distance 2; otherwise require adjacency.
   const dist = distance(attacker.position, action.targetCoord);
   const hasSiege = attacker.units.some(u => u.type === 'siege' && !u.hasAttackedThisTurn);
+  const hasRanged = attacker.units.some(u => u.type === 'ranged' && !u.hasAttackedThisTurn);
   if (dist === 2) {
-    if (!hasSiege) throw new Error('Only siege units can attack at distance 2');
+    if (!hasSiege && !hasRanged) throw new Error('Only siege or ranged units can attack at distance 2');
   } else if (dist !== 1) {
     throw new Error('Not adjacent to target');
   }
@@ -707,10 +834,10 @@ function handleAttackStack(
     units: s.units.map(u => ({ ...u, hasAttackedThisTurn: true })),
   });
 
-  // At distance 2, only siege units fire and defender cannot retaliate.
+  // At distance 2, only siege/ranged units fire and defender cannot retaliate.
   const siegeOnly = dist === 2;
   const firingAttacker = siegeOnly
-    ? { ...attacker, units: attacker.units.filter(u => u.type === 'siege' && !u.hasAttackedThisTurn) }
+    ? { ...attacker, units: attacker.units.filter(u => (u.type === 'siege' || u.type === 'ranged') && !u.hasAttackedThisTurn) }
     : attacker;
 
   const markedAttacker = markAttacked(firingAttacker);
@@ -724,14 +851,15 @@ function handleAttackStack(
     state.era3TurnNumber ?? 1,
     {
       attackerPerUnit: totalAttackBonus(markedAttacker, state),
-      defenderPerUnit: siegeOnly ? 0 : totalAttackBonus(defender, state),
+      defenderPerUnit: siegeOnly ? 0 : defenderRetalBonus(defender, state),
       flankerBonuses: markedFlankers.map(f => totalAttackBonus(f, state)),
       defenderDamageMult: siegeOnly ? 1 : defenderDamageMult(state, defender),
+      noRetaliation: siegeOnly,
     },
   );
 
-  // For distance-2: merge siege survivors back + mark their units as attacked.
-  // Non-siege units in the attacker stack remain untouched.
+  // For distance-2: merge siege/ranged survivors back + mark their units as attacked.
+  // Other unit types in the attacker stack remain untouched.
   if (siegeOnly) {
     const siegeIds = new Set(firingAttacker.units.map(u => u.id));
     const survivorById = new Map(result.primaryAttacker.units.map(u => [u.id, u]));
@@ -770,18 +898,35 @@ function handleAttackStack(
   const newHexes = { ...state.map.hexes };
   const combatLog: CombatEntry[] = [...(state.era3CombatLog ?? []), result.entry];
 
-  // Primary attacker — no movement change, position unchanged.
+  // Defender first (so we can check whether the hex is cleared before advancing).
+  if (result.defenderWiped) {
+    delete newStacks[defender.id];
+    if (newHexes[targetKey]?.stackId === defender.id) {
+      newHexes[targetKey] = { ...newHexes[targetKey], stackId: null };
+    }
+  } else {
+    newStacks[defender.id] = { ...result.defender, position: defender.position };
+  }
+
+  // Primary attacker: advances into cleared hex on melee win (dist===1 only).
+  const attackerFromKey = hexKey(markedAttacker.position);
   if (result.primaryWiped) {
     delete newStacks[markedAttacker.id];
-    const fromKey = hexKey(markedAttacker.position);
-    if (newHexes[fromKey]?.stackId === markedAttacker.id) {
-      newHexes[fromKey] = { ...newHexes[fromKey], stackId: null };
+    if (newHexes[attackerFromKey]?.stackId === markedAttacker.id) {
+      newHexes[attackerFromKey] = { ...newHexes[attackerFromKey], stackId: null };
     }
+  } else if (result.defenderWiped && dist === 1) {
+    // Advance into cleared hex.
+    newStacks[markedAttacker.id] = { ...result.primaryAttacker, position: action.targetCoord };
+    if (newHexes[attackerFromKey]?.stackId === markedAttacker.id) {
+      newHexes[attackerFromKey] = { ...newHexes[attackerFromKey], stackId: null };
+    }
+    newHexes[targetKey] = { ...newHexes[targetKey], stackId: markedAttacker.id };
   } else {
     newStacks[markedAttacker.id] = { ...result.primaryAttacker, position: markedAttacker.position };
   }
 
-  // Flankers — same treatment, position unchanged.
+  // Flankers — stay in place regardless of outcome.
   result.flankingAttackers.forEach((f, i) => {
     if (result.flankersWiped[i]) {
       delete newStacks[f.id];
@@ -793,16 +938,6 @@ function handleAttackStack(
       newStacks[f.id] = { ...f, position: markedFlankers[i].position };
     }
   });
-
-  // Defender.
-  if (result.defenderWiped) {
-    delete newStacks[defender.id];
-    if (newHexes[targetKey]?.stackId === defender.id) {
-      newHexes[targetKey] = { ...newHexes[targetKey], stackId: null };
-    }
-  } else {
-    newStacks[defender.id] = { ...result.defender, position: defender.position };
-  }
 
   let out: GameState = {
     ...state,
@@ -837,12 +972,13 @@ function handleRestStack(
   if (stack.ownerId !== action.playerId) throw new Error('You do not own that stack');
   if (stack.hasActedThisTurn) throw new Error('Stack already used its action this turn');
 
+  const spiritBonus = spiritualityRestHealBonus(stack, state.players);
   const healed = stack.units.map(u => {
     if (u.hasMovedThisTurn || u.hasAttackedThisTurn) return u;
     const def = UNIT_DEFINITIONS.find(d => d.id === u.type);
     const maxHp = def ? def.defense + 2 : 3;
     if (u.currentHp >= maxHp) return u;
-    const gain = Math.ceil(maxHp * REST_HEAL_FRACTION);
+    const gain = Math.ceil(maxHp * REST_HEAL_FRACTION) + spiritBonus;
     return { ...u, currentHp: Math.min(u.currentHp + gain, maxHp) };
   });
 
@@ -954,7 +1090,7 @@ function handleTerraform(
 
   const terraformMap: Partial<Record<import('../types/era3.js').HexTerrain, import('../types/era3.js').HexTerrain>> = {
     desert: 'plain',
-    mountain: 'hill',
+    mountain: 'plain',
     swamp: 'plain',
   };
   const newTerrain = terraformMap[hex.terrain];
@@ -964,11 +1100,19 @@ function handleTerraform(
   if (!player?.era3State) throw new Error('No player state');
   if (player.era3State.goldCoins < TERRAFORM_COST) throw new Error('Not enough gold');
 
+  // When a road overlays this hex, roadTerrain records the base terrain under
+  // the road for rendering. Update it alongside terrain so visuals stay correct.
+  const updatedHex = {
+    ...hex,
+    terrain: newTerrain,
+    ...(hex.hasRoadOverlay ? { roadTerrain: newTerrain } : {}),
+  };
+
   return {
     ...state,
     map: {
       ...state.map,
-      hexes: { ...state.map.hexes, [key]: { ...hex, terrain: newTerrain } },
+      hexes: { ...state.map.hexes, [key]: updatedHex },
     },
     era3Stacks: {
       ...state.era3Stacks,
@@ -1057,7 +1201,7 @@ function handleDrainWater(
     ...state,
     map: {
       ...state.map,
-      hexes: { ...state.map.hexes, [key]: { ...hex, terrain: 'plain', hasBridge: undefined } },
+      hexes: { ...state.map.hexes, [key]: { ...hex, terrain: 'plain', hasBridge: undefined, ...(hex.hasRoadOverlay ? { roadTerrain: 'plain' as const } : {}) } },
     },
     era3Stacks: {
       ...state.era3Stacks,
@@ -1116,6 +1260,36 @@ function handleBuildBridge(
   };
 }
 
+function handleDestroySpawnZone(
+  state: GameState,
+  action: Extract<GameAction, { type: 'DESTROY_SPAWN_ZONE' }>,
+): GameState {
+  if (state.era3Phase !== 'game_loop' && state.era3Phase !== 'final_heroic_turn') return state;
+  if (state.era3CurrentPlayerId !== action.playerId) throw new Error('Not your turn');
+  if (!state.map || !state.era3Stacks) return state;
+
+  const stack = state.era3Stacks[action.stackId];
+  if (!stack) throw new Error('Unknown stack');
+  if (stack.ownerId !== action.playerId) throw new Error('Not your stack');
+
+  const coord = action.coord;
+  const k = hexKey(coord);
+  const hex = state.map.hexes[k];
+  if (!hex) throw new Error('Unknown hex');
+  if (!hex.isSpawnZone) throw new Error('Not a spawn zone');
+  if (hex.spawnZoneDestroyed) throw new Error('Already destroyed');
+
+  // Stack must be on the spawn zone hex.
+  if (stack.position.q !== coord.q || stack.position.r !== coord.r) {
+    throw new Error('Stack must be on the spawn zone to destroy it');
+  }
+
+  return {
+    ...state,
+    map: { ...state.map, hexes: { ...state.map.hexes, [k]: { ...hex, spawnZoneDestroyed: true } } },
+  };
+}
+
 function handleEra3UpgradeTech(
   state: GameState,
   action: Extract<GameAction, { type: 'ERA3_UPGRADE_TECH' }>,
@@ -1129,8 +1303,8 @@ function handleEra3UpgradeTech(
   if (player.era3State.eliminated) throw new Error('Eliminated');
 
   const current = player.era3State.techLevels[action.tech] ?? 0;
-  const maxLevel = (state as GameState & { era3AllowLevel6?: boolean }).era3AllowLevel6 ? 6 : 5;
-  if (current >= maxLevel) throw new Error('Already at max level');
+  const raceMax = RACE_TECH_MAX[player.raceId as keyof typeof RACE_TECH_MAX]?.[action.tech] ?? 5;
+  if (current >= raceMax) throw new Error('Already at max level for this race');
 
   const nextLevel = current + 1;
   const baseCost = getIncrementalCost(action.tech, nextLevel);
@@ -1150,6 +1324,98 @@ function handleEra3UpgradeTech(
               techLevels: { ...p.era3State.techLevels, [action.tech]: nextLevel },
             },
           }
+        : p,
+    ),
+  };
+}
+
+// ── TRADE_GOLD_FOR_FOOD ───────────────────────────────────────────────────────
+// 2 gold → 1 food (rate: spend `amount` gold, gain floor(amount/2) food).
+
+function handleTradeGoldForFood(
+  state: GameState,
+  action: Extract<GameAction, { type: 'TRADE_GOLD_FOR_FOOD' }>,
+): GameState {
+  if (state.era3Phase !== 'game_loop' && state.era3Phase !== 'final_heroic_turn') return state;
+  if (state.era3CurrentPlayerId !== action.playerId) throw new Error('Not your turn');
+  const player = state.players.find(p => p.id === action.playerId);
+  if (!player?.era3State) throw new Error('No era3State');
+  if (player.era3State.eliminated) throw new Error('Eliminated');
+  const amount = Math.max(1, Math.floor(action.amount));
+  const foodGain = Math.floor(amount / 2);
+  if (foodGain <= 0) throw new Error('Must trade at least 2 gold');
+  if (player.era3State.goldCoins < amount) throw new Error('Not enough gold');
+  return {
+    ...state,
+    players: state.players.map(p =>
+      p.id === action.playerId && p.era3State
+        ? { ...p, era3State: { ...p.era3State, goldCoins: p.era3State.goldCoins - amount, foodReserves: p.era3State.foodReserves + foodGain } }
+        : p,
+    ),
+  };
+}
+
+// ── TRADE_FOOD_FOR_GOLD ───────────────────────────────────────────────────────
+// 2 food → 1 gold.
+
+function handleTradeFoodForGold(
+  state: GameState,
+  action: Extract<GameAction, { type: 'TRADE_FOOD_FOR_GOLD' }>,
+): GameState {
+  if (state.era3Phase !== 'game_loop' && state.era3Phase !== 'final_heroic_turn') return state;
+  if (state.era3CurrentPlayerId !== action.playerId) throw new Error('Not your turn');
+  const player = state.players.find(p => p.id === action.playerId);
+  if (!player?.era3State) throw new Error('No era3State');
+  if (player.era3State.eliminated) throw new Error('Eliminated');
+  const amount = Math.max(1, Math.floor(action.amount));
+  const goldGain = Math.floor(amount / 2);
+  if (goldGain <= 0) throw new Error('Must trade at least 2 food');
+  if ((player.era3State.foodReserves ?? 0) < amount) throw new Error('Not enough food');
+  return {
+    ...state,
+    players: state.players.map(p =>
+      p.id === action.playerId && p.era3State
+        ? { ...p, era3State: { ...p.era3State, goldCoins: p.era3State.goldCoins + goldGain, foodReserves: p.era3State.foodReserves - amount } }
+        : p,
+    ),
+  };
+}
+
+// ── DISBAND_UNIT_STARVATION ───────────────────────────────────────────────────
+// Player chooses which unit to sacrifice when food reserves are negative.
+
+function handleDisbandUnitStarvation(
+  state: GameState,
+  action: Extract<GameAction, { type: 'DISBAND_UNIT_STARVATION' }>,
+): GameState {
+  if (!state.era3Stacks || !state.map) return state;
+  const player = state.players.find(p => p.id === action.playerId);
+  if (!player?.era3State) throw new Error('No era3State');
+  if ((player.era3State.foodReserves ?? 0) >= 0) throw new Error('Not starving');
+  const stack = state.era3Stacks[action.stackId];
+  if (!stack) throw new Error(`Unknown stack ${action.stackId}`);
+  if (stack.ownerId !== action.playerId) throw new Error('Not your stack');
+  const unitIdx = stack.units.findIndex(u => u.id === action.unitId);
+  if (unitIdx < 0) throw new Error('Unit not in stack');
+
+  const remaining = stack.units.filter(u => u.id !== action.unitId);
+  let newStacks = { ...state.era3Stacks };
+  const newHexes = { ...state.map.hexes };
+  if (remaining.length === 0) {
+    delete newStacks[stack.id];
+    const k = hexKey(stack.position);
+    if (newHexes[k]?.stackId === stack.id) newHexes[k] = { ...newHexes[k], stackId: null };
+  } else {
+    newStacks = { ...newStacks, [stack.id]: { ...stack, units: remaining } };
+  }
+
+  return {
+    ...state,
+    map: { ...state.map, hexes: newHexes },
+    era3Stacks: newStacks,
+    players: state.players.map(p =>
+      p.id === action.playerId && p.era3State
+        ? { ...p, era3State: { ...p.era3State, foodReserves: 0, era3StarvationPending: false } }
         : p,
     ),
   };

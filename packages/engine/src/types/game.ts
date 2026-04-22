@@ -88,8 +88,10 @@ export type GameState = {
   era3PassiveAttackBonus?: number;
   /** Per-turn effects applied by Era III era cards; cleared on END_TURN for the acting player. */
   era3TurnEffects?: Era3TurnEffects;
-  /** Per-player: whether they have already played a card this turn. */
-  era3CardPlayedThisTurn?: Record<string, boolean>;
+  /** Per-player: number of cards played this turn (max 2). */
+  era3CardPlayedThisTurn?: Record<string, number>;
+  /** Per-player: two card options offered at start of turn (pick one, discard the other). */
+  era3CardOffers?: Record<string, EraCard[]>;
   /**
    * Once any player stack reaches a hex adjacent to the citadel while the
    * boss is alive, this flag is set. On the next cycle wrap the phase
@@ -105,11 +107,21 @@ export type GameState = {
   era3BossKillerId?: string | null;
   /** Monotonically increasing counter for unique unit IDs in Era III. Never decreases. */
   era3UnitSeq?: number;
+  /** Maximum number of full rounds in Era III. Defeat when era3TurnNumber exceeds this. */
+  era3MaxTurns?: number;
+  /**
+   * Fog of War: per-player set of hex keys that have ever been visible to that player.
+   * Key format: "q,r". Once a hex is added here it stays visible forever.
+   * Record<playerId, Record<hexKey, true>>
+   */
+  era3ExploredHexes?: Record<string, Record<string, true>>;
 };
 
 export type Era3TurnEffects = {
   /** Per-player-id per-unit attack bonus during their current turn. */
   attackBoost: Record<string, number>;
+  /** Per-player-id per-unit defense bonus during their current turn. */
+  defenseBoost?: Record<string, number>;
   /** Per-player-id extra movement to each of their stacks this turn. */
   movementBonus: Record<string, number>;
 };
@@ -119,6 +131,8 @@ export type GameConfig = {
   soloVariant?: SoloVariant;
   playerConfigs: PlayerConfig[];
   seed?: number;
+  /** Maximum number of full rounds in Era III before defeat. Default 20. */
+  gameLengthTurns?: number;
 };
 
 export type PlayerConfig = {

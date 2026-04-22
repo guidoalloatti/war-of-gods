@@ -25,7 +25,7 @@ function resolveEngineDataDir(): string | null {
  * the card set expands so existing DBs pick up new card types.
  */
 export function seedCards(db: Database.Database): void {
-  const MIGRATION_KEY = 'seed_cards_v2';
+  const MIGRATION_KEY = 'seed_cards_v3';
 
   const existing = db.prepare('SELECT key FROM migrations WHERE key = ?').get(MIGRATION_KEY);
   if (existing) return;
@@ -45,7 +45,8 @@ export function seedCards(db: Database.Database): void {
     const filePath = path.join(engineDataDir, filename);
     if (!fs.existsSync(filePath)) return 0;
 
-    const raw = JSON.parse(fs.readFileSync(filePath, 'utf-8')) as Array<Record<string, unknown>>;
+    const parsed = JSON.parse(fs.readFileSync(filePath, 'utf-8')) as { cards?: Array<Record<string, unknown>>; relics?: Array<Record<string, unknown>> } | Array<Record<string, unknown>>;
+    const raw = Array.isArray(parsed) ? parsed : (parsed.cards ?? parsed.relics ?? []);
     let count = 0;
     for (let i = 0; i < raw.length; i++) {
       const c = raw[i];

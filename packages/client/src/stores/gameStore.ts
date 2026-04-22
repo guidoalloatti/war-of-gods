@@ -3,6 +3,7 @@ import type { GameState, GameConfig, GameAction, GameMode } from '@war-of-gods/e
 import { createGame, gameReducer } from '@war-of-gods/engine';
 import { EasyBot, createRng } from '@war-of-gods/engine';
 import { io, Socket } from 'socket.io-client';
+import type { HexCell } from '../components/HexBoard.js';
 import { saveGame as apiSaveGame, loadSave, listSaves, deleteSave as apiDeleteSave } from '../api/saves.js';
 import type { SaveSummary } from '../api/saves.js';
 
@@ -55,6 +56,11 @@ type GameStore = {
   deleteGame: (saveId: string) => Promise<void>;
   restoreLocalSave: () => boolean;
   clearLocalSave: () => void;
+  abandonGame: () => Promise<void>;
+
+  // Era1 board layout — saved locally when the player confirms placement
+  localBoardLayout: HexCell[] | null;
+  setLocalBoardLayout: (board: HexCell[]) => void;
 
   // Shared setters
   setGameState: (state: GameState) => void;
@@ -88,6 +94,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   saves: [],
   savesLoading: false,
   localAutosaveExists: !!localStorage.getItem('wog-local-autosave'),
+  localBoardLayout: null,
+  setLocalBoardLayout: (board) => set({ localBoardLayout: board }),
 
   setScreen: (screen) => set({ screen }),
   setGameMode: (mode) => set({ gameMode: mode }),
@@ -158,6 +166,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
         // If dispatch rejected the action (reducer threw), state ref is unchanged.
         // Bailing out prevents the bot from spinning on the same bad action.
         if (get().gameState === current) break;
+      }
+
+      // Safety: if this bot still holds the current turn after the loop
+      // (e.g. all actions were rejected), force END_TURN so the game never freezes.
+      const afterLoop = get().gameState;
+      if (
+        afterLoop &&
+        afterLoop.phase === 'era3' &&
+        (afterLoop.era3Phase === 'game_loop' || afterLoop.era3Phase === 'final_heroic_turn') &&
+        afterLoop.era3CurrentPlayerId === botPlayer.id
+      ) {
+        get().dispatch({ type: 'END_TURN', playerId: botPlayer.id });
       }
     }
   },
@@ -429,6 +449,35 @@ export const useGameStore = create<GameStore>((set, get) => ({
   clearLocalSave: () => {
     localStorage.removeItem('wog-local-autosave');
     set({ localAutosaveExists: false });
+  },
+
+  abandonGame: async () => {
+    const { currentSaveId, socket, roomCode, gameMode } = get();
+    // Delete server save if exists
+    if (currentSaveId) {
+      try { await apiDeleteSave(currentSaveId); } catch { /* ignore */ }
+    }
+    // Clear local autosave
+    localStorage.removeItem('wog-local-autosave');
+    // Disconnect multiplayer socket if active
+    if (gameMode === 'multiplayer' && socket && roomCode) {
+      socket.emit('leave_room', { roomCode });
+      socket.disconnect();
+      localStorage.removeItem('wog-room-code');
+      localStorage.removeItem('wog-player-id');
+    }
+    set({
+      gameState: null,
+      localPlayerId: null,
+      gameMode: null,
+      currentSaveId: null,
+      localAutosaveExists: false,
+      socket: null,
+      roomCode: null,
+      isHost: false,
+      screen: 'menu',
+      error: null,
+    });
   },
 
   setGameState: (state) => set({ gameState: state }),

@@ -142,7 +142,7 @@ describe('Era II world cards — coverage', () => {
       ...s,
       players: s.players.map((p, i) =>
         i === 0
-          ? { ...p, era2State: { ...p.era2State!, techLevels: { war: 3, science: 3, resources: 0, economy: 0 } } }
+          ? { ...p, era2State: { ...p.era2State!, techLevels: { war: 3, science: 3, resources: 0, economy: 0, religion: 0 } } }
           : p,
       ),
     };

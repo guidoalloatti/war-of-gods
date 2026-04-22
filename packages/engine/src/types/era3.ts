@@ -51,6 +51,8 @@ export type Hex = {
   hasRoadOverlay?: boolean;
   /** Bridge built on this river hex — makes crossing possible (move cost = road). */
   hasBridge?: boolean;
+  /** Original terrain before a road was paved over it (for visual rendering). */
+  roadTerrain?: HexTerrain;
 };
 
 export type GameMap = {
@@ -105,6 +107,8 @@ export type General = {
 export type PlayerEra3State = {
   capitalCoord: HexCoord;
   goldCoins: number;
+  /** Accumulated food reserves. Positive = surplus, negative triggers starvation. */
+  foodReserves: number;
   techLevels: Record<TechType, number>;
   /** Units that couldn't fit in the initial stack (exceeded MAX_STACK_SIZE). */
   initialDeploymentOverflow?: FreeUnitGrant[];
@@ -116,6 +120,12 @@ export type PlayerEra3State = {
   roadsBuiltThisTurn?: number;
   /** Generals the player has available (some assigned to stacks, others in reserve). */
   generals?: General[];
+  /** Set to true when food went negative and the player must choose a unit to disband. */
+  era3StarvationPending?: boolean;
+  /** Permanent bonus gold added each cycle (from legendary cards). */
+  permanentGoldBonus?: number;
+  /** Permanent bonus food added each cycle (from legendary cards). */
+  permanentFoodBonus?: number;
 };
 
 export type CombatEntry = {

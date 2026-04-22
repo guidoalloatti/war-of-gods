@@ -8,6 +8,7 @@ const TECH_ICONS: Record<TechType, string> = {
   science: '🔬',
   resources: '🌾',
   economy: '💰',
+  religion: '✨',
 };
 
 const TERRAIN_ICONS: Record<string, string> = {

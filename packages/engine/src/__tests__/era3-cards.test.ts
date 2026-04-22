@@ -3,7 +3,7 @@ import { gameReducer } from '../reducer.js';
 import { transitionEra2ToEra3 } from '../era3/transition.js';
 import { initPlayerEra2State } from '../era2/init.js';
 import {
-  playEra3Card, drawEra3Card, clearTurnEffectsFor, ERA3_HAND_MAX_SIZE,
+  playEra3Card, dealCardOffers, clearTurnEffectsFor, ERA3_HAND_MAX_SIZE,
 } from '../era3/cards.js';
 import { totalAttackBonus } from '../era3/economy.js';
 import { worldCardDeckEra3, eraCardDeckEra3 } from '../cards/loader.js';
@@ -34,9 +34,9 @@ function era3Game(seed = 9999): GameState {
 }
 
 describe('Era III data decks', () => {
-  it('loads 3 world cards and 8 era cards', () => {
+  it('loads 3 world cards and ≥8 era cards', () => {
     expect(worldCardDeckEra3.length).toBe(3);
-    expect(eraCardDeckEra3.length).toBe(8);
+    expect(eraCardDeckEra3.length).toBeGreaterThanOrEqual(8);
   });
 
   it('every era card has on_era3_play effects', () => {
@@ -54,8 +54,9 @@ describe('transition deals cards + reveals world card', () => {
     for (const p of s.players) {
       expect(s.era3Hands?.[p.id]?.length).toBe(3);
     }
-    // deck has 8 − 3*players remaining
-    expect(s.era3Deck!.length).toBe(8 - 3 * s.players.length);
+    // deck has totalCards − 3*players remaining (after dealing initial hands)
+    const totalCards = eraCardDeckEra3.length;
+    expect(s.era3Deck!.length).toBe(totalCards - 3 * s.players.length);
   });
 
   it('is deterministic: same seed → same world card + hands', () => {
@@ -88,13 +89,15 @@ describe('PLAY_ERA3_CARD', () => {
     ).toThrow(/hand/);
   });
 
-  it('rejects a second play in the same turn', () => {
+  it('allows a second play in the same turn but rejects a third', () => {
     const s = era3Game();
     const pid = s.era3CurrentPlayerId!;
-    const [c1, c2] = s.era3Hands![pid];
-    const afterFirst = gameReducer(s, { type: 'PLAY_ERA3_CARD', playerId: pid, cardId: c1.id });
+    const [c1, c2, c3] = s.era3Hands![pid];
+    const after1 = gameReducer(s, { type: 'PLAY_ERA3_CARD', playerId: pid, cardId: c1.id });
+    const after2 = gameReducer(after1, { type: 'PLAY_ERA3_CARD', playerId: pid, cardId: c2.id });
+    expect(after2.era3CardPlayedThisTurn?.[pid]).toBe(2);
     expect(() =>
-      gameReducer(afterFirst, { type: 'PLAY_ERA3_CARD', playerId: pid, cardId: c2.id }),
+      gameReducer(after2, { type: 'PLAY_ERA3_CARD', playerId: pid, cardId: c3.id }),
     ).toThrow(/Already played/);
   });
 
@@ -129,7 +132,7 @@ describe('clearTurnEffectsFor', () => {
     const s: GameState = {
       ...era3Game(),
       era3TurnEffects: { attackBoost: { pA: 2, pB: 1 }, movementBonus: { pA: 1 } },
-      era3CardPlayedThisTurn: { pA: true },
+      era3CardPlayedThisTurn: { pA: 2 },
     };
     const out = clearTurnEffectsFor(s, 'pA');
     expect(out.era3TurnEffects!.attackBoost.pA).toBeUndefined();
@@ -139,54 +142,50 @@ describe('clearTurnEffectsFor', () => {
   });
 });
 
-describe('drawEra3Card', () => {
-  it('moves the top of the deck into hand', () => {
+describe('dealCardOffers', () => {
+  it('puts 2 cards into era3CardOffers for the player', () => {
     const s = era3Game();
     const pid = s.era3CurrentPlayerId!;
-    const handBefore = s.era3Hands![pid].length;
     const deckBefore = s.era3Deck!.length;
-    const next = drawEra3Card(s, pid);
-    expect(next.era3Hands![pid].length).toBe(handBefore + 1);
-    expect(next.era3Deck!.length).toBe(deckBefore - 1);
+    const next = dealCardOffers(s, pid);
+    expect(next.era3CardOffers?.[pid]?.length).toBe(2);
+    expect(next.era3Deck!.length).toBe(deckBefore - 2);
+    // Hand should not change yet
+    expect(next.era3Hands![pid].length).toBe(s.era3Hands![pid].length);
   });
 
-  it('is a no-op when hand is at MAX', () => {
+  it('offers only remaining cards when deck has 1 card', () => {
     const s = era3Game();
     const pid = s.era3CurrentPlayerId!;
-    const bigHand = Array.from({ length: ERA3_HAND_MAX_SIZE }, (_, i) => ({
-      ...s.era3Hands![pid][0],
-      id: `pad_${i}`,
-    }));
-    const padded: GameState = {
-      ...s,
-      era3Hands: { ...s.era3Hands, [pid]: bigHand },
-    };
-    const next = drawEra3Card(padded, pid);
-    expect(next.era3Hands![pid].length).toBe(ERA3_HAND_MAX_SIZE);
+    const oneCard: GameState = { ...s, era3Deck: s.era3Deck!.slice(0, 1) };
+    const next = dealCardOffers(oneCard, pid);
+    expect(next.era3CardOffers?.[pid]?.length).toBe(1);
   });
 });
 
-describe('END_TURN draws a card + clears effects for next player', () => {
-  it('drawing adds one card to the ending player\'s hand (if deck has cards)', () => {
+describe('END_TURN offers 2 cards + clears effects for next player', () => {
+  it('offering puts 2 cards into era3CardOffers (not directly into hand)', () => {
     const s = era3Game();
     const pid = s.era3CurrentPlayerId!;
     const handBefore = s.era3Hands![pid].length;
     const next = gameReducer(s, { type: 'END_TURN', playerId: pid });
-    expect(next.era3Hands![pid].length).toBe(handBefore + 1);
+    // Hand unchanged — player must pick from offer
+    expect(next.era3Hands![pid].length).toBe(handBefore);
+    expect(next.era3CardOffers?.[pid]?.length).toBe(2);
   });
 
-  it('clears the acting player\'s card-played flag when their next turn starts', () => {
+  it('clears the acting player\'s card-played count when their next turn starts', () => {
     let s = era3Game();
     const order = s.era3TurnOrder!;
     const first = order[0];
     const card = s.era3Hands![first][0];
     s = gameReducer(s, { type: 'PLAY_ERA3_CARD', playerId: first, cardId: card.id });
-    expect(s.era3CardPlayedThisTurn?.[first]).toBe(true);
+    expect(s.era3CardPlayedThisTurn?.[first]).toBe(1);
 
     for (const p of order) {
       s = gameReducer(s, { type: 'END_TURN', playerId: p });
     }
-    // Full cycle back to `first`: their card-played flag should be cleared.
+    // Full cycle back to `first`: their card-played count should be cleared.
     expect(s.era3CardPlayedThisTurn?.[first]).toBeFalsy();
   });
 });

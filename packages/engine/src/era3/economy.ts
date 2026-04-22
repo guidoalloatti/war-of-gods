@@ -10,12 +10,19 @@ import {
   ERA3_WAR_ATTACK_PER_LEVEL,
   ERA3_WAR_RECRUITS_PER_LEVEL,
   ERA3_RESOURCES_STACK_SIZE_PER_LEVEL,
+  ERA3_FOOD_CAPACITY_PER_LEVEL,
+  ERA3_FOOD_PRODUCTION_PER_LEVEL,
   ERA3_SCIENCE_UNIT_REQS,
   MAX_STACK_SIZE,
   ERA3_HOME_TERRAIN_BONUS,
+  ERA3_RELIGION_DEFENSE_REDUCTION,
+  ERA3_RELIGION_MORALE_HEAL,
+  ERA3_RELIGION_REST_HEAL_BONUS,
+  ERA3_RELIGION_FORTIFY_DEF_BONUS,
 } from './constants.js';
 import { hexKey } from './hex.js';
 import { getRaceById } from '../races/index.js';
+import { updateExploredHexes } from './fog.js';
 
 /**
  * Per-unit attack bonus applied to every unit in `stack`, based on the
@@ -94,6 +101,40 @@ export function maxStackSize(player: Player): number {
 }
 
 /**
+ * Returns the food cost (upkeep) of a single unit type.
+ * infantry/ranged = 1, mounted = 2, siege/flying = 3.
+ */
+export function unitFoodCost(unitType: UnitType): number {
+  const def = UNIT_DEFINITIONS.find(d => d.id === unitType);
+  return def?.food ?? 1;
+}
+
+/**
+ * Total food consumed by all units owned by `playerId` across all stacks.
+ */
+export function totalFoodConsumed(stacks: Record<string, Stack>, playerId: string): number {
+  let total = 0;
+  for (const stack of Object.values(stacks)) {
+    if (stack.ownerId !== playerId) continue;
+    for (const unit of stack.units) {
+      total += unitFoodCost(unit.type);
+    }
+  }
+  return total;
+}
+
+/**
+ * Maximum food supply the player can sustain based on their Resources tech level.
+ */
+export function maxFoodCapacity(player: Player): number {
+  const res = Math.min(
+    player.era3State?.techLevels.resources ?? 0,
+    ERA3_FOOD_CAPACITY_PER_LEVEL.length - 1,
+  );
+  return ERA3_FOOD_CAPACITY_PER_LEVEL[res] ?? ERA3_FOOD_CAPACITY_PER_LEVEL[0];
+}
+
+/**
  * Returns whether the player's science level allows recruiting the given unit type.
  */
 export function scienceAllowsUnit(player: Player, unitType: UnitType): boolean {
@@ -113,22 +154,143 @@ export function cycleIncome(player: Player): number {
 
 /**
  * Apply cycle income to every active player. Pure; returns a new players array.
+ * Includes permanent gold/food bonuses granted by legendary cards.
  */
 export function applyCycleIncome(players: Player[]): Player[] {
   return players.map(p => {
     if (!p.era3State || p.era3State.eliminated) return p;
     const income = cycleIncome(p);
-    if (income === 0) return p;
+    const permGold = p.era3State.permanentGoldBonus ?? 0;
+    const permFood = p.era3State.permanentFoodBonus ?? 0;
+    if (income === 0 && permGold === 0 && permFood === 0) return p;
     return {
       ...p,
-      era3State: { ...p.era3State, goldCoins: p.era3State.goldCoins + income },
+      era3State: {
+        ...p.era3State,
+        goldCoins: p.era3State.goldCoins + income + permGold,
+        foodReserves: p.era3State.foodReserves + permFood,
+      },
     };
   });
+}
+
+/**
+ * Religion defense: fraction of incoming attacker damage to negate for the
+ * defending stack, based on the defender's religion tech level.
+ * Returns a damage multiplier in [0,1]: 1 = no reduction, 0.73 = 27% reduction (level 5).
+ */
+export function religionDefenseMultiplier(stack: Stack, players: Player[]): number {
+  if (stack.ownerId === 'dhakhan') return 1;
+  const owner = players.find(p => p.id === stack.ownerId);
+  const rel = Math.min(
+    owner?.era3State?.techLevels.religion ?? 0,
+    ERA3_RELIGION_DEFENSE_REDUCTION.length - 1,
+  );
+  return 1 - (ERA3_RELIGION_DEFENSE_REDUCTION[rel] ?? 0);
+}
+
+/**
+ * Extra HP healed per unit when a stack rests, based on spirituality level.
+ * Stacks on top of REST_HEAL_FRACTION.
+ */
+export function spiritualityRestHealBonus(stack: Stack, players: Player[]): number {
+  if (stack.ownerId === 'dhakhan') return 0;
+  const owner = players.find(p => p.id === stack.ownerId);
+  const rel = Math.min(
+    owner?.era3State?.techLevels.religion ?? 0,
+    ERA3_RELIGION_REST_HEAL_BONUS.length - 1,
+  );
+  return ERA3_RELIGION_REST_HEAL_BONUS[rel] ?? 0;
+}
+
+/**
+ * Flat per-unit defense bonus granted when a stack is fortified, based on spirituality level.
+ */
+export function spiritualityFortifyDefBonus(stack: Stack, players: Player[]): number {
+  if (stack.ownerId === 'dhakhan') return 0;
+  const owner = players.find(p => p.id === stack.ownerId);
+  const rel = Math.min(
+    owner?.era3State?.techLevels.religion ?? 0,
+    ERA3_RELIGION_FORTIFY_DEF_BONUS.length - 1,
+  );
+  return ERA3_RELIGION_FORTIFY_DEF_BONUS[rel] ?? 0;
+}
+
+/**
+ * Passive morale healing: at end of each cycle, each living unit in every
+ * player stack regains up to ERA3_RELIGION_MORALE_HEAL[religion] HP
+ * (capped at max HP). Eliminated players and Dhakhan are skipped.
+ * Pure — returns a new stacks record.
+ */
+export function applyMoraleHeal(
+  stacks: Record<string, Stack>,
+  players: Player[],
+): Record<string, Stack> {
+  const out: Record<string, Stack> = {};
+  for (const [id, stack] of Object.entries(stacks)) {
+    if (stack.ownerId === 'dhakhan') { out[id] = stack; continue; }
+    const owner = players.find(p => p.id === stack.ownerId);
+    if (!owner?.era3State || owner.era3State.eliminated) { out[id] = stack; continue; }
+    const rel = Math.min(
+      owner.era3State.techLevels.religion ?? 0,
+      ERA3_RELIGION_MORALE_HEAL.length - 1,
+    );
+    const healAmt = ERA3_RELIGION_MORALE_HEAL[rel] ?? 0;
+    if (healAmt === 0) { out[id] = stack; continue; }
+    const healedUnits = stack.units.map(u => {
+      if (u.currentHp <= 0) return u;
+      const maxHp = unitMaxHp(u.type);
+      return { ...u, currentHp: Math.min(maxHp, u.currentHp + healAmt) };
+    });
+    out[id] = { ...stack, units: healedUnits };
+  }
+  return out;
 }
 
 function unitMaxHp(type: UnitType): number {
   const def = UNIT_DEFINITIONS.find(d => d.id === type);
   return def ? def.defense + 2 : 3;
+}
+
+/**
+ * Food produced per turn based on the player's Economy tech level.
+ */
+export function foodProduction(player: Player): number {
+  const eco = Math.min(
+    player.era3State?.techLevels.economy ?? 0,
+    ERA3_FOOD_PRODUCTION_PER_LEVEL.length - 1,
+  );
+  return ERA3_FOOD_PRODUCTION_PER_LEVEL[eco] ?? 1;
+}
+
+/**
+ * Apply end-of-cycle food: produce food, subtract upkeep, update reserves.
+ * If reserves go negative, one random unit is lost to starvation (cheapest type first).
+ * Pure — returns new stacks and players.
+ */
+export function applyFoodCycle(
+  stacks: Record<string, Stack>,
+  players: Player[],
+): { stacks: Record<string, Stack>; players: Player[] } {
+  let newStacks = { ...stacks };
+  const newPlayers = players.map(p => {
+    if (!p.era3State || p.era3State.eliminated) return p;
+    const produced = foodProduction(p);
+    const consumed = totalFoodConsumed(newStacks, p.id);
+    const delta = produced - consumed;
+    const newReserves = (p.era3State.foodReserves ?? 0) + delta;
+    if (newReserves >= 0) {
+      return { ...p, era3State: { ...p.era3State, foodReserves: newReserves, era3StarvationPending: false } };
+    }
+    // Starvation: mark as pending — the player must choose which unit to disband.
+    // If the player has no units, absorb the loss silently.
+    const playerStacks = Object.values(newStacks).filter(s => s.ownerId === p.id && s.units.length > 0);
+    if (playerStacks.length === 0) {
+      return { ...p, era3State: { ...p.era3State, foodReserves: Math.max(newReserves, -99) } };
+    }
+    return { ...p, era3State: { ...p.era3State, foodReserves: Math.max(newReserves, -99), era3StarvationPending: true } };
+  });
+  return { stacks: newStacks, players: newPlayers };
 }
 
 export type RecruitValidation =
@@ -167,6 +329,21 @@ export function validateRecruit(
   const maxRecruits = recruitsPerTurn(player);
   if ((player.era3State.recruitsThisTurn ?? 0) >= maxRecruits) {
     return { ok: false, reason: 'Already recruited this turn' };
+  }
+
+  // Food balance: cannot recruit when food reserves are 0 or negative (starving).
+  if ((player.era3State.foodReserves ?? 0) <= 0) {
+    return { ok: false, reason: 'food_starving' };
+  }
+
+  // Food cap: cannot recruit if it would exceed max food supply.
+  if (state.era3Stacks) {
+    const consumed = totalFoodConsumed(state.era3Stacks, playerId);
+    const cap = maxFoodCapacity(player);
+    const newUnitFood = unitFoodCost(unitType);
+    if (consumed + newUnitFood > cap) {
+      return { ok: false, reason: 'food_cap_exceeded' };
+    }
   }
 
   if (!state.map || !state.era3Stacks) {
@@ -252,12 +429,13 @@ export function recruitUnit(
       : p,
   );
 
-  return {
+  const next = {
     ...state,
     players: updatedPlayers,
     map: { ...state.map!, hexes: newHexes },
     era3Stacks: newStacks,
     era3UnitSeq: unitSeq,
   };
+  return updateExploredHexes(next, playerId);
 }
 

@@ -209,29 +209,23 @@ export function generateMap(seed: number, players: Player[]): GameMap {
     reserved.add(hexKey({ q: n.q, r: n.r }));
   }
 
-  // 1a. Mountain ranges — large, elongated ridges. Two big ones plus an
-  //     optional third smaller spur. Directional growth produces cordilleras.
+  // 1a. Mountain ranges — large elongated ridges well-spread across the map.
+  //     High growth + directional = realistic cordilleras, not scattered peaks.
   const mountainOrigins = pickRandomHexes(
-    terrainRng,
-    3,
-    MAP_RADIUS,
-    /* minDist */ 7,
-    c => reserved.has(hexKey(c)) || distance(c, { q: 0, r: 0 }) < 3,
+    terrainRng, 3, MAP_RADIUS, /* minDist */ 8,
+    c => reserved.has(hexKey(c)) || distance(c, { q: 0, r: 0 }) < 4,
   );
   mountainOrigins.forEach((origin, i) => {
-    // Main ranges are bigger than the smaller spur.
     const size = i < 2
-      ? 28 + Math.floor(terrainRng() * 10) // 28–37
-      : 14 + Math.floor(terrainRng() * 6); // 14–19
-    seedFeature(hexes, 'mountain', origin, size, /* growth */ 0.7, /* directional */ true, terrainRng, reserved);
+      ? 32 + Math.floor(terrainRng() * 12) // 32–43
+      : 16 + Math.floor(terrainRng() * 8); // 16–23
+    seedFeature(hexes, 'mountain', origin, size, /* growth */ 0.78, /* directional */ true, terrainRng, reserved);
   });
 
-  // 1b. Forests — two very large woodlands plus an optional smaller grove.
+  // 1b. Forests — two large contiguous woodlands + one smaller grove.
+  //     Higher growth chance keeps them as solid blobs not scattered trees.
   const forestOrigins = pickRandomHexes(
-    terrainRng,
-    3,
-    MAP_RADIUS,
-    /* minDist */ 6,
+    terrainRng, 3, MAP_RADIUS, /* minDist */ 7,
     c => {
       const k = hexKey(c);
       return reserved.has(k) || hexes[k]?.terrain === 'mountain';
@@ -239,55 +233,40 @@ export function generateMap(seed: number, players: Player[]): GameMap {
   );
   forestOrigins.forEach((origin, i) => {
     const size = i < 2
-      ? 22 + Math.floor(terrainRng() * 10) // 22–31
-      : 12 + Math.floor(terrainRng() * 6); // 12–17
-    seedFeature(hexes, 'forest', origin, size, /* growth */ 0.62, /* directional */ false, terrainRng, reserved);
+      ? 26 + Math.floor(terrainRng() * 12) // 26–37
+      : 14 + Math.floor(terrainRng() * 8); // 14–21
+    seedFeature(hexes, 'forest', origin, size, /* growth */ 0.70, /* directional */ false, terrainRng, reserved);
   });
 
-  // 1c. Deserts — one sprawling arid expanse plus one smaller scrubland.
+  // 1c. Deserts — one large arid region + one smaller scrubland, only on plain.
   const desertOrigins = pickRandomHexes(
-    terrainRng,
-    2,
-    MAP_RADIUS,
-    /* minDist */ 8,
-    c => {
-      const k = hexKey(c);
-      const h = hexes[k];
-      return reserved.has(k) || (h?.terrain !== 'plain');
-    },
+    terrainRng, 2, MAP_RADIUS, /* minDist */ 9,
+    c => { const k = hexKey(c); return reserved.has(k) || hexes[k]?.terrain !== 'plain'; },
   );
   desertOrigins.forEach((origin, i) => {
     const size = i === 0
-      ? 22 + Math.floor(terrainRng() * 10) // 22–31
-      : 10 + Math.floor(terrainRng() * 5); // 10–14
-    seedFeature(hexes, 'desert', origin, size, /* growth */ 0.55, /* directional */ false, terrainRng, reserved);
+      ? 24 + Math.floor(terrainRng() * 12) // 24–35
+      : 12 + Math.floor(terrainRng() * 6); // 12–17
+    seedFeature(hexes, 'desert', origin, size, /* growth */ 0.62, /* directional */ false, terrainRng, reserved);
   });
 
-  // 1d. Lakes — round blue bodies, impassable. One big lake + one small pond.
+  // 1d. Lakes — compact round bodies, impassable. High growth = solid shape, no fringe holes.
+  //     Only placed on plain so they don't fragment other biomes.
   const lakeOrigins = pickRandomHexes(
-    terrainRng,
-    2,
-    MAP_RADIUS,
-    /* minDist */ 8,
-    c => {
-      const k = hexKey(c);
-      const h = hexes[k];
-      return reserved.has(k) || (h?.terrain !== 'plain');
-    },
+    terrainRng, 2, MAP_RADIUS, /* minDist */ 9,
+    c => { const k = hexKey(c); return reserved.has(k) || hexes[k]?.terrain !== 'plain'; },
   );
   lakeOrigins.forEach((origin, i) => {
     const size = i === 0
-      ? 9 + Math.floor(terrainRng() * 5) // 9–13
-      : 4 + Math.floor(terrainRng() * 3); // 4–6
-    seedFeature(hexes, 'lake', origin, size, /* growth */ 0.75, /* directional */ false, terrainRng, reserved);
+      ? 10 + Math.floor(terrainRng() * 5) // 10–14
+      : 5 + Math.floor(terrainRng() * 3); // 5–7
+    seedFeature(hexes, 'lake', origin, size, /* growth */ 0.82, /* directional */ false, terrainRng, reserved);
   });
 
-  // 1e. Swamps — mid-sized wetlands, often near lakes or forests.
+  // 1e. Swamps — mid-sized wetlands placed adjacent to existing non-mountain terrain.
+  //     Avoid mountains and lakes for natural placement.
   const swampOrigins = pickRandomHexes(
-    terrainRng,
-    2,
-    MAP_RADIUS,
-    /* minDist */ 6,
+    terrainRng, 2, MAP_RADIUS, /* minDist */ 7,
     c => {
       const k = hexKey(c);
       const h = hexes[k];
@@ -295,10 +274,30 @@ export function generateMap(seed: number, players: Player[]): GameMap {
     },
   );
   for (const origin of swampOrigins) {
-    seedFeature(hexes, 'swamp', origin, /* size */ 9 + Math.floor(terrainRng() * 4), 0.5, /* directional */ false, terrainRng, reserved);
+    const size = 12 + Math.floor(terrainRng() * 6); // 12–17
+    seedFeature(hexes, 'swamp', origin, size, /* growth */ 0.60, /* directional */ false, terrainRng, reserved);
   }
 
-  // 1f. Ruins — scattered single-hex landmarks on plains. Skip hexes that
+  // 1f. Hills — transition zone on the edge of mountain ranges.
+  //     Any plain hex with 2+ mountain neighbors becomes a hill (foothills).
+  //     This creates natural transition bands instead of hard mountain/plain edges.
+  {
+    const hillCandidates: string[] = [];
+    for (const [key, hex] of Object.entries(hexes)) {
+      if (hex.terrain !== 'plain') continue;
+      if (hex.isCapital || hex.isSpawnZone || reserved.has(key)) continue;
+      const mountainNeighbors = directions.filter(d => {
+        const nk = hexKey({ q: hex.coord.q + d.q, r: hex.coord.r + d.r });
+        return hexes[nk]?.terrain === 'mountain';
+      }).length;
+      if (mountainNeighbors >= 2) hillCandidates.push(key);
+    }
+    for (const key of hillCandidates) {
+      hexes[key] = { ...hexes[key], terrain: 'hill' };
+    }
+  }
+
+  // 1h. Ruins — scattered single-hex landmarks on plains. Skip hexes that
   //     were reassigned to a biome.
   const ruinCount = 10;
   const ruinOrigins = pickRandomHexes(
@@ -334,6 +333,34 @@ export function generateMap(seed: number, players: Player[]): GameMap {
     };
   });
 
+  // 3b. Stamp each player's Era I kingdom board around their capital.
+  //     Era1 board uses axial coords relative to (0,0), max level 3.
+  //     We translate to the capital position and overwrite terrain (not capital/citadel flags).
+  //     Era1 terrain 'road' becomes a hasRoadOverlay on the underlying terrain.
+  const ERA1_TO_ERA3: Record<string, HexTerrain> = {
+    plain: 'plain', mountain: 'mountain', forest: 'forest', swamp: 'swamp',
+  };
+  capitals.forEach((capitalCoord, i) => {
+    const player = players[i];
+    if (!player.era1BoardCells || player.era1BoardCells.length === 0) return;
+    for (const cell of player.era1BoardCells) {
+      if (!cell.terrain) continue;
+      const worldQ = capitalCoord.q + cell.q;
+      const worldR = capitalCoord.r + cell.r;
+      const key = hexKey({ q: worldQ, r: worldR });
+      if (!hexes[key]) continue; // outside disk
+      const h = hexes[key];
+      if (h.isCapital || h.terrain === 'citadel' || h.isSpawnZone) continue;
+      if (cell.terrain === 'road') {
+        // Road tile → road overlay on whatever terrain is there
+        hexes[key] = { ...h, hasRoadOverlay: true };
+      } else {
+        const era3Terrain = ERA1_TO_ERA3[cell.terrain];
+        if (era3Terrain) hexes[key] = { ...h, terrain: era3Terrain };
+      }
+    }
+  });
+
   // 4. Spawn zones mid-way between each capital and the citadel.
   //    Each capital contributes 1 spawn zone, tagged with that player's race.
   capitals.forEach((coord, i) => {
@@ -352,6 +379,68 @@ export function generateMap(seed: number, players: Player[]): GameMap {
 
   // 5. Roads: paint a path from each capital toward a map edge.
   paintRoadsForCapitals(hexes, capitals, MAP_RADIUS, roadRng);
+
+  // 5b. Smoothing pass: remove isolated terrain outliers.
+  //     Any hex whose terrain differs from ALL 6 neighbors adopts the most
+  //     common neighbor type. Run 2 iterations for cleaner borders.
+  //     Capitals, citadel, spawn zones, and lakes are never touched here.
+  for (let pass = 0; pass < 2; pass++) {
+    const changes: Array<{ key: string; terrain: HexTerrain }> = [];
+    for (const [key, hex] of Object.entries(hexes)) {
+      if (hex.isCapital || hex.isSpawnZone || hex.terrain === 'citadel') continue;
+      if (hex.terrain === 'lake' || hex.terrain === 'river') continue;
+      const ns = directions
+        .map(d => hexes[hexKey({ q: hex.coord.q + d.q, r: hex.coord.r + d.r })])
+        .filter(Boolean);
+      if (ns.length === 0) continue;
+      const differentCount = ns.filter(n => n.terrain !== hex.terrain && n.terrain !== 'lake' && n.terrain !== 'river').length;
+      if (differentCount === ns.length) {
+        // Completely surrounded by other terrain — adopt majority neighbor type.
+        const freq: Partial<Record<HexTerrain, number>> = {};
+        for (const n of ns) {
+          if (n.terrain === 'lake' || n.terrain === 'river' || n.terrain === 'citadel') continue;
+          freq[n.terrain] = (freq[n.terrain] ?? 0) + 1;
+        }
+        const dominant = (Object.entries(freq) as [HexTerrain, number][])
+          .sort((a, b) => b[1] - a[1])[0]?.[0];
+        if (dominant && dominant !== hex.terrain) {
+          changes.push({ key, terrain: dominant });
+        }
+      }
+    }
+    for (const { key, terrain } of changes) {
+      hexes[key] = { ...hexes[key], terrain };
+    }
+  }
+
+  // 5c. Remove tiny isolated lake fragments (< 3 hexes) — turn them into plain.
+  //     Flood-fill to find connected lake blobs, discard small ones.
+  {
+    const lakeVisited = new Set<string>();
+    for (const [startKey, startHex] of Object.entries(hexes)) {
+      if (startHex.terrain !== 'lake') continue;
+      if (lakeVisited.has(startKey)) continue;
+      // BFS to find connected lake blob
+      const blob: string[] = [];
+      const queue = [startKey];
+      const seen = new Set<string>([startKey]);
+      while (queue.length > 0) {
+        const k = queue.shift()!;
+        blob.push(k);
+        lakeVisited.add(k);
+        const coord = hexes[k].coord;
+        for (const d of directions) {
+          const nk = hexKey({ q: coord.q + d.q, r: coord.r + d.r });
+          if (!seen.has(nk) && hexes[nk]?.terrain === 'lake') {
+            seen.add(nk); queue.push(nk);
+          }
+        }
+      }
+      if (blob.length < 3) {
+        for (const k of blob) hexes[k] = { ...hexes[k], terrain: 'plain' };
+      }
+    }
+  }
 
   // 6. Roll rewards for every non-spawn ruins hex. Deterministic key-sorted
   //    iteration so the rng sequence is reproducible.

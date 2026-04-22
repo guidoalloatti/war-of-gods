@@ -41,7 +41,7 @@ const PHASE_ICONS: Record<string, string> = {
 };
 
 export function Era1Screen() {
-  const { gameState, localPlayerId, dispatch, runBots, setScreen, error, gameMode } = useGameStore(
+  const { gameState, localPlayerId, dispatch, runBots, setScreen, error, gameMode, setLocalBoardLayout } = useGameStore(
     useShallow(s => ({
       gameState: s.gameState,
       localPlayerId: s.localPlayerId,
@@ -50,6 +50,7 @@ export function Era1Screen() {
       setScreen: s.setScreen,
       error: s.error,
       gameMode: s.gameMode,
+      setLocalBoardLayout: s.setLocalBoardLayout,
     })),
   );
   const t = useI18n(s => s.t);
@@ -151,9 +152,12 @@ export function Era1Screen() {
   }, [dispatch, localPlayerId]);
 
   const handlePlaceTiles = useCallback(() => {
-    dispatch({ type: 'PLACE_TILES', playerId: localPlayerId! });
+    setLocalBoardLayout(board);
+    // Pass board cells to engine so Era3 map generation can stamp the kingdom around the capital.
+    const boardCells = board.map(c => ({ q: c.coord.q, r: c.coord.r, terrain: c.terrain as string | null }));
+    dispatch({ type: 'PLACE_TILES', playerId: localPlayerId!, boardCells });
     runBots();
-  }, [dispatch, localPlayerId, runBots]);
+  }, [board, dispatch, localPlayerId, runBots, setLocalBoardLayout]);
 
   const handleEndTrade = useCallback(() => {
     dispatch({ type: 'END_TRADE_PHASE' });
@@ -265,9 +269,6 @@ export function Era1Screen() {
         <EffectModal player={player} onResolve={handleResolveEffect} />
       )}
 
-      {/* Era Timeline Wizard */}
-      <EraTimeline currentPhase={phase!} t={t} />
-
       {/* Mobile sidebar toggle button */}
       <button
         type="button"
@@ -288,12 +289,12 @@ export function Era1Screen() {
         />
       )}
 
-      <div className="flex flex-row min-h-screen relative z-10 pt-14">
+      <div className="flex flex-row min-h-screen relative z-10 pt-12">
         {/* LEFT SIDEBAR — Cards & Info */}
         <div className={`
           fixed lg:static inset-y-0 left-0 z-40 lg:z-auto
           lg:w-80 xl:w-[22rem] w-72 shrink-0 border-r border-border-subtle p-4 pl-14 space-y-4 overflow-y-auto
-          h-screen lg:max-h-[calc(100vh-3.5rem)] lg:h-auto
+          h-screen lg:max-h-[calc(100vh-6rem)] lg:h-auto
           bg-game-bg lg:bg-transparent
           transition-transform duration-300 ease-in-out
           ${showSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
@@ -381,7 +382,7 @@ export function Era1Screen() {
         </div>
 
         {/* MAIN CONTENT */}
-        <div className="flex-1 p-4 lg:p-6 flex flex-col min-h-0 h-[calc(100vh-3.5rem)] w-full overflow-hidden">
+        <div className="flex-1 p-4 lg:p-6 flex flex-col min-h-0 h-[calc(100vh-6rem)] w-full overflow-hidden">
           {showHexBoard ? (
             <div className="flex-1 min-h-0 flex flex-col animate-fade-in-up">
               <div className="flex items-center gap-2 mb-2">
@@ -655,54 +656,6 @@ export function Era1Screen() {
           t={t}
         />
       )}
-    </div>
-  );
-}
-
-// ── Era Timeline Wizard ──────────────────────────────────────────
-
-function EraTimeline({ currentPhase, t }: { currentPhase: string; t: Translations }) {
-  const currentIdx = ERA_PHASES.indexOf(currentPhase as typeof ERA_PHASES[number]);
-
-  return (
-    <div id="era-timeline" className="fixed top-0 left-0 right-0 z-30 bg-game-bg/90 backdrop-blur-sm border-b border-border-subtle">
-      <div className="max-w-2xl mx-auto px-4 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-1 text-xs text-game-gold font-bold uppercase tracking-wider">
-          <span>{t.menu.era} I</span>
-        </div>
-        <div className="flex items-center gap-1">
-          {ERA_PHASES.map((phase, i) => {
-            const isActive = i === currentIdx;
-            const isDone = i < currentIdx;
-            const isFuture = i > currentIdx;
-            return (
-              <div key={phase} className="flex items-center">
-                <div
-                  className={`flex items-center gap-1 px-2 py-1 rounded-full transition-all duration-300 ${
-                    isActive
-                      ? 'bg-game-gold/15 border border-game-gold/30'
-                      : isDone
-                        ? 'opacity-60'
-                        : 'opacity-30'
-                  }`}
-                >
-                  <span className="text-sm">{PHASE_ICONS[phase]}</span>
-                  <span className={`text-xs font-medium hidden sm:inline ${
-                    isActive ? 'text-game-gold' : isDone ? 'text-text-secondary' : 'text-text-faint'
-                  }`}>
-                    {t.phases[phase]}
-                  </span>
-                </div>
-                {i < ERA_PHASES.length - 1 && (
-                  <div className={`w-4 sm:w-6 h-px mx-0.5 transition-colors ${
-                    isDone ? 'bg-game-gold/40' : 'bg-border-subtle'
-                  }`} />
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
 }

@@ -74,12 +74,20 @@ export type CardEffect =
   | { type: 'free_unit_per_high_tech';   trigger: EffectTrigger; minLevel: number; unit: UnitType; count: number }
 
   // ── Era III effects ──
-  | { type: 'era3_attack_boost';         trigger: EffectTrigger; bonus: number }
-  | { type: 'era3_heal_stack';           trigger: EffectTrigger }
-  | { type: 'era3_free_recruit';         trigger: EffectTrigger; unit: UnitType }
-  | { type: 'era3_gold_bonus';           trigger: EffectTrigger; amount: number }
-  | { type: 'era3_extra_movement';       trigger: EffectTrigger; bonus: number }
-  | { type: 'era3_global_passive_atk';   trigger: EffectTrigger; bonus: number };
+  | { type: 'era3_attack_boost';             trigger: EffectTrigger; bonus: number }
+  | { type: 'era3_heal_stack';               trigger: EffectTrigger }
+  | { type: 'era3_free_recruit';             trigger: EffectTrigger; unit: UnitType }
+  | { type: 'era3_gold_bonus';               trigger: EffectTrigger; amount: number }
+  | { type: 'era3_food_bonus';               trigger: EffectTrigger; amount: number }
+  | { type: 'era3_extra_movement';           trigger: EffectTrigger; bonus: number }
+  | { type: 'era3_global_passive_atk';       trigger: EffectTrigger; bonus: number }
+  | { type: 'era3_defense_boost';            trigger: EffectTrigger; bonus: number }
+  | { type: 'era3_free_recruit_two';         trigger: EffectTrigger; unit: UnitType }
+  | { type: 'era3_permanent_gold_income';    trigger: EffectTrigger; amount: number }
+  | { type: 'era3_permanent_food_income';    trigger: EffectTrigger; amount: number }
+  | { type: 'era3_tech_upgrade';             trigger: EffectTrigger; tech: TechType }
+  | { type: 'era3_heal_all_stacks';          trigger: EffectTrigger; hpAmount: number }
+  | { type: 'era3_fortify_stack';            trigger: EffectTrigger };
 
 export type Card = {
   id: string;

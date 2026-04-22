@@ -173,11 +173,13 @@ function loadEra3Cards(): EraCard[] {
       throw new Error(`era3-cards.json[${i}]: expected type "era3", got "${card.type}"`);
     }
     const c = card as Record<string, unknown>;
+    const rarity = c.rarity as EraCard['rarity'] | undefined;
     return {
       id: card.id,
       name: card.name,
       name_en: (c.name_en as string) ?? card.name,
       type: card.type,
+      ...(rarity ? { rarity } : {}),
       flavorText: card.flavorText,
       flavorText_en: (c.flavorText_en as string) ?? card.flavorText,
       mechanicalText: card.mechanicalText,

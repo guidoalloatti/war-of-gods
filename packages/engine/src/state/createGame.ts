@@ -55,5 +55,6 @@ export function createGame(config: GameConfig): GameState {
     seed,
     roomCode: null,
     createdAt: Date.now(),
+    era3MaxTurns: config.gameLengthTurns ?? 20,
   };
 }

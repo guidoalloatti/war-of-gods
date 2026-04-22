@@ -10,6 +10,7 @@ import { createStartingGeneral } from './generals.js';
 import { createRng } from '../state/random.js';
 import { BOSS_STACK_ID, CITADEL_COORD, OFFSET_ERA3_CAPITAL_ROTATION } from './constants.js';
 import { initGameLoopTurnState } from './turn.js';
+import { updateAllExploredHexes } from './fog.js';
 import { worldCardDeckEra3, eraCardDeckEra3 } from '../cards/loader.js';
 import { applyEffects } from '../cards/effect-dispatcher.js';
 
@@ -122,7 +123,7 @@ export function transitionEra2ToEra3(state: GameState): GameState {
     });
   }
 
-  return initGameLoopTurnState(midState);
+  return updateAllExploredHexes(initGameLoopTurnState(midState));
 }
 
 function shuffleDeterministic<T>(arr: readonly T[], rng: () => number): T[] {

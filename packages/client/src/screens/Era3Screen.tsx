@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
-  getRaceById, TECH_TYPES,
+  getRaceById, TECH_TYPES, RACE_TECH_MAX,
   ERA3_RECRUIT_COSTS, ERA3_RECRUITS_PER_TURN, ERA3_BASE_INCOME, validateRecruit,
   ERA3_BUILD_ROAD_COST, ERA3_ROADS_PER_TURN, validateBuildRoad,
   neighbors, hexKey, distance, DHAKHAN_OWNER_ID, BOSS_STACK_ID, MAX_STACK_SIZE,
@@ -18,14 +18,9 @@ import { useI18n } from '../i18n/index.js';
 import { Era3HexMap3D, type HexContextAction } from '../components/era3/Era3HexMap3D.js';
 import { HexInspectorPanel } from '../components/era3/HexInspectorPanel.js';
 import { ArmyPanel } from '../components/era3/ArmyPanel.js';
+import { HexBoard3D } from '../components/HexBoard3D.js';
+import { TechPentagon } from '../components/TechPentagon.js';
 import type { Hex } from '@war-of-gods/engine';
-
-const TECH_ICONS: Record<TechType, string> = {
-  war: '⚔️',
-  science: '🔬',
-  resources: '🌾',
-  economy: '💰',
-};
 
 const UNIT_ICONS: Record<UnitType, string> = {
   infantry: '🛡️',
@@ -36,23 +31,29 @@ const UNIT_ICONS: Record<UnitType, string> = {
 };
 
 export function Era3Screen() {
-  const { gameState, localPlayerId, dispatch, runBots, setScreen } = useGameStore(
+  const { gameState, localPlayerId, dispatch, runBots, setScreen, abandonGame, localBoardLayout } = useGameStore(
     useShallow(s => ({
       gameState: s.gameState,
       localPlayerId: s.localPlayerId,
       dispatch: s.dispatch,
       runBots: s.runBots,
       setScreen: s.setScreen,
+      abandonGame: s.abandonGame,
+      localBoardLayout: s.localBoardLayout,
     })),
   );
   const t = useI18n(s => s.t);
+  const fogOfWarEnabled = useI18n(s => s.fogOfWar);
 
   const [selectedStackId, setSelectedStackId] = useState<string | null>(null);
   const [buildingRoad, setBuildingRoad] = useState(false);
   const [inspected, setInspected] = useState<{ hex: Hex; stack: Stack | null } | null>(null);
   const [ruinsModal, setRuinsModal] = useState<RuinsLootEntry | null>(null);
   const [escMenu, setEscMenu] = useState(false);
-  const shownRuinsRef = useRef<number>(0);
+  const [abandonConfirm, setAbandonConfirm] = useState(false);
+  // Initialize to current log length so we never re-show ruins from before this session.
+  const shownRuinsRef = useRef<number>(gameState?.era3RuinsLog?.length ?? 0);
+  const [legendOpen, setLegendOpen] = useState(true);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -78,13 +79,16 @@ export function Era3Screen() {
   );
   const isMyTurn = !!localPlayerId && activePlayerId === localPlayerId;
 
-  // Run bots when it's a bot's turn in game_loop or final_heroic_turn.
+  // Run bots when it's a bot's turn. setTimeout defers one tick so React
+  // flushes the render before bots synchronously chain multiple state updates.
   useEffect(() => {
     if (!gameState) return;
     const phase = gameState.era3Phase;
-    if (phase !== 'game_loop' && phase !== 'final_heroic_turn') return;
-    if (!activePlayer?.isBot) return;
-    runBots();
+    const isAwaitingStart = phase === 'awaiting_next_session';
+    const isBotTurn = (phase === 'game_loop' || phase === 'final_heroic_turn') && !!activePlayer?.isBot;
+    if (!isAwaitingStart && !isBotTurn) return;
+    const id = setTimeout(() => { runBots(); }, 50);
+    return () => clearTimeout(id);
   }, [gameState, activePlayer, runBots]);
 
   // Show ruins reward modal when new loot entries appear for local player.
@@ -273,6 +277,11 @@ export function Era3Screen() {
     });
   }, [isMyTurn, gameState, localPlayerId, recruitedThisTurn]);
 
+  const techLockedUnits = useMemo((): UnitType[] => {
+    if (!isMyTurn || !player || recruitedThisTurn) return [];
+    return (Object.keys(ERA3_RECRUIT_COSTS) as UnitType[]).filter(ut => !scienceAllowsUnit(player, ut));
+  }, [isMyTurn, player, recruitedThisTurn]);
+
   const handleHexContextAction = (action: HexContextAction) => {
     if (!localPlayerId) return;
     if (action.kind === 'build_road') {
@@ -295,6 +304,45 @@ export function Era3Screen() {
       dispatch({ type: 'DRAIN_WATER', playerId: localPlayerId, stackId: action.stackId, coord: action.coord });
     } else if (action.kind === 'build_bridge') {
       dispatch({ type: 'BUILD_BRIDGE', playerId: localPlayerId, stackId: action.stackId, coord: action.coord });
+    } else if (action.kind === 'destroy_spawn_zone') {
+      dispatch({ type: 'DESTROY_SPAWN_ZONE', playerId: localPlayerId, stackId: action.stackId, coord: action.coord });
+    } else if (action.kind === 'split_stack') {
+      if (!gameState.map || !gameState.era3Stacks) return;
+      const srcStack = gameState.era3Stacks[action.stackId];
+      if (!srcStack) return;
+      // Find nearest free adjacent hex for the split-off unit.
+      const freeNeighbor = neighbors(srcStack.position).find(n => {
+        const h = gameState.map!.hexes[hexKey(n)];
+        return h && !h.stackId && h.terrain !== 'lake';
+      });
+      dispatch({ type: 'SPLIT_STACK', playerId: localPlayerId, stackId: action.stackId, unitIds: [action.unitId] });
+      if (freeNeighbor) {
+        // The new stack id is derived deterministically in the reducer: `${stackId}_s${seed}`
+        // We can't know it here, so we defer the move one tick so state is updated.
+        const splitTargetCoord = freeNeighbor;
+        setTimeout(() => {
+          const updatedState = useGameStore.getState().gameState;
+          if (!updatedState?.era3Stacks) return;
+          // Find the newly created stack at the same position as srcStack that is NOT the original.
+          const newStack = Object.values(updatedState.era3Stacks).find(
+            s => s.ownerId === localPlayerId &&
+              s.position.q === srcStack.position.q &&
+              s.position.r === srcStack.position.r &&
+              s.id !== action.stackId &&
+              s.units.some(u => u.id === action.unitId),
+          );
+          if (newStack) {
+            useGameStore.getState().dispatch({
+              type: 'MOVE_STACK',
+              playerId: localPlayerId!,
+              stackId: newStack.id,
+              path: [srcStack.position, splitTargetCoord],
+            });
+          }
+        }, 0);
+      }
+    } else if (action.kind === 'merge_stacks') {
+      dispatch({ type: 'MERGE_STACKS', playerId: localPlayerId, sourceStackId: action.sourceStackId, targetStackId: action.targetStackId });
     }
   };
   const bossKillerId = gameState.era3BossKillerId ?? null;
@@ -302,24 +350,50 @@ export function Era3Screen() {
   const worldCard = gameState.worldCardEra3 ?? null;
   const hand = (localPlayerId && gameState.era3Hands?.[localPlayerId]) || [];
   const deckSize = gameState.era3Deck?.length ?? 0;
-  const cardAlreadyPlayed = !!(localPlayerId && gameState.era3CardPlayedThisTurn?.[localPlayerId]);
+  const cardsPlayedThisTurn = (localPlayerId && gameState.era3CardPlayedThisTurn?.[localPlayerId]) || 0;
+  const cardAlreadyPlayed = cardsPlayedThisTurn >= 2;
+  const cardOffers = (localPlayerId && gameState.era3CardOffers?.[localPlayerId]) || [];
 
   const formatEffect = (e: CardEffect): string => {
     const effects = t.era3.cardEffects as Record<string, string>;
+    const techLabels = t.tech as unknown as Record<string, string>;
     const tpl = effects[e.type] ?? e.type;
     const unitName = (ut: UnitType) => t.units[ut];
     switch (e.type) {
       case 'era3_attack_boost':
       case 'era3_extra_movement':
       case 'era3_global_passive_atk':
+      case 'era3_defense_boost':
         return tpl.replace('{bonus}', String(e.bonus));
       case 'era3_gold_bonus':
+      case 'era3_food_bonus':
+      case 'era3_permanent_gold_income':
+      case 'era3_permanent_food_income':
         return tpl.replace('{amount}', String(e.amount));
+      case 'era3_heal_all_stacks':
+        return e.hpAmount >= 99
+          ? tpl.replace('{hpAmount}', '∞')
+          : tpl.replace('{hpAmount}', String(e.hpAmount));
       case 'era3_free_recruit':
+      case 'era3_free_recruit_two':
         return tpl.replace('{unit}', unitName(e.unit));
+      case 'era3_tech_upgrade':
+        return tpl.replace('{tech}', techLabels[e.tech] ?? e.tech);
       default:
         return tpl;
     }
+  };
+
+  const rarityStyle = (rarity?: string) => {
+    if (rarity === 'legendary') return 'border-yellow-400/70 bg-yellow-900/20 shadow-[0_0_8px_rgba(234,179,8,0.3)]';
+    if (rarity === 'rare') return 'border-purple-400/60 bg-purple-900/15';
+    return 'border-border-subtle bg-game-bg/60';
+  };
+
+  const rarityBadge = (rarity?: string) => {
+    if (rarity === 'legendary') return <span className="text-yellow-400 text-[9px] font-black uppercase tracking-widest">★ {(t.era3.rarities as Record<string, string>)?.legendary ?? 'Legendaria'}</span>;
+    if (rarity === 'rare') return <span className="text-purple-400 text-[9px] font-bold uppercase tracking-wider">◆ {(t.era3.rarities as Record<string, string>)?.rare ?? 'Rara'}</span>;
+    return <span className="text-text-faint text-[9px] uppercase tracking-wider">{(t.era3.rarities as Record<string, string>)?.common ?? 'Común'}</span>;
   };
 
   if (isVictory || isDefeat) {
@@ -357,6 +431,16 @@ export function Era3Screen() {
               </div>
             </div>
           )}
+          {/* Eternal mode: only on defeat when a turn limit was in place */}
+          {isDefeat && (gameState.era3MaxTurns ?? 20) > 0 && (
+            <button
+              type="button"
+              onClick={() => dispatch({ type: 'ERA3_CONTINUE_ETERNAL' })}
+              className="btn btn-primary w-full"
+            >
+              {t.era3.continueEternal ?? 'Continue in eternal mode'}
+            </button>
+          )}
           <button type="button" onClick={() => setScreen('menu')} className="btn btn-ghost w-full">
             {t.era3.backToMenu}
           </button>
@@ -386,7 +470,27 @@ export function Era3Screen() {
               <button type="button" className="btn btn-ghost w-full text-game-ember" onClick={() => { setEscMenu(false); setScreen('menu'); }}>
                 {t.escMenu.backToMenu}
               </button>
-              <button type="button" className="btn btn-danger w-full" onClick={() => { setEscMenu(false); setScreen('menu'); }}>
+              <button type="button" className="btn btn-danger w-full" onClick={() => { setEscMenu(false); setAbandonConfirm(true); }}>
+                {t.escMenu.abandon}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {abandonConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="bg-game-surface/95 border border-red-800/60 rounded-2xl p-6 w-80 space-y-4 shadow-2xl animate-scale-in">
+            <h2 className="text-lg font-bold text-red-400 text-center">⚠ {t.escMenu.abandon}</h2>
+            <p className="text-text-secondary text-sm text-center">{t.escMenu.abandonConfirm}</p>
+            <div className="flex gap-2 pt-2">
+              <button type="button" className="btn btn-ghost flex-1" onClick={() => setAbandonConfirm(false)}>
+                {t.escMenu.resume}
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger flex-1"
+                onClick={() => { setAbandonConfirm(false); void abandonGame(); }}
+              >
                 {t.escMenu.abandon}
               </button>
             </div>
@@ -396,243 +500,112 @@ export function Era3Screen() {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-game-accent/[0.05] rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-game-ember/[0.05] rounded-full blur-3xl pointer-events-none" />
 
-      <div className="relative z-10 flex flex-col lg:flex-row gap-0 h-screen overflow-hidden">
-        {/* Sidebar — reorganized for clarity:
-           1. Status strip (turn + movement + gold + hand) — always visible, compact
-           2. "Mi turno" section — all actions grouped (card, recruit, road, checklist, end turn)
-           3. Selected stack — conditional, always-visible when relevant
-           4. "Mi reino" — race, tech, army (less urgent reference info)
-           5. "El mundo" — world card + doom (boss) context
-           6. "Crónica" — combat log
-           All collapsible sections default open when relevant; collapsed otherwise.
-        */}
-        <aside className="w-full lg:w-64 xl:w-72 shrink-0 overflow-y-auto p-2 space-y-2 border-r border-border-subtle bg-game-surface/20">
-          <header className="text-center lg:text-left">
-            <h2 className="text-xl font-bold text-game-gold animate-title-glow">{t.era3.title}</h2>
-            {gameState.era3Phase && (
-              <div className="mt-1">
-                <span className="chip-gold">{t.era3.phases[gameState.era3Phase]}</span>
-              </div>
-            )}
-          </header>
+      <div className="relative z-10 flex flex-col lg:flex-row gap-0 h-screen overflow-hidden pt-12">
+        <aside className="w-full lg:w-60 xl:w-64 shrink-0 overflow-y-auto p-2 space-y-1.5 border-r border-border-subtle bg-game-surface/20">
 
-          {inHeroic && (
-            <div className="panel-danger">
-              <div className="text-game-ember text-[11px] uppercase tracking-wider font-bold">
-                {t.era3.heroicTurnBanner}
-              </div>
-              <div className="text-text-primary text-sm mt-1">{t.era3.heroicTurnDescription}</div>
+          {/* Stats strip: cards, army size, movement */}
+          {inGameLoop && (
+            <div className="flex gap-1 px-1">
+              <StatChip icon="🃏" value={hand.length} sub={`/${deckSize}`} />
+              <StatChip icon="⚔️" value={playerStack?.units.length ?? 0} />
+              <StatChip icon="👣" value={isMyTurn ? (playerStack?.movementLeft ?? 0) : 0} dim={!isMyTurn} />
+            </div>
+          )}
+          {!inGameLoop && gameState.era3Phase && (
+            <div className="px-1">
+              <span className="chip-gold text-[9px]">{t.era3.phases[gameState.era3Phase]}</span>
             </div>
           )}
 
-          {/* Awaiting-start gate */}
+          {/* Heroic banner (compact) */}
+          {inHeroic && (
+            <div className="rounded-lg border border-game-ember/50 bg-game-ember/10 px-2.5 py-1.5 text-[10px] text-game-ember font-bold uppercase tracking-wider">
+              ⚡ {t.era3.heroicTurnBanner}
+            </div>
+          )}
+
+          {/* Awaiting / eliminated */}
           {awaitingStart && (
             <button type="button" onClick={handleStartGameLoop} className="btn btn-primary w-full">
               {t.era3.startGameLoop}
             </button>
           )}
-
-          {/* Eliminated banner */}
           {isEliminated && (
-            <div className="rounded-xl p-3 text-center border border-red-500/40 bg-red-900/20">
-              <div className="text-red-300 text-[11px] uppercase tracking-wider font-semibold">
-                {t.era3.eliminated}
-              </div>
+            <div className="rounded-lg px-2.5 py-1.5 text-center border border-red-500/40 bg-red-900/20 text-red-300 text-[10px] uppercase tracking-wider font-semibold">
+              {t.era3.eliminated}
             </div>
           )}
 
-          {/* ── Fused Turn + Actions panel ── */}
-          {inGameLoop && activePlayer && (
-            <div className={`rounded-xl border overflow-hidden ${isMyTurn
-              ? 'border-game-gold/60 bg-game-gold/5 shadow-gold-sm'
-              : 'border-border-subtle bg-game-surface/40'}`}
-            >
-              {/* Turn header row */}
-              <div className="flex items-center justify-between gap-2 px-3 pt-3 pb-2">
-                <div className="min-w-0 flex-1">
-                  <div className="eyebrow">
-                    {inHeroic ? t.era3.heroicTurn : `${t.era3.turn} ${gameState.era3TurnNumber ?? 1}`}
-                  </div>
-                  <div className="text-text-primary text-sm font-bold truncate">
-                    {isMyTurn ? t.era3.yourTurn : `${t.era3.turnOf} ${activePlayer.name}`}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 shrink-0" style={{ color: race.color }}>
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: race.color }} />
-                  <span className="text-[10px] uppercase tracking-wider text-text-muted">
-                    {t.races[player.raceId as keyof typeof t.races]}
-                  </span>
-                </div>
+          {/* ── Mi turno: checklist + recruit + road + end turn ── */}
+          {inGameLoop && isMyTurn && !isEliminated && (
+            <div className="rounded-xl border border-game-gold/40 bg-game-gold/5 overflow-hidden">
+              {/* Checklist inline */}
+              <div className="flex items-center gap-2 px-2.5 py-1.5 border-b border-game-gold/20 text-[10px]">
+                <CheckDot done={cardAlreadyPlayed} available={hand.length > 0 || cardOffers.length > 0} label={`Carta ${cardsPlayedThisTurn}/2`} />
+                <CheckDot done={recruitedThisTurn} available={Object.values(recruitValidations).some(v => v.ok)} label={`Recluta ${recruitsThisTurn}/${player ? recruitsPerTurn(player) : ERA3_RECRUITS_PER_TURN}`} />
+                <CheckDot done={false} available={anyStackCanAct} label="Mover" />
               </div>
 
-              {/* Gold — large, prominent */}
-              <div className="mx-3 mb-2 rounded-lg border border-game-gold/40 bg-game-gold/10 px-3 py-2 flex items-center gap-3">
-                <span className="text-2xl">💰</span>
-                <div className="flex-1 min-w-0">
-                  <div className="text-game-gold font-black text-2xl tabular-nums leading-none">
-                    {goldCoins}
-                  </div>
-                  <div className="text-[10px] text-text-muted mt-0.5">
-                    {t.era3.quickStats.gold}
-                    {!isEliminated && (
-                      <span className="ml-1.5 text-emerald-400 font-semibold">+{expectedIncome} / {t.era3.turn.toLowerCase()}</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Secondary stats row */}
-              <div className="grid grid-cols-3 gap-1.5 px-3 pb-3 text-center">
-                <QuickStat
-                  icon="🃏"
-                  label={t.era3.quickStats.hand}
-                  value={hand.length}
-                  sub={`/${deckSize}`}
-                />
-                <QuickStat
-                  icon="⚔️"
-                  label={t.era3.quickStats.army}
-                  value={playerStack?.units.length ?? 0}
-                />
-                <QuickStat
-                  icon="👣"
-                  label={t.era3.movementLeft}
-                  value={isMyTurn ? (playerStack?.movementLeft ?? 0) : 0}
-                  dim={!isMyTurn}
-                />
-              </div>
-
-              {/* ── My turn actions — only shown when it's my turn ── */}
-              {isMyTurn && !isEliminated && (
-                <div className="border-t border-game-gold/20 px-3 py-3 space-y-3">
-                  {/* Checklist */}
-                  <ul className="space-y-0.5 text-xs bg-game-bg/40 rounded-lg p-2 border border-border-subtle">
-                    <ChecklistItem
-                      label={t.era3.checklist.playCard}
-                      done={cardAlreadyPlayed}
-                      available={hand.length > 0}
-                    />
-                    <ChecklistItem
-                      label={`${t.era3.checklist.recruit} (${recruitsThisTurn}/${player ? recruitsPerTurn(player) : ERA3_RECRUITS_PER_TURN})`}
-                      done={recruitedThisTurn}
-                      available={Object.values(recruitValidations).some(v => v.ok)}
-                    />
-                    <ChecklistItem
-                      label={t.era3.checklist.moveOrAttack}
-                      done={false}
-                      available={anyStackCanAct}
-                    />
-                  </ul>
-
-                  {/* Recruit */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="eyebrow">{t.era3.recruit}</div>
-                      {recruitedThisTurn && (
-                        <span className="text-text-muted text-[9px] italic">{t.era3.alreadyPlayed}</span>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {(Object.keys(ERA3_RECRUIT_COSTS) as UnitType[]).map(ut => {
-                        const v = recruitValidations[ut];
-                        const ok = v?.ok === true;
-                        const cost = ERA3_RECRUIT_COSTS[ut];
-                        const scienceReq = ERA3_SCIENCE_UNIT_REQS[ut] ?? 0;
-                        const scienceLocked = player && !scienceAllowsUnit(player, ut);
-                        const tooExpensive = !scienceLocked && !ok && goldCoins < cost && !recruitedThisTurn;
-                        const sciLockLabel = t.tech.scienceLocked.replace('{req}', String(scienceReq));
-                        return (
-                          <button
-                            key={ut}
-                            type="button"
-                            onClick={() => handleRecruit(ut)}
-                            disabled={!ok}
-                            title={scienceLocked ? sciLockLabel : undefined}
-                            className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 border text-left ${
-                              ok
-                                ? 'bg-emerald-500/10 border-emerald-400/30 hover:bg-emerald-500/20'
-                                : scienceLocked
-                                ? 'bg-game-bg/40 border-purple-900/40 opacity-60 cursor-not-allowed'
-                                : tooExpensive
-                                ? 'bg-game-bg/40 border-red-900/40 opacity-60 cursor-not-allowed'
-                                : 'bg-game-bg/40 border-border-subtle opacity-50 cursor-not-allowed'
-                            }`}
-                          >
-                            <span className="text-base">{scienceLocked ? '🔬' : UNIT_ICONS[ut]}</span>
-                            <div className="flex-1 min-w-0">
-                              <div className="text-text-primary text-[11px] font-semibold">{t.units[ut]}</div>
-                              {scienceLocked ? (
-                                <div className="text-[10px] text-purple-400">{sciLockLabel}</div>
-                              ) : (
-                                <div className={`text-[10px] tabular-nums ${goldCoins < cost ? 'text-red-400' : 'text-game-gold'}`}>
-                                  💰 {cost}
-                                </div>
-                              )}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Build road */}
-                  {gameState.era3Phase === 'game_loop' && (
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="eyebrow">{t.era3.buildRoad.title} ({roadsBuiltThisTurn}/3)</div>
-                        <div className={`text-[10px] font-semibold tabular-nums ${goldCoins < ERA3_BUILD_ROAD_COST ? 'text-red-400' : 'text-game-gold'}`}>
-                          💰 {ERA3_BUILD_ROAD_COST}
-                        </div>
-                      </div>
-                      {buildingRoad ? (
-                        <div className="rounded-lg border border-game-gold/40 bg-game-gold/5 p-2">
-                          <div className="text-text-primary text-xs mb-2">{t.era3.buildRoad.active}</div>
-                          <button
-                            type="button"
-                            onClick={() => setBuildingRoad(false)}
-                            className="btn-sm btn-ghost w-full uppercase tracking-wider"
-                          >
-                            {t.era3.buildRoad.cancel}
-                          </button>
-                        </div>
-                      ) : (
+              <div className="px-2.5 py-2 space-y-2">
+                {/* Recruit — 5 unit buttons in a row */}
+                <div>
+                  <div className="eyebrow mb-1">{t.era3.recruit}</div>
+                  <div className="flex gap-1">
+                    {(Object.keys(ERA3_RECRUIT_COSTS) as UnitType[]).map(ut => {
+                      const v = recruitValidations[ut];
+                      const ok = v?.ok === true;
+                      const cost = ERA3_RECRUIT_COSTS[ut];
+                      const scienceReq = ERA3_SCIENCE_UNIT_REQS[ut] ?? 0;
+                      const scienceLocked = player && !scienceAllowsUnit(player, ut);
+                      const sciLockLabel = t.tech.scienceLocked.replace('{req}', String(scienceReq));
+                      return (
                         <button
+                          key={ut}
                           type="button"
-                          onClick={() => setBuildingRoad(true)}
-                          disabled={!canStartBuildRoad}
-                          className="btn-sm btn-primary w-full uppercase tracking-wider"
+                          onClick={() => handleRecruit(ut)}
+                          disabled={!ok}
+                          title={scienceLocked ? sciLockLabel : `${t.units[ut]} 💰${cost}`}
+                          className={`flex-1 flex flex-col items-center gap-0.5 rounded-lg py-1.5 border text-center transition-colors ${
+                            ok
+                              ? 'bg-emerald-500/10 border-emerald-400/30 hover:bg-emerald-500/20'
+                              : scienceLocked
+                              ? 'bg-game-bg/30 border-purple-900/30 opacity-40 cursor-not-allowed'
+                              : 'bg-game-bg/30 border-border-subtle opacity-40 cursor-not-allowed'
+                          }`}
                         >
-                          {t.era3.buildRoad.build}
+                          <span className="text-sm leading-none">{UNIT_ICONS[ut]}</span>
+                          <span className={`text-[8px] tabular-nums font-semibold ${goldCoins < cost && !scienceLocked ? 'text-red-400' : ok ? 'text-game-gold' : 'text-text-muted'}`}>
+                            {scienceLocked ? `🔬${scienceReq}` : `💰${cost}`}
+                          </span>
                         </button>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Selected stack */}
-                  {selectedStack && (
-                    <SelectedStackPanel
-                      stack={selectedStack}
-                      adjacentEnemies={selectedStackAdjacentEnemies}
-                      onAttack={handleAttackStack}
-                      onDeselect={() => setSelectedStackId(null)}
-                      t={t}
-                    />
-                  )}
-
-                  {/* End turn — prominent at bottom */}
-                  <button
-                    type="button"
-                    onClick={handleEndTurn}
-                    className="btn btn-danger w-full"
-                  >
-                    {t.era3.endTurn}
-                  </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              )}
 
-              {/* Spectating: show selected stack info when not my turn */}
-              {!isMyTurn && selectedStack && (
-                <div className="border-t border-border-subtle px-3 pb-3 pt-2">
+                {/* Build road — inline compact */}
+                {gameState.era3Phase === 'game_loop' && (
+                  buildingRoad ? (
+                    <div className="flex items-center gap-2 rounded-lg border border-game-gold/40 bg-game-gold/10 px-2 py-1.5">
+                      <span className="text-[10px] text-game-gold flex-1">{t.era3.buildRoad.active}</span>
+                      <button type="button" onClick={() => setBuildingRoad(false)} className="btn-sm btn-ghost text-[9px] py-0.5 px-2">
+                        {t.era3.buildRoad.cancel}
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setBuildingRoad(true)}
+                      disabled={!canStartBuildRoad}
+                      className="btn-sm btn-ghost w-full text-[10px]"
+                    >
+                      🛤️ {t.era3.buildRoad.build} ({roadsBuiltThisTurn}/3) · 💰{ERA3_BUILD_ROAD_COST}
+                    </button>
+                  )
+                )}
+
+                {/* Selected stack compact */}
+                {selectedStack && (
                   <SelectedStackPanel
                     stack={selectedStack}
                     adjacentEnemies={selectedStackAdjacentEnemies}
@@ -640,184 +613,77 @@ export function Era3Screen() {
                     onDeselect={() => setSelectedStackId(null)}
                     t={t}
                   />
-                </div>
-              )}
+                )}
+
+              </div>
             </div>
           )}
 
-          {/* ── Section: Mi reino (race, tech, army) ── */}
-          <Section title={t.era3.sections.kingdom} icon="🏰" defaultOpen={!inGameLoop || !isMyTurn}>
-            <div className="space-y-3">
-              {techLevels && era3 && (
-                <div>
-                  <div className="eyebrow mb-1.5">{t.era3.techUpgrade.title}</div>
-                  <div className="space-y-1.5">
-                    {TECH_TYPES.map(tech => {
-                      const current = techLevels[tech] ?? 0;
-                      const maxLevel = 5;
-                      const atMax = current >= maxLevel;
-                      const nextLevel = current + 1;
-                      const baseCost = atMax ? 0 : getIncrementalCost(tech, nextLevel);
-                      const goldCost = atMax ? 0 : Math.ceil(baseCost * ERA3_TECH_UPGRADE_MULTIPLIER);
-                      const canAfford = goldCoins >= goldCost;
-                      const canUpgrade = isMyTurn && inGameLoop && !isEliminated && !atMax && canAfford && !!localPlayerId;
-
-                      // Compute current effect label
-                      const fx = t.tech.era3Effects[tech];
-                      let currentEffect = '';
-                      let nextEffect = '';
-                      if (tech === 'war') {
-                        const wfx = t.tech.era3Effects.war;
-                        const curRecruits = ERA3_WAR_RECRUITS_PER_LEVEL[Math.min(current, ERA3_WAR_RECRUITS_PER_LEVEL.length - 1)];
-                        const curAtk = ERA3_WAR_ATTACK_PER_LEVEL[Math.min(current, ERA3_WAR_ATTACK_PER_LEVEL.length - 1)];
-                        currentEffect = wfx.currentTemplate.replace('{recruits}', String(curRecruits)).replace('{atk}', String(curAtk));
-                        if (!atMax) {
-                          const nxtRecruits = ERA3_WAR_RECRUITS_PER_LEVEL[Math.min(nextLevel, ERA3_WAR_RECRUITS_PER_LEVEL.length - 1)];
-                          const nxtAtk = ERA3_WAR_ATTACK_PER_LEVEL[Math.min(nextLevel, ERA3_WAR_ATTACK_PER_LEVEL.length - 1)];
-                          nextEffect = wfx.nextTemplate.replace('{recruits}', String(nxtRecruits)).replace('{atk}', String(nxtAtk));
-                        }
-                      } else if (tech === 'science') {
-                        const sfx = t.tech.era3Effects.science;
-                        const UNIT_ORDER: UnitType[] = ['infantry', 'ranged', 'mounted', 'siege', 'flying'];
-                        const unlockedNow = UNIT_ORDER.filter(u => (ERA3_SCIENCE_UNIT_REQS[u] ?? 0) <= current);
-                        currentEffect = sfx.currentTemplate.replace('{units}', unlockedNow.map(u => t.units[u]).join(', '));
-                        if (!atMax) {
-                          const nextUnlocked = UNIT_ORDER.find(u => (ERA3_SCIENCE_UNIT_REQS[u] ?? 0) === nextLevel);
-                          nextEffect = nextUnlocked ? sfx.nextTemplate.replace('{unit}', t.units[nextUnlocked]) : '';
-                        }
-                      } else if (tech === 'resources') {
-                        const rfx = t.tech.era3Effects.resources;
-                        const curSize = ERA3_RESOURCES_STACK_SIZE_PER_LEVEL[Math.min(current, ERA3_RESOURCES_STACK_SIZE_PER_LEVEL.length - 1)];
-                        currentEffect = rfx.currentTemplate.replace('{size}', String(curSize));
-                        if (!atMax) {
-                          const nxtSize = ERA3_RESOURCES_STACK_SIZE_PER_LEVEL[Math.min(nextLevel, ERA3_RESOURCES_STACK_SIZE_PER_LEVEL.length - 1)];
-                          nextEffect = rfx.nextTemplate.replace('{size}', String(nxtSize));
-                        }
-                      } else if (tech === 'economy') {
-                        const efx = t.tech.era3Effects.economy;
-                        const curIncome = ERA3_BASE_INCOME + current;
-                        currentEffect = efx.currentTemplate.replace('{income}', String(curIncome));
-                        if (!atMax) {
-                          const nxtIncome = ERA3_BASE_INCOME + nextLevel;
-                          nextEffect = efx.nextTemplate.replace('{income}', String(nxtIncome));
-                        }
-                      }
-
-                      return (
-                        <div
-                          key={tech}
-                          className="bg-game-bg/60 border border-border-subtle rounded-lg p-2 group relative"
-                          title={fx.desc}
-                        >
-                          {/* Header row: icon + name + level pips + upgrade button */}
-                          <div className="flex items-center gap-2">
-                            <span className="text-base shrink-0">{TECH_ICONS[tech]}</span>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-text-secondary text-[10px] uppercase tracking-wider font-semibold">{t.tech[tech]}</span>
-                                <span className="text-game-gold font-bold text-sm tabular-nums">{current}</span>
-                                <div className="flex gap-0.5">
-                                  {Array.from({ length: maxLevel }).map((_, i) => (
-                                    <div key={i} className={`w-2 h-2 rounded-sm ${i < current ? 'bg-game-gold' : 'bg-border-subtle'}`} />
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                            {!atMax ? (
-                              <button
-                                type="button"
-                                disabled={!canUpgrade}
-                                onClick={() => localPlayerId && dispatch({ type: 'ERA3_UPGRADE_TECH', playerId: localPlayerId, tech })}
-                                className={`shrink-0 text-[9px] rounded px-1.5 py-1 border font-bold transition-colors ${
-                                  canUpgrade
-                                    ? 'border-game-gold/50 bg-game-gold/10 text-game-gold hover:bg-game-gold/20'
-                                    : canAfford
-                                    ? 'border-border-subtle bg-transparent text-text-muted opacity-60 cursor-not-allowed'
-                                    : 'border-red-900/40 bg-transparent text-red-400 opacity-70 cursor-not-allowed'
-                                }`}
-                              >
-                                +1 <span className={canAfford ? 'text-game-gold' : 'text-red-400'}>💰{goldCost}</span>
-                              </button>
-                            ) : (
-                              <span className="text-emerald-400 text-[9px] shrink-0 font-semibold">MAX</span>
-                            )}
-                          </div>
-
-                          {/* Current effect */}
-                          <div className="mt-1 text-[10px] text-text-secondary">
-                            {currentEffect}
-                          </div>
-
-                          {/* Next level preview */}
-                          {nextEffect && (
-                            <div className="mt-0.5 text-[10px] text-game-gold/70">
-                              {nextEffect}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <div className="eyebrow mb-1.5">{t.era3.deployment}</div>
-                {unitSummary.length > 0 ? (
-                  <div className="flex flex-wrap gap-1">
-                    {unitSummary.map(g => (
-                      <div
-                        key={g.type}
-                        className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-400/30 rounded-md px-1.5 py-1"
-                      >
-                        <span className="text-sm">{UNIT_ICONS[g.type]}</span>
-                        <span className="text-emerald-400 font-bold text-[11px] tabular-nums">×{g.count}</span>
-                        <span className="text-text-secondary text-[10px]">{t.units[g.type]}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-text-muted text-xs italic">{t.era3.noUnits}</div>
-                )}
-
-                {era3?.initialDeploymentOverflow && era3.initialDeploymentOverflow.length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-border-subtle">
-                    <div className="text-game-accent text-[10px] uppercase tracking-wider font-semibold mb-1">
-                      {t.era3.overflowWarning}
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {era3.initialDeploymentOverflow.map((g, i) => (
-                        <span key={i} className="text-text-muted text-xs">
-                          {UNIT_ICONS[g.unit]} ×{g.count}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </Section>
-
-          {/* ── Section: Ejército — stacks + generals ── */}
-          {inGameLoop && gameState && localPlayerId && (
-            <Section title={t.era3.army} icon="🎖️" defaultOpen={isMyTurn}>
-              <ArmyPanel
-                gameState={gameState}
-                localPlayerId={localPlayerId}
-                goldCoins={goldCoins}
-                recruitsThisTurn={recruitsThisTurn}
-                roadsBuiltThisTurn={roadsBuiltThisTurn}
-                isMyTurn={isMyTurn}
-                onAssignGeneral={(generalId, stackId) =>
-                  dispatch({ type: 'ASSIGN_GENERAL', playerId: localPlayerId, generalId, stackId })
-                }
-                onUnassignGeneral={(stackId) =>
-                  dispatch({ type: 'UNASSIGN_GENERAL', playerId: localPlayerId, stackId })
-                }
-                onSplitStack={(stackId, unitIds) =>
-                  dispatch({ type: 'SPLIT_STACK', playerId: localPlayerId, stackId, unitIds })
-                }
+          {/* Spectating selected stack */}
+          {inGameLoop && !isMyTurn && selectedStack && (
+            <div className="rounded-xl border border-border-subtle bg-game-surface/40 px-2.5 py-2">
+              <SelectedStackPanel
+                stack={selectedStack}
+                adjacentEnemies={selectedStackAdjacentEnemies}
+                onAttack={handleAttackStack}
+                onDeselect={() => setSelectedStackId(null)}
+                t={t}
               />
+            </div>
+          )}
+
+          {/* ── Mi ejército + Mi reino — collapsible, fused ── */}
+          {inGameLoop && gameState && localPlayerId && (
+            <Section title={`${t.era3.army} · ${t.era3.sections.kingdom}`} icon="🎖️" defaultOpen={isMyTurn}>
+              <div className="space-y-3">
+                {/* Tech pentagon */}
+                {techLevels && era3 && (() => {
+                  const raceTechMax = RACE_TECH_MAX[player.raceId as keyof typeof RACE_TECH_MAX] ?? Object.fromEntries(TECH_TYPES.map(t => [t, 5])) as Record<TechType, number>;
+                  return (
+                    <TechPentagon
+                      techLevels={techLevels}
+                      raceTechMax={raceTechMax}
+                      t={t}
+                      size={180}
+                      onUpgrade={tech => localPlayerId && dispatch({ type: 'ERA3_UPGRADE_TECH', playerId: localPlayerId, tech })}
+                      canUpgrade={tech => {
+                        const cur = techLevels[tech] ?? 0;
+                        const raceMax = raceTechMax[tech] ?? 5;
+                        if (cur >= raceMax) return false;
+                        const nextLvl = cur + 1;
+                        const cost = Math.ceil(getIncrementalCost(tech, nextLvl) * ERA3_TECH_UPGRADE_MULTIPLIER);
+                        return isMyTurn && inGameLoop && !isEliminated && goldCoins >= cost && !!localPlayerId;
+                      }}
+                      goldCost={tech => {
+                        const cur = techLevels[tech] ?? 0;
+                        const raceMax = raceTechMax[tech] ?? 5;
+                        if (cur >= raceMax) return 0;
+                        return Math.ceil(getIncrementalCost(tech, cur + 1) * ERA3_TECH_UPGRADE_MULTIPLIER);
+                      }}
+                      goldCoins={goldCoins}
+                    />
+                  );
+                })()}
+
+                {/* Army panel */}
+                <ArmyPanel
+                  gameState={gameState}
+                  localPlayerId={localPlayerId}
+                  goldCoins={goldCoins}
+                  recruitsThisTurn={recruitsThisTurn}
+                  roadsBuiltThisTurn={roadsBuiltThisTurn}
+                  isMyTurn={isMyTurn}
+                  onAssignGeneral={(generalId, stackId) =>
+                    dispatch({ type: 'ASSIGN_GENERAL', playerId: localPlayerId, generalId, stackId })
+                  }
+                  onUnassignGeneral={(stackId) =>
+                    dispatch({ type: 'UNASSIGN_GENERAL', playerId: localPlayerId, stackId })
+                  }
+                  onSplitStack={(stackId, unitIds) =>
+                    dispatch({ type: 'SPLIT_STACK', playerId: localPlayerId, stackId, unitIds })
+                  }
+                />
+              </div>
             </Section>
           )}
 
@@ -827,15 +693,7 @@ export function Era3Screen() {
         </aside>
 
         {/* Map — center column, fills all remaining space */}
-        <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
-          <div className="flex items-center justify-between px-2 py-1 border-b border-border-subtle shrink-0">
-            <h3 className="text-game-gold font-bold text-xs uppercase tracking-wider">{t.era3.mapTitle}</h3>
-            <div className="flex items-center gap-2 text-[9px] text-text-muted">
-              <span className="flex items-center gap-0.5"><span className="text-game-gold">♚</span>{t.era3.legend.capital}</span>
-              <span className="flex items-center gap-0.5"><span className="text-game-accent">☠</span>{t.era3.legend.spawnZone}</span>
-              <span className="flex items-center gap-0.5"><span className="text-game-gold">🏯</span>{t.era3.legend.citadel}</span>
-            </div>
-          </div>
+        <main className="flex-1 min-w-0 flex flex-col overflow-hidden relative">
           {map ? (
             <div className="flex-1 min-h-0 relative">
               <Era3HexMap3D
@@ -855,7 +713,12 @@ export function Era3Screen() {
                 recentCombats={recentCombats}
                 onHexContextAction={isMyTurn && !isEliminated ? handleHexContextAction : undefined}
                 recruitableUnits={isMyTurn && !isEliminated ? recruitableUnits : undefined}
+                techLockedUnits={isMyTurn && !isEliminated ? techLockedUnits : undefined}
                 canBuildRoad={isMyTurn && !isEliminated && canStartBuildRoad}
+                exploredHexes={localPlayerId ? (gameState.era3ExploredHexes?.[localPlayerId] ?? undefined) : undefined}
+                fogOfWar={fogOfWarEnabled}
+                playerCapitalCoord={era3?.capitalCoord ?? null}
+                playerRaces={Object.fromEntries(gameState.players.map(p => [p.id, p.raceId]))}
               />
               {inspected && (
                 <HexInspectorPanel
@@ -865,10 +728,128 @@ export function Era3Screen() {
                   onClose={() => setInspected(null)}
                 />
               )}
+
+
+              {/* ── Map Legend overlay — bottom-right corner, collapsible ── */}
+              <div className="absolute bottom-3 right-3 z-10 select-none" style={{ maxWidth: 220 }}>
+                <div className="rounded-xl overflow-hidden border border-game-gold/25 bg-game-bg/88 backdrop-blur-md shadow-2xl"
+                  style={{ boxShadow: '0 4px 32px rgba(0,0,0,0.65), 0 0 0 1px rgba(245,197,24,0.10)' }}
+                >
+                  {/* Header — always visible, clickable to toggle */}
+                  <button
+                    type="button"
+                    onClick={() => setLegendOpen(o => !o)}
+                    className="w-full flex items-center justify-between px-3 py-2 border-b border-game-gold/15 bg-game-gold/8 hover:bg-game-gold/12 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-game-gold text-base leading-none">🗺️</span>
+                      <span className="text-game-gold text-[10px] font-bold uppercase tracking-[0.15em] animate-title-glow">
+                        {t.era3.mapTitle}
+                      </span>
+                    </div>
+                    <span className="text-game-gold/60 text-[10px] font-bold leading-none transition-transform duration-200"
+                      style={{ transform: legendOpen ? 'rotate(180deg)' : 'rotate(0deg)', display: 'inline-block' }}>
+                      ▼
+                    </span>
+                  </button>
+
+                  {legendOpen && (
+                    <>
+                      {/* Special markers */}
+                      <div className="px-3 pt-2 pb-1">
+                        <div className="text-[8px] text-game-gold/50 uppercase tracking-widest mb-1">Marcadores</div>
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
+                          {[
+                            { icon: '♚', color: '#f5c518', label: t.era3.legend.capital },
+                            { icon: '🏯', color: '#fbbf24', label: t.era3.legend.citadel },
+                            { icon: '☠', color: '#e94560', label: t.era3.legend.spawnZone },
+                            { icon: '🏰', color: '#a78bfa', label: 'Fuerte' },
+                          ].map(({ icon, color, label }) => (
+                            <div key={label} className="flex items-center gap-1.5 py-0.5">
+                              <span className="text-[13px] leading-none shrink-0" style={{ filter: 'drop-shadow(0 0 3px rgba(0,0,0,0.9))' }}>{icon}</span>
+                              <span className="text-[9px] font-semibold leading-none truncate" style={{ color }}>{label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="mx-3 border-t border-game-gold/10" />
+                      {/* Terrain */}
+                      <div className="px-3 pt-1.5 pb-1">
+                        <div className="text-[8px] text-game-gold/50 uppercase tracking-widest mb-1">Terrenos</div>
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
+                          {[
+                            { icon: '🌾', color: '#86efac', label: 'Llanura', cost: 3 },
+                            { icon: '⛰️', color: '#a8a29e', label: 'Montaña', cost: 6 },
+                            { icon: '🌲', color: '#4ade80', label: 'Bosque', cost: 6 },
+                            { icon: '🌿', color: '#2dd4bf', label: 'Pantano', cost: 4 },
+                            { icon: '🏔️', color: '#c084fc', label: 'Colina', cost: 3 },
+                            { icon: '🏜️', color: '#fcd34d', label: 'Desierto', cost: 6 },
+                            { icon: '🌊', color: '#60a5fa', label: 'Lago', cost: null },
+                            { icon: '🏛️', color: '#f59e0b', label: 'Ruinas', cost: 3 },
+                            { icon: '🛤️', color: '#fbbf24', label: 'Camino', cost: 1 },
+                            { icon: '🌉', color: '#94a3b8', label: 'Puente', cost: 1 },
+                          ].map(({ icon, color, label, cost }) => (
+                            <div key={label} className="flex items-center gap-1.5 py-0.5">
+                              <span className="text-[13px] leading-none shrink-0" style={{ filter: 'drop-shadow(0 0 3px rgba(0,0,0,0.9))' }}>{icon}</span>
+                              <span className="text-[9px] font-medium leading-none truncate" style={{ color }}>{label}</span>
+                              {cost !== null ? (
+                                <span className="ml-auto text-[8px] text-text-faint shrink-0 tabular-nums">·{cost}</span>
+                              ) : (
+                                <span className="ml-auto text-[8px] text-red-400/70 shrink-0">✕</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      {/* Footer hint */}
+                      <div className="px-3 py-1.5 border-t border-game-gold/10 bg-black/25">
+                        <span className="text-text-faint text-[8px] uppercase tracking-wider">
+                          Costo de movimiento (×1/3 escala)
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-center text-text-muted text-sm">
               {t.era3.phases.map_generation}…
+            </div>
+          )}
+
+          {/* ── End Turn overlay — positioned over map, outside canvas so pointer events work ── */}
+          {inGameLoop && (
+            <div className="absolute top-3 left-3 z-30 pointer-events-none">
+              <div className="pointer-events-auto">
+                {isMyTurn && !isEliminated ? (
+                  <button
+                    type="button"
+                    onClick={handleEndTurn}
+                    className="flex items-center gap-3 rounded-2xl px-6 py-3.5 font-black text-base border-2 shadow-2xl transition-all select-none bg-game-accent border-game-accent text-white hover:bg-red-500 hover:border-red-400 hover:scale-105 active:scale-95 cursor-pointer"
+                    style={{ boxShadow: '0 0 28px rgba(233,69,96,0.55), 0 0 60px rgba(233,69,96,0.20), 0 6px 16px rgba(0,0,0,0.6)' }}
+                  >
+                    <span className="text-xl leading-none">⏭</span>
+                    <span className="tracking-wide uppercase">{t.era3.endTurn}</span>
+                  </button>
+                ) : (
+                  <div
+                    className="flex items-center gap-2.5 rounded-2xl px-5 py-3 font-bold text-sm border-2 border-border-subtle bg-game-surface/70 text-text-muted opacity-80"
+                    style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}
+                  >
+                    <span className="text-base leading-none animate-pulse">⏳</span>
+                    <span className="tracking-wide">{activePlayer ? `${t.era3.turnOf} ${activePlayer.name}` : '…'}</span>
+                  </div>
+                )}
+                {gameState.era3TurnNumber && (
+                  <div className="mt-1.5 text-center">
+                    <span className="text-[10px] text-game-gold/70 font-semibold uppercase tracking-widest tabular-nums">
+                      Turno {gameState.era3TurnNumber}
+                      {gameState.era3MaxTurns ? ` / ${gameState.era3MaxTurns}` : ' ∞'}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </main>
@@ -885,9 +866,12 @@ export function Era3Screen() {
                   {hand.map((card: EraCard) => {
                     const canPlay = isMyTurn && !cardAlreadyPlayed;
                     return (
-                      <li key={card.id} className="bg-game-bg/60 border border-border-subtle rounded-lg p-2">
+                      <li key={card.id} className={`border rounded-lg p-2 ${rarityStyle(card.rarity)}`}>
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1 mb-0.5">
+                              {rarityBadge(card.rarity)}
+                            </div>
                             <div className="text-text-primary font-semibold text-xs">{card.name}</div>
                             {card.effects.map((e, i) => (
                               <div key={i} className="text-text-secondary text-[10px]">• {formatEffect(e)}</div>
@@ -907,8 +891,12 @@ export function Era3Screen() {
                   })}
                 </ul>
               )}
-              {cardAlreadyPlayed && (
-                <div className="text-text-muted text-[10px] italic mt-1">{t.era3.alreadyPlayed}</div>
+              {isMyTurn && (
+                <div className="flex items-center gap-1 mt-1">
+                  <span className={`text-[10px] font-bold ${cardsPlayedThisTurn >= 2 ? 'text-text-muted' : 'text-game-gold'}`}>
+                    {cardsPlayedThisTurn}/2 {t.era3.cardsPlayed ?? 'cartas jugadas'}
+                  </span>
+                </div>
               )}
               <div className="text-text-faint text-[9px] mt-1">{t.era3.deckCount}: {deckSize}</div>
             </Section>
@@ -947,6 +935,107 @@ export function Era3Screen() {
           )}
         </aside>
       </div>
+
+      {/* Card offer modal — shown when a player has 2 cards to choose from */}
+      {cardOffers.length > 0 && isMyTurn && (
+        <div className="fixed inset-0 z-[55] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in-up">
+          <div className="max-w-lg w-full space-y-4 animate-scale-in">
+            {/* Header */}
+            <div className="text-center">
+              <div className="text-4xl mb-2">🃏</div>
+              <h2 className="text-2xl font-black text-game-gold animate-title-glow uppercase tracking-wider">
+                {t.era3.cardOfferTitle ?? 'Nueva carta'}
+              </h2>
+              <p className="text-text-secondary text-sm mt-1">
+                {t.era3.cardOfferSubtitle ?? 'Elige una carta para tu mano. La otra será descartada.'}
+              </p>
+            </div>
+
+            {/* Card options */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {cardOffers.map((card: EraCard) => {
+                const borderClass = card.rarity === 'legendary'
+                  ? 'border-yellow-400/60 bg-yellow-900/15 hover:border-yellow-400/90 hover:bg-yellow-900/25'
+                  : card.rarity === 'rare'
+                    ? 'border-purple-400/50 bg-purple-900/10 hover:border-purple-400/80 hover:bg-purple-900/20'
+                    : 'border-border-subtle bg-game-surface/80 hover:border-game-gold/60 hover:bg-game-gold/5';
+                return (
+                  <button
+                    key={card.id}
+                    type="button"
+                    onClick={() => { if (localPlayerId) dispatch({ type: 'PICK_CARD_OFFER', playerId: localPlayerId, cardId: card.id }); }}
+                    className={`group relative border-2 rounded-2xl p-4 text-left transition-all duration-200 hover:shadow-gold-sm ${borderClass}`}
+                  >
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-game-gold text-xs font-bold uppercase tracking-wider">Elegir ✓</span>
+                    </div>
+                    <div className="mb-1">{rarityBadge(card.rarity)}</div>
+                    <div className="text-game-gold font-black text-base mb-2 pr-12">{card.name}</div>
+                    <ul className="space-y-1">
+                      {card.effects.map((e, i) => (
+                        <li key={i} className="text-text-secondary text-xs">• {formatEffect(e)}</li>
+                      ))}
+                    </ul>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Discard all (only if hand is full) */}
+            {hand.length >= 5 && (
+              <div className="text-center pt-1">
+                <button
+                  type="button"
+                  onClick={() => { if (localPlayerId) dispatch({ type: 'DISCARD_CARD_OFFER', playerId: localPlayerId }); }}
+                  className="btn btn-ghost text-text-muted hover:text-game-accent text-xs"
+                >
+                  {t.era3.discardOffer ?? 'Mano llena — descartar ambas'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Starvation modal — player chooses which unit to sacrifice */}
+      {localPlayerId && player?.era3State?.era3StarvationPending && stacks && (() => {
+        const playerStacks = Object.values(stacks).filter(s => s.ownerId === localPlayerId && s.units.length > 0);
+        return (
+          <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+            <div className="bg-game-surface border border-red-500/40 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-scale-in">
+              <div className="text-center mb-4">
+                <div className="text-4xl mb-2">💀</div>
+                <h3 className="text-red-400 font-black text-xl">¡Hambruna!</h3>
+                <p className="text-text-secondary text-sm mt-1">Las reservas de comida se han agotado. Elige una unidad para sacrificar.</p>
+                <div className="text-text-muted text-xs mt-1">Reservas: <span className="text-red-400 font-bold">{player.era3State.foodReserves}</span></div>
+              </div>
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {playerStacks.map(stack => (
+                  stack.units.map(unit => {
+                    const defInfo = UNIT_DEFINITIONS.find(d => d.id === unit.type);
+                    const maxHp = defInfo ? defInfo.defense + 2 : 3;
+                    return (
+                      <button
+                        key={unit.id}
+                        type="button"
+                        onClick={() => dispatch({ type: 'DISBAND_UNIT_STARVATION', playerId: localPlayerId, stackId: stack.id, unitId: unit.id })}
+                        className="w-full flex items-center gap-3 px-3 py-2 rounded-xl border border-red-500/20 hover:border-red-500/60 hover:bg-red-900/20 transition-all text-left"
+                      >
+                        <span className="text-xl">{UNIT_ICONS[unit.type]}</span>
+                        <div className="flex-1">
+                          <div className="text-text-primary font-bold text-sm">{(t.units as Record<string, string>)[unit.type] ?? unit.type}</div>
+                          <div className="text-text-muted text-xs">HP {unit.currentHp}/{maxHp}</div>
+                        </div>
+                        <div className="text-red-400 text-xs font-bold">Sacrificar</div>
+                      </button>
+                    );
+                  })
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Ruins reward modal */}
       {ruinsModal && (() => {
@@ -1041,6 +1130,35 @@ function QuickStat({
         {sub && <span className="text-[9px] text-text-muted font-normal ml-0.5">{sub}</span>}
       </div>
     </div>
+  );
+}
+
+function StatChip({
+  icon, value, sub, dim = false,
+}: {
+  icon: string;
+  value: number | string;
+  sub?: string;
+  dim?: boolean;
+}) {
+  return (
+    <div className={`flex-1 flex items-center gap-1 bg-game-bg/50 border border-border-subtle rounded px-1.5 py-1 ${dim ? 'opacity-40' : ''}`}>
+      <span className="text-xs leading-none">{icon}</span>
+      <span className="text-xs font-bold text-game-gold tabular-nums">
+        {value}{sub && <span className="text-[9px] text-text-muted font-normal">{sub}</span>}
+      </span>
+    </div>
+  );
+}
+
+function CheckDot({ done, available, label }: { done: boolean; available: boolean; label: string }) {
+  const color = done ? 'text-emerald-400' : available ? 'text-game-gold' : 'text-text-muted';
+  const dot = done ? '✓' : available ? '·' : '×';
+  return (
+    <span className={`flex items-center gap-0.5 shrink-0 ${color}`} title={label}>
+      <span className="font-bold text-[11px]">{dot}</span>
+      <span className="text-[9px] hidden sm:inline">{label}</span>
+    </span>
   );
 }
 

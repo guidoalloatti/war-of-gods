@@ -175,6 +175,41 @@ body {
   animation: shimmer 3s linear infinite;
 }
 
+@keyframes fire-flicker {
+  0%, 100% { opacity: 0.7; transform: scaleY(1) translateX(0); }
+  25% { opacity: 0.9; transform: scaleY(1.05) translateX(-1px); }
+  50% { opacity: 0.6; transform: scaleY(0.95) translateX(1px); }
+  75% { opacity: 0.85; transform: scaleY(1.08) translateX(-0.5px); }
+}
+
+@keyframes ember-rise {
+  0% { opacity: 0; transform: translateY(0) scale(1); }
+  20% { opacity: 1; }
+  80% { opacity: 0.5; }
+  100% { opacity: 0; transform: translateY(-60px) scale(0.3) rotate(45deg); }
+}
+
+@keyframes magic-pulse {
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(1.05); }
+}
+
+@keyframes scroll-unfurl {
+  from { clip-path: inset(0 100% 0 0); opacity: 0; }
+  to { clip-path: inset(0 0% 0 0); opacity: 1; }
+}
+
+@keyframes rune-glow {
+  0%, 100% { text-shadow: 0 0 8px rgba(245,197,24,0.4), 0 0 16px rgba(245,197,24,0.2); }
+  50% { text-shadow: 0 0 16px rgba(245,197,24,0.8), 0 0 32px rgba(245,197,24,0.4), 0 0 48px rgba(255,107,53,0.2); }
+}
+
+.animate-fire-flicker { animation: fire-flicker 1.8s ease-in-out infinite; }
+.animate-ember-rise { animation: ember-rise 2.5s ease-out infinite; }
+.animate-magic-pulse { animation: magic-pulse 3s ease-in-out infinite; }
+.animate-scroll-unfurl { animation: scroll-unfurl 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-rune-glow { animation: rune-glow 2.5s ease-in-out infinite; }
+
 /* ── Reusable component utilities ─────────────────────────────── */
 /* Plain CSS (not @apply) because game-surface/game-bg use CSS variables
    which Tailwind's opacity modifier can't resolve at build time. */

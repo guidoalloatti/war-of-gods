@@ -73,10 +73,10 @@ describe('Era I → Era II transition', () => {
     expect(s.kingsTableReady).toEqual([]);
   });
 
-  it('applies racial free tech (human → science 1)', () => {
+  it('applies racial free tech (human → economy 1)', () => {
     const s = driveToEra2(newGame());
     const human = s.players.find(p => p.raceId === 'human')!;
-    expect(human.era2State!.techLevels.science).toBeGreaterThanOrEqual(1);
+    expect(human.era2State!.techLevels.economy).toBeGreaterThanOrEqual(1);
   });
 });
 
@@ -119,7 +119,7 @@ describe('era2Reducer — SET_TECH_LEVEL', () => {
   it('rejects level 6 without allowLevel6', () => {
     let s = driveToEra2(newGame());
     const humanId = s.players.find(p => !p.isBot)!.id;
-    // Ensure budget is plentiful so the level-6 gate is the failure, not overspend.
+    // Human economy max is 6, so use economy to ensure race cap doesn't fire before the level-6 gate.
     s = {
       ...s,
       era2Phase: 'tech_allocation',
@@ -130,7 +130,7 @@ describe('era2Reducer — SET_TECH_LEVEL', () => {
       ),
     };
     expect(() =>
-      era2Reducer(s, { type: 'SET_TECH_LEVEL', playerId: humanId, tech: 'war', targetLevel: 6 }),
+      era2Reducer(s, { type: 'SET_TECH_LEVEL', playerId: humanId, tech: 'economy', targetLevel: 6 }),
     ).toThrow(/Forja del Destino/);
   });
 
@@ -175,10 +175,10 @@ describe('era2Reducer — CONFIRM_ALLOCATION / RESET_ALLOCATION', () => {
     s = era2Reducer(s, { type: 'SET_TECH_LEVEL', playerId: humanId, tech: 'war', targetLevel: 2 });
     s = era2Reducer(s, { type: 'RESET_ALLOCATION', playerId: humanId });
     const e2 = s.players.find(p => p.id === humanId)!.era2State!;
-    // Human race gives free science +1; reset should preserve baseline.
+    // Human race gives free economy +1; reset should preserve baseline.
     expect(e2.techLevels).toEqual(e2.baselineTechLevels);
     expect(e2.techLevels.war).toBe(0);
-    expect(e2.techLevels.science).toBeGreaterThanOrEqual(1);
+    expect(e2.techLevels.economy).toBeGreaterThanOrEqual(1);
     expect(e2.pointsSpent).toBe(0);
     expect(e2.reallocationsUsed).toBe(1);
   });

@@ -3,528 +3,129 @@
 > vite
 
 
-  VITE v5.4.21  ready in 372 ms
+  VITE v5.4.21  ready in 141 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-1:50:21 AM [vite] Pre-transform error: Transform failed with 1 error:
-/Users/guidoalloatti/projects/war-of-gods/packages/engine/src/era3/ruins.ts:221:0: ERROR: Unexpected "}"
-1:50:21 AM [vite] Pre-transform error: Transform failed with 1 error:
-/Users/guidoalloatti/projects/war-of-gods/packages/engine/src/era3/ruins.ts:221:0: ERROR: Unexpected "}"
-1:50:21 AM [vite] Pre-transform error: Transform failed with 1 error:
-/Users/guidoalloatti/projects/war-of-gods/packages/engine/src/era3/ruins.ts:221:0: ERROR: Unexpected "}"
-1:50:21 AM [vite] Internal server error: Transform failed with 1 error:
-/Users/guidoalloatti/projects/war-of-gods/packages/engine/src/era3/ruins.ts:221:0: ERROR: Unexpected "}"
-  Plugin: vite:esbuild
-  File: /Users/guidoalloatti/projects/war-of-gods/packages/engine/src/era3/ruins.ts:221:0
-  
-  Unexpected "}"
-  219|  }
-  220|  
-  221|  }
-     |  ^
-  222|  
-  
-      at failureErrorWithLog (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:1472:15)
-      at /Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:755:50
-      at responseCallbacks.<computed> (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:622:9)
-      at handleIncomingPacket (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:677:12)
-      at Socket.readFromStdout (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:600:7)
-      at Socket.emit (node:events:508:28)
-      at addChunk (node:internal/streams/readable:559:12)
-      at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
-      at Readable.push (node:internal/streams/readable:390:5)
-      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
-1:50:35 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-1:50:36 AM [vite] Internal server error: Transform failed with 1 error:
-/Users/guidoalloatti/projects/war-of-gods/packages/engine/src/era3/ruins.ts:221:0: ERROR: Unexpected "}"
-  Plugin: vite:esbuild
-  File: /Users/guidoalloatti/projects/war-of-gods/packages/engine/src/era3/ruins.ts:221:0
-  
-  Unexpected "}"
-  219|  }
-  220|  
-  221|  }
-     |  ^
-  222|  
-  
-      at failureErrorWithLog (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:1472:15)
-      at /Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:755:50
-      at responseCallbacks.<computed> (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:622:9)
-      at handleIncomingPacket (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:677:12)
-      at Socket.readFromStdout (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:600:7)
-      at Socket.emit (node:events:508:28)
-      at addChunk (node:internal/streams/readable:559:12)
-      at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
-      at Readable.push (node:internal/streams/readable:390:5)
-      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
-1:50:41 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-1:50:42 AM [vite] Internal server error: Transform failed with 1 error:
-/Users/guidoalloatti/projects/war-of-gods/packages/engine/src/era3/ruins.ts:221:0: ERROR: Unexpected "}"
-  Plugin: vite:esbuild
-  File: /Users/guidoalloatti/projects/war-of-gods/packages/engine/src/era3/ruins.ts:221:0
-  
-  Unexpected "}"
-  219|  }
-  220|  
-  221|  }
-     |  ^
-  222|  
-  
-      at failureErrorWithLog (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:1472:15)
-      at /Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:755:50
-      at responseCallbacks.<computed> (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:622:9)
-      at handleIncomingPacket (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:677:12)
-      at Socket.readFromStdout (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:600:7)
-      at Socket.emit (node:events:508:28)
-      at addChunk (node:internal/streams/readable:559:12)
-      at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
-      at Readable.push (node:internal/streams/readable:390:5)
-      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
-1:51:04 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-1:51:05 AM [vite] Internal server error: Transform failed with 1 error:
-/Users/guidoalloatti/projects/war-of-gods/packages/engine/src/era3/ruins.ts:221:0: ERROR: Unexpected "}"
-  Plugin: vite:esbuild
-  File: /Users/guidoalloatti/projects/war-of-gods/packages/engine/src/era3/ruins.ts:221:0
-  
-  Unexpected "}"
-  219|  }
-  220|  
-  221|  }
-     |  ^
-  222|  
-  
-      at failureErrorWithLog (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:1472:15)
-      at /Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:755:50
-      at responseCallbacks.<computed> (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:622:9)
-      at handleIncomingPacket (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:677:12)
-      at Socket.readFromStdout (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:600:7)
-      at Socket.emit (node:events:508:28)
-      at addChunk (node:internal/streams/readable:559:12)
-      at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
-      at Readable.push (node:internal/streams/readable:390:5)
-      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
-1:51:11 AM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
-1:51:11 AM [vite] Internal server error: Transform failed with 1 error:
-/Users/guidoalloatti/projects/war-of-gods/packages/engine/src/era3/ruins.ts:221:0: ERROR: Unexpected "}"
-  Plugin: vite:esbuild
-  File: /Users/guidoalloatti/projects/war-of-gods/packages/engine/src/era3/ruins.ts:221:0
-  
-  Unexpected "}"
-  219|  }
-  220|  
-  221|  }
-     |  ^
-  222|  
-  
-      at failureErrorWithLog (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:1472:15)
-      at /Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:755:50
-      at responseCallbacks.<computed> (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:622:9)
-      at handleIncomingPacket (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:677:12)
-      at Socket.readFromStdout (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:600:7)
-      at Socket.emit (node:events:508:28)
-      at addChunk (node:internal/streams/readable:559:12)
-      at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
-      at Readable.push (node:internal/streams/readable:390:5)
-      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
-1:51:33 AM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/LandingScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/ScoreBreakdown.tsx, /src/components/GameCard.tsx, /src/components/EffectModal.tsx, /src/components/TradeModal.tsx, /src/components/era2/Era2CardReveal.tsx, /src/components/HexTile.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-1:51:33 AM [vite] Internal server error: Transform failed with 1 error:
-/Users/guidoalloatti/projects/war-of-gods/packages/engine/src/era3/ruins.ts:221:0: ERROR: Unexpected "}"
-  Plugin: vite:esbuild
-  File: /Users/guidoalloatti/projects/war-of-gods/packages/engine/src/era3/ruins.ts:221:0
-  
-  Unexpected "}"
-  219|  }
-  220|  
-  221|  }
-     |  ^
-  222|  
-  
-      at failureErrorWithLog (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:1472:15)
-      at /Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:755:50
-      at responseCallbacks.<computed> (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:622:9)
-      at handleIncomingPacket (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:677:12)
-      at Socket.readFromStdout (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:600:7)
-      at Socket.emit (node:events:508:28)
-      at addChunk (node:internal/streams/readable:559:12)
-      at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
-      at Readable.push (node:internal/streams/readable:390:5)
-      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
-1:51:45 AM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/LandingScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/ScoreBreakdown.tsx, /src/components/GameCard.tsx, /src/components/EffectModal.tsx, /src/components/TradeModal.tsx, /src/components/era2/Era2CardReveal.tsx, /src/components/HexTile.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-1:51:45 AM [vite] Internal server error: Transform failed with 1 error:
-/Users/guidoalloatti/projects/war-of-gods/packages/engine/src/era3/ruins.ts:221:0: ERROR: Unexpected "}"
-  Plugin: vite:esbuild
-  File: /Users/guidoalloatti/projects/war-of-gods/packages/engine/src/era3/ruins.ts:221:0
-  
-  Unexpected "}"
-  219|  }
-  220|  
-  221|  }
-     |  ^
-  222|  
-  
-      at failureErrorWithLog (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:1472:15)
-      at /Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:755:50
-      at responseCallbacks.<computed> (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:622:9)
-      at handleIncomingPacket (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:677:12)
-      at Socket.readFromStdout (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:600:7)
-      at Socket.emit (node:events:508:28)
-      at addChunk (node:internal/streams/readable:559:12)
-      at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
-      at Readable.push (node:internal/streams/readable:390:5)
-      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
-1:52:33 AM [vite] page reload src/components/era3/Era3HexMap.tsx
-1:59:15 AM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
-1:59:23 AM [vite] hmr update /src/screens/Era1Screen.tsx, /src/index.css
-1:59:44 AM [vite] hmr update /src/components/HexBoard3D.tsx, /src/index.css
-1:59:49 AM [vite] hmr update /src/components/HexBoard3D.tsx, /src/index.css
-2:02:14 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:02:44 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:02:44 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:02:44 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:02:44 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:02:44 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:02:52 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:02:53 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:02:53 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:02:53 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:02:53 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:02:58 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:02:58 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:02:58 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:02:58 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:02:58 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:03:03 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:03:03 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:03:03 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:03:03 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:03:03 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:03:16 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:03:16 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:03:16 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:03:16 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:03:16 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:03:21 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:03:21 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:03:21 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:03:21 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:03:21 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:03:27 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:03:28 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:03:28 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:03:28 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:03:28 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:03:33 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:03:34 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:03:34 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:03:34 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:03:34 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:03:56 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:03:57 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:03:57 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:03:57 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:03:57 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:04:01 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:04:01 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:04:01 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:04:01 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:04:01 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:04:22 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:04:22 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:04:22 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:04:22 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:04:22 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:04:29 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:04:30 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:04:30 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:04:30 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:04:30 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:05:01 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:05:40 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:05:49 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:06:10 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:06:19 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:06:43 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:06:53 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:07:07 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:07:35 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:07:48 AM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
-2:08:05 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:08:14 AM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/LandingScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/ScoreBreakdown.tsx, /src/components/GameCard.tsx, /src/components/EffectModal.tsx, /src/components/TradeModal.tsx, /src/components/era2/Era2CardReveal.tsx, /src/components/HexTile.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx, /src/components/HexBoard3D.tsx
-2:08:15 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:08:15 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:08:15 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:08:15 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:08:25 AM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/LandingScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/ScoreBreakdown.tsx, /src/components/GameCard.tsx, /src/components/EffectModal.tsx, /src/components/TradeModal.tsx, /src/components/era2/Era2CardReveal.tsx, /src/components/HexTile.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx, /src/components/HexBoard3D.tsx
-2:08:25 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:08:25 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:08:25 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:08:25 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:11:14 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:11:14 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:11:14 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:11:14 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:11:14 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:11:24 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:11:24 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:11:24 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:11:24 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:11:24 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:11:29 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:11:29 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:11:29 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:11:29 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:11:29 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:11:44 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:11:45 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:11:45 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:11:45 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:11:45 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:12:00 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:12:29 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:12:29 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:12:29 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:12:29 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:12:29 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:12:36 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:12:37 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:12:37 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:12:37 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:12:37 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:12:50 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:12:51 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:12:51 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:12:51 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:12:51 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:13:16 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:13:26 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:13:55 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:14:24 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:17:12 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:17:26 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:17:45 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:19:05 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:19:06 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:19:06 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:19:06 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:19:06 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:19:13 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:19:13 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:19:13 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:19:13 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:19:13 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:21:43 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:21:51 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:21:58 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:22:15 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:22:29 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:23:02 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:23:13 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:23:22 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:23:31 AM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
-2:23:44 AM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
-2:23:51 AM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/LandingScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/ScoreBreakdown.tsx, /src/components/GameCard.tsx, /src/components/EffectModal.tsx, /src/components/TradeModal.tsx, /src/components/era2/Era2CardReveal.tsx, /src/components/HexTile.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx, /src/components/HexBoard3D.tsx
-2:23:52 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:23:52 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:23:52 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:23:52 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:23:56 AM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/LandingScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/ScoreBreakdown.tsx, /src/components/GameCard.tsx, /src/components/EffectModal.tsx, /src/components/TradeModal.tsx, /src/components/era2/Era2CardReveal.tsx, /src/components/HexTile.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx, /src/components/HexBoard3D.tsx
-2:23:57 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:23:57 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:23:57 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:23:57 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:24:21 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:24:21 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:24:21 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:24:21 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:24:21 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:24:31 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:24:32 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:24:32 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:24:32 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:24:32 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:24:43 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:24:44 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:24:44 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:24:44 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:24:44 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:25:10 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:25:10 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:25:10 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:25:10 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:25:10 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:25:26 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:25:27 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:25:27 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:25:27 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:25:27 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:25:40 AM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
-2:25:57 AM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
-2:26:04 AM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/LandingScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/ScoreBreakdown.tsx, /src/components/GameCard.tsx, /src/components/EffectModal.tsx, /src/components/TradeModal.tsx, /src/components/era2/Era2CardReveal.tsx, /src/components/HexTile.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx, /src/components/HexBoard3D.tsx
-2:26:04 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:26:04 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:26:04 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:26:04 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:26:09 AM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/LandingScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/ScoreBreakdown.tsx, /src/components/GameCard.tsx, /src/components/EffectModal.tsx, /src/components/TradeModal.tsx, /src/components/era2/Era2CardReveal.tsx, /src/components/HexTile.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx, /src/components/HexBoard3D.tsx
-2:26:09 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:26:09 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:26:09 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:26:09 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:26:36 AM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
-2:27:38 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:27:56 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:28:01 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:29:36 AM [vite] hmr update /src/App.tsx, /src/index.css
-2:29:46 AM [vite] hmr update /src/components/SettingsSidebar.tsx, /src/index.css
-2:29:59 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/LandingScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/ScoreBreakdown.tsx, /src/components/GameCard.tsx, /src/components/EffectModal.tsx, /src/components/TradeModal.tsx, /src/components/era2/Era2CardReveal.tsx, /src/components/HexTile.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx, /src/components/HexBoard3D.tsx
-2:29:59 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:29:59 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:29:59 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:29:59 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:30:06 AM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/LandingScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/ScoreBreakdown.tsx, /src/components/GameCard.tsx, /src/components/EffectModal.tsx, /src/components/TradeModal.tsx, /src/components/era2/Era2CardReveal.tsx, /src/components/HexTile.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx, /src/components/HexBoard3D.tsx
-2:30:06 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:30:06 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:30:06 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:30:06 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:30:11 AM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/LandingScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/ScoreBreakdown.tsx, /src/components/GameCard.tsx, /src/components/EffectModal.tsx, /src/components/TradeModal.tsx, /src/components/era2/Era2CardReveal.tsx, /src/components/HexTile.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx, /src/components/HexBoard3D.tsx
-2:30:12 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:30:12 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:30:12 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:30:12 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:30:23 AM [vite] hmr update /src/components/SettingsSidebar.tsx, /src/index.css
-2:30:38 AM [vite] hmr update /src/components/SettingsSidebar.tsx, /src/index.css
-2:31:01 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:34:50 AM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
-2:35:10 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:35:17 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:35:17 AM [vite] Internal server error: /Users/guidoalloatti/projects/war-of-gods/packages/client/src/components/era3/Era3HexMap3D.tsx: Expected corresponding JSX closing tag for <FontScaleContext.Provider>. (780:4)
-
-  778 |         </div>
-  779 |       )}
-> 780 |     </div>
-      |     ^
-  781 |   );
-  782 | }
-  783 |
-  Plugin: vite:react-babel
-  File: /Users/guidoalloatti/projects/war-of-gods/packages/client/src/components/era3/Era3HexMap3D.tsx:780:4
-  778|          </div>
-  779|        )}
-  780|      </div>
-     |      ^
-  781|    );
-  782|  }
-      at constructor (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:365:19)
-      at TypeScriptParserMixin.raise (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:6599:19)
-      at TypeScriptParserMixin.jsxParseElementAt (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:4727:16)
-      at TypeScriptParserMixin.jsxParseElementAt (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:4698:32)
-      at TypeScriptParserMixin.jsxParseElement (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:4749:17)
-      at TypeScriptParserMixin.parseExprAtom (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:4759:19)
-      at TypeScriptParserMixin.parseExprSubscripts (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:11081:23)
-      at TypeScriptParserMixin.parseUpdate (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:11066:21)
-      at TypeScriptParserMixin.parseMaybeUnary (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:11046:23)
-      at TypeScriptParserMixin.parseMaybeUnary (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9837:18)
-      at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10899:61)
-      at TypeScriptParserMixin.parseExprOps (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10904:23)
-      at TypeScriptParserMixin.parseMaybeConditional (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10881:23)
-      at TypeScriptParserMixin.parseMaybeAssign (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10831:21)
-      at /Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9775:39
-      at TypeScriptParserMixin.tryParse (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:6907:20)
-      at TypeScriptParserMixin.parseMaybeAssign (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9775:18)
-      at /Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10800:39
-      at TypeScriptParserMixin.allowInAnd (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12426:12)
-      at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10800:17)
-      at TypeScriptParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12493:17)
-      at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:11675:28)
-      at TypeScriptParserMixin.parseExprAtom (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:11331:23)
-      at TypeScriptParserMixin.parseExprAtom (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:4764:20)
-      at TypeScriptParserMixin.parseExprSubscripts (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:11081:23)
-      at TypeScriptParserMixin.parseUpdate (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:11066:21)
-      at TypeScriptParserMixin.parseMaybeUnary (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:11046:23)
-      at TypeScriptParserMixin.parseMaybeUnary (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9837:18)
-      at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10899:61)
-      at TypeScriptParserMixin.parseExprOps (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10904:23)
-      at TypeScriptParserMixin.parseMaybeConditional (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10881:23)
-      at TypeScriptParserMixin.parseMaybeAssign (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10831:21)
-      at TypeScriptParserMixin.parseMaybeAssign (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9786:20)
-      at TypeScriptParserMixin.parseExpressionBase (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10784:23)
-      at /Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10780:39
-      at TypeScriptParserMixin.allowInAnd (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12421:16)
-      at TypeScriptParserMixin.parseExpression (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:10780:17)
-      at TypeScriptParserMixin.parseReturnStatement (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13142:28)
-      at TypeScriptParserMixin.parseStatementContent (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12798:21)
-      at TypeScriptParserMixin.parseStatementContent (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9508:18)
-      at TypeScriptParserMixin.parseStatementLike (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12767:17)
-      at TypeScriptParserMixin.parseStatementListItem (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12747:17)
-      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13316:61)
-      at TypeScriptParserMixin.parseBlockBody (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13309:10)
-      at TypeScriptParserMixin.parseBlock (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13297:10)
-      at TypeScriptParserMixin.parseFunctionBody (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12100:24)
-      at TypeScriptParserMixin.parseFunctionBodyAndFinish (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12086:10)
-      at TypeScriptParserMixin.parseFunctionBodyAndFinish (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:9172:18)
-      at /Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:13445:12
-      at TypeScriptParserMixin.withSmartMixTopicForbiddingContext (/Users/guidoalloatti/projects/war-of-gods/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/lib/index.js:12403:14)
-2:35:21 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:35:28 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:35:41 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:35:51 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:36:01 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:36:12 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:36:19 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:36:39 AM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
-2:38:04 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:38:05 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:38:05 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:38:05 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:38:05 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:38:13 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:38:14 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:38:14 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:38:14 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:38:14 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:38:21 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:38:21 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:38:21 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:38:21 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:38:21 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:38:27 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:38:28 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:38:28 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:38:28 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:38:28 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:38:37 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:38:37 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:38:37 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:38:37 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:38:37 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:38:51 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:38:52 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:38:52 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:38:52 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:38:52 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:39:24 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/EffectModal.tsx, /src/components/era2/TechSlider.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx
-2:39:24 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:39:24 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:39:24 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:39:24 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:39:43 AM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
-2:39:52 AM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
-2:40:21 AM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/LandingScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/ScoreBreakdown.tsx, /src/components/GameCard.tsx, /src/components/EffectModal.tsx, /src/components/TradeModal.tsx, /src/components/era2/Era2CardReveal.tsx, /src/components/HexTile.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx, /src/components/HexBoard3D.tsx
-2:40:21 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:40:21 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:40:21 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:40:21 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:40:56 AM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/LandingScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/ScoreBreakdown.tsx, /src/components/GameCard.tsx, /src/components/EffectModal.tsx, /src/components/TradeModal.tsx, /src/components/era2/Era2CardReveal.tsx, /src/components/HexTile.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx, /src/components/HexBoard3D.tsx
-2:40:57 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:40:57 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:40:57 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:40:57 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:41:13 AM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/screens/LandingScreen.tsx, /src/components/SettingsSidebar.tsx, /src/screens/Era2Screen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/components/ScoreBreakdown.tsx, /src/components/GameCard.tsx, /src/components/EffectModal.tsx, /src/components/TradeModal.tsx, /src/components/era2/Era2CardReveal.tsx, /src/components/HexTile.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/HexBoard.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/Era3HexMap3D.tsx, /src/components/HexBoard3D.tsx
-2:41:13 AM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:41:13 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:41:13 AM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-2:41:13 AM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
-2:42:02 AM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
-2:42:22 AM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
-2:42:35 AM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
-2:42:44 AM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
+5:20:29 PM [vite] hmr update /src/components/GameHeader.tsx, /src/index.css
+5:21:33 PM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
+5:21:55 PM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
+5:22:00 PM [vite] hmr update /src/components/GameHeader.tsx, /src/index.css
+5:22:06 PM [vite] hmr update /src/components/GameHeader.tsx, /src/index.css
+5:24:57 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/components/GameHeader.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/screens/Era2Screen.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/TechPentagon.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/HexBoard.tsx, /src/components/era3/Era3HexMap3D.tsx
+5:24:57 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:24:57 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:24:57 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:24:57 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:25:05 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/components/GameHeader.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/screens/Era2Screen.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/TechPentagon.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/HexBoard.tsx, /src/components/era3/Era3HexMap3D.tsx
+5:25:06 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:25:06 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:25:06 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:25:06 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:25:26 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/components/GameHeader.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/screens/Era2Screen.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/TechPentagon.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/HexBoard.tsx, /src/components/era3/Era3HexMap3D.tsx
+5:25:26 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:25:26 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:25:26 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:25:26 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:25:59 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/components/GameHeader.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/screens/Era2Screen.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/TechPentagon.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/HexBoard.tsx, /src/components/era3/Era3HexMap3D.tsx
+5:25:59 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:25:59 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:25:59 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:25:59 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:26:41 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/components/GameHeader.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/screens/Era2Screen.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/TechPentagon.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/HexBoard.tsx, /src/components/era3/Era3HexMap3D.tsx
+5:26:41 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:26:41 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:26:41 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:26:41 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:26:48 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/components/GameHeader.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/screens/Era2Screen.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/TechPentagon.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/HexBoard.tsx, /src/components/era3/Era3HexMap3D.tsx
+5:26:49 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:26:49 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:26:49 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:26:49 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:28:11 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/components/GameHeader.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/screens/Era2Screen.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/TechPentagon.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/HexBoard.tsx, /src/components/era3/Era3HexMap3D.tsx
+5:28:11 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:28:11 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:28:11 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:28:11 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:28:58 PM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/components/SettingsSidebar.tsx, /src/components/GameHeader.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/LandingScreen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/screens/Era2Screen.tsx, /src/components/ScoreBreakdown.tsx, /src/components/GameCard.tsx, /src/components/TradeModal.tsx, /src/components/HexBoard3D.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx, /src/components/HexTile.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/era2/Era2CardReveal.tsx, /src/components/HexBoard.tsx, /src/components/era3/Era3HexMap3D.tsx
+5:28:59 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:28:59 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:28:59 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:28:59 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:29:10 PM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/components/SettingsSidebar.tsx, /src/components/GameHeader.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/LandingScreen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/screens/Era2Screen.tsx, /src/components/ScoreBreakdown.tsx, /src/components/GameCard.tsx, /src/components/TradeModal.tsx, /src/components/HexBoard3D.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx, /src/components/HexTile.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/era2/Era2CardReveal.tsx, /src/components/HexBoard.tsx, /src/components/era3/Era3HexMap3D.tsx
+5:29:10 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:29:10 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:29:10 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:29:10 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:29:23 PM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
+5:29:33 PM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
+5:29:44 PM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
+5:30:28 PM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
+5:30:44 PM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
+5:42:58 PM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
+5:43:10 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/components/GameHeader.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/screens/Era2Screen.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/TechPentagon.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/HexBoard.tsx, /src/components/era3/Era3HexMap3D.tsx
+5:43:10 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:43:10 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:43:10 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:43:10 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:44:07 PM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
+5:44:16 PM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
+5:44:20 PM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
+5:44:28 PM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
+5:44:39 PM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
+5:51:02 PM [vite] hmr update /src/screens/Era3Screen.tsx, /src/index.css
+5:51:58 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/components/GameHeader.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/screens/Era2Screen.tsx
+5:52:03 PM [vite] hmr update /src/screens/Era2Screen.tsx, /src/index.css
+5:52:07 PM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/components/SettingsSidebar.tsx, /src/components/GameHeader.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/LandingScreen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/screens/Era2Screen.tsx, /src/components/ScoreBreakdown.tsx, /src/components/GameCard.tsx, /src/components/TradeModal.tsx, /src/components/HexBoard3D.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx, /src/components/HexTile.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/era2/Era2CardReveal.tsx, /src/components/HexBoard.tsx, /src/components/era3/Era3HexMap3D.tsx
+5:52:07 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:52:07 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:52:07 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:52:07 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:52:09 PM [vite] hmr update /src/index.css, /src/App.tsx, /src/screens/LoginScreen.tsx, /src/screens/ScoringScreen.tsx, /src/screens/RegisterScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/components/SettingsSidebar.tsx, /src/components/GameHeader.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/LandingScreen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/screens/Era2Screen.tsx, /src/components/ScoreBreakdown.tsx, /src/components/GameCard.tsx, /src/components/TradeModal.tsx, /src/components/HexBoard3D.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx, /src/components/HexTile.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/era2/Era2CardReveal.tsx, /src/components/HexBoard.tsx, /src/components/era3/Era3HexMap3D.tsx
+5:52:10 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:52:10 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:52:10 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:52:10 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+5:52:19 PM [vite] hmr update /src/components/SettingsSidebar.tsx, /src/index.css
+5:52:25 PM [vite] hmr update /src/components/SettingsSidebar.tsx, /src/index.css
+5:52:40 PM [vite] hmr update /src/components/SettingsSidebar.tsx, /src/index.css
+5:52:46 PM [vite] hmr update /src/components/SettingsSidebar.tsx, /src/index.css
+5:53:09 PM [vite] hmr update /src/components/SettingsSidebar.tsx, /src/index.css
+5:55:12 PM [vite] hmr update /src/components/GameHeader.tsx, /src/index.css
+5:55:31 PM [vite] hmr update /src/components/SettingsSidebar.tsx, /src/index.css
+5:55:43 PM [vite] hmr update /src/components/SettingsSidebar.tsx, /src/index.css
+5:58:46 PM [vite] hmr update /src/screens/Era2Screen.tsx, /src/index.css
+5:59:37 PM [vite] hmr update /src/screens/Era2Screen.tsx, /src/index.css
+5:59:43 PM [vite] hmr update /src/screens/Era2Screen.tsx, /src/index.css
+5:59:53 PM [vite] hmr update /src/screens/Era2Screen.tsx, /src/index.css
+6:00:01 PM [vite] hmr update /src/screens/Era2Screen.tsx, /src/index.css
+6:07:38 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/components/GameHeader.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/screens/Era2Screen.tsx, /src/components/SettingsSidebar.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/TechPentagon.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/HexBoard.tsx, /src/components/era3/Era3HexMap3D.tsx
+6:07:38 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+6:07:38 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+6:07:38 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+6:07:38 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+6:07:44 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/components/GameHeader.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/screens/Era2Screen.tsx, /src/components/SettingsSidebar.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/TechPentagon.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/HexBoard.tsx, /src/components/era3/Era3HexMap3D.tsx
+6:07:44 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+6:07:44 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+6:07:44 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+6:07:44 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+6:07:55 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/components/GameHeader.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/screens/Era2Screen.tsx, /src/components/SettingsSidebar.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/TechPentagon.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/HexBoard.tsx, /src/components/era3/Era3HexMap3D.tsx
+6:07:56 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+6:07:56 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+6:07:56 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+6:07:56 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+6:11:35 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/components/GameHeader.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/screens/Era2Screen.tsx, /src/components/SettingsSidebar.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/TechPentagon.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/HexBoard.tsx, /src/components/era3/Era3HexMap3D.tsx
+6:11:36 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+6:11:36 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+6:11:36 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+6:11:36 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+6:11:43 PM [vite] hmr update /src/App.tsx, /src/index.css, /src/screens/ScoringScreen.tsx, /src/screens/MenuScreen.tsx, /src/screens/Era2ScoringScreen.tsx, /src/components/GameHeader.tsx, /src/screens/RaceSelectionScreen.tsx, /src/screens/LobbyScreen.tsx, /src/screens/Era1Screen.tsx, /src/screens/Era3Screen.tsx, /src/screens/Era2Screen.tsx, /src/components/SettingsSidebar.tsx, /src/components/LiveScoreDisplay.tsx, /src/components/EffectModal.tsx, /src/components/era3/HexInspectorPanel.tsx, /src/components/era3/ArmyPanel.tsx, /src/components/TechPentagon.tsx, /src/components/era2/TechSummaryReview.tsx, /src/components/era2/KingsTableModal.tsx, /src/components/HexBoard.tsx, /src/components/era3/Era3HexMap3D.tsx
+6:11:43 PM [vite] hmr invalidate /src/components/LiveScoreDisplay.tsx Could not Fast Refresh ("calculateAdjacencyBonus" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+6:11:43 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+6:11:43 PM [vite] hmr invalidate /src/components/HexBoard.tsx Could not Fast Refresh ("HEX_GRID" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+6:11:43 PM [vite] hmr update /src/index.css, /src/screens/Era1Screen.tsx
+6:12:40 PM [vite] hmr update /src/components/TechPentagon.tsx, /src/index.css
+6:14:40 PM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
+6:14:51 PM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
+6:15:05 PM [vite] hmr update /src/components/era3/Era3HexMap3D.tsx, /src/index.css
+6:24:40 PM [vite] hmr update /src/screens/admin/AdminCardEditor.tsx, /src/index.css

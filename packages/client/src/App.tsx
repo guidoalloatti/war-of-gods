@@ -14,6 +14,7 @@ import { Era2Screen } from './screens/Era2Screen.js';
 import { Era2ScoringScreen } from './screens/Era2ScoringScreen.js';
 import { Era3Screen } from './screens/Era3Screen.js';
 import { SettingsSidebar } from './components/SettingsSidebar.js';
+import { GameHeader } from './components/GameHeader.js';
 import { ScreenErrorBoundary } from './components/ScreenErrorBoundary.js';
 import { useI18n } from './i18n/index.js';
 
@@ -123,7 +124,7 @@ export function App() {
           id="settings-button"
           type="button"
           onClick={() => setSettingsOpen(true)}
-          className="fixed top-3 right-3 z-[80] w-10 h-10 flex items-center justify-center rounded-full bg-game-surface/80 border border-border-medium hover:border-game-gold text-text-secondary hover:text-text-primary transition-colors"
+          className="fixed top-0 right-0 z-[80] w-8 h-8 flex items-center justify-center rounded-none border-l border-b border-border-subtle bg-transparent hover:bg-game-surface/60 text-text-secondary hover:text-text-primary transition-colors"
           aria-label={t.settings.openSettings}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -131,6 +132,8 @@ export function App() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
         </button>
+
+        <GameHeader />
 
         <CurrentScreen />
 

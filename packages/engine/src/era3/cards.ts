@@ -23,8 +23,9 @@ export function playEra3Card(
   if (!player?.era3State) throw new Error('No era3State');
   if (player.era3State.eliminated) throw new Error('Eliminated');
 
-  if (state.era3CardPlayedThisTurn?.[playerId]) {
-    throw new Error('Already played a card this turn');
+  const playsThisTurn = state.era3CardPlayedThisTurn?.[playerId] ?? 0;
+  if (playsThisTurn >= 2) {
+    throw new Error('Already played 2 cards this turn');
   }
 
   const hand = state.era3Hands?.[playerId] ?? [];
@@ -46,7 +47,7 @@ export function playEra3Card(
     era3Hands: { ...(afterEffects.era3Hands ?? {}), [playerId]: nextHand },
     era3CardPlayedThisTurn: {
       ...(afterEffects.era3CardPlayedThisTurn ?? {}),
-      [playerId]: true,
+      [playerId]: (afterEffects.era3CardPlayedThisTurn?.[playerId] ?? 0) + 1,
     },
   };
 }
@@ -82,14 +83,68 @@ export function clearTurnEffectsFor(state: GameState, playerId: string): GameSta
   if (!te) return state;
   const attackBoost = { ...te.attackBoost };
   const movementBonus = { ...te.movementBonus };
+  const defenseBoost = { ...(te.defenseBoost ?? {}) };
   delete attackBoost[playerId];
   delete movementBonus[playerId];
+  delete defenseBoost[playerId];
   const played = { ...(state.era3CardPlayedThisTurn ?? {}) };
   delete played[playerId];
   return {
     ...state,
-    era3TurnEffects: { attackBoost, movementBonus },
+    era3TurnEffects: { attackBoost, movementBonus, defenseBoost },
     era3CardPlayedThisTurn: played,
+  };
+}
+
+/**
+ * At the start of a player's turn, draw up to 2 cards from the deck and
+ * place them in `era3CardOffers[playerId]` for the player to choose from.
+ * If fewer than 2 cards remain, offer what's available (may be 1 or 0).
+ */
+export function dealCardOffers(state: GameState, playerId: string): GameState {
+  const deck = state.era3Deck ?? [];
+  if (deck.length === 0) return state;
+  const offerCount = Math.min(2, deck.length);
+  const offered = deck.slice(0, offerCount).map(c => ({ ...c, assignedTo: playerId }));
+  const rest = deck.slice(offerCount);
+  return {
+    ...state,
+    era3Deck: rest,
+    era3CardOffers: { ...(state.era3CardOffers ?? {}), [playerId]: offered },
+  };
+}
+
+/**
+ * Player picks one of the offered cards to add to their hand (if below max).
+ * The unchosen card is discarded. Clears the offer.
+ */
+export function pickCardOffer(state: GameState, playerId: string, cardId: string): GameState {
+  const offers = state.era3CardOffers?.[playerId] ?? [];
+  const chosen = offers.find(c => c.id === cardId);
+  if (!chosen) throw new Error('Card not in offer');
+  const hand = state.era3Hands?.[playerId] ?? [];
+  const newHand = hand.length < ERA3_HAND_MAX_SIZE ? [...hand, chosen] : hand;
+  const newOffers = { ...(state.era3CardOffers ?? {}) };
+  delete newOffers[playerId];
+  return {
+    ...state,
+    era3CardOffers: newOffers,
+    era3Hands: { ...(state.era3Hands ?? {}), [playerId]: newHand },
+  };
+}
+
+/**
+ * Player discards the card offer (no card added to hand). Clears the offer.
+ */
+export function discardCardOffer(state: GameState, playerId: string): GameState {
+  const newOffers = { ...(state.era3CardOffers ?? {}) };
+  // Put discarded cards back on the bottom of the deck
+  const discarded = newOffers[playerId] ?? [];
+  delete newOffers[playerId];
+  return {
+    ...state,
+    era3CardOffers: newOffers,
+    era3Deck: [...(state.era3Deck ?? []), ...discarded],
   };
 }
 

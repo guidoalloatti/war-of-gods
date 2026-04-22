@@ -13,6 +13,7 @@ const TECH_ICONS: Record<TechType, string> = {
   science: '🔬',
   resources: '🌾',
   economy: '💰',
+  religion: '✨',
 };
 
 export function Era2ScoringScreen() {

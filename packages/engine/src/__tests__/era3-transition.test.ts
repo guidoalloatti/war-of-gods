@@ -66,7 +66,7 @@ describe('transitionEra2ToEra3', () => {
     const players = RACES.map((r, i) => makePlayer(`p${i}`, r));
     const out = transitionEra2ToEra3(makeState(players));
     expect(out.map).toBeTruthy();
-    expect(Object.keys(out.map!.hexes).length).toBe(331);
+    expect(Object.keys(out.map!.hexes).length).toBe(469);
   });
 
   it('creates one stack per player on their capital hex', () => {

@@ -1,5 +1,6 @@
 import type { GameMap, Hex, HexCoord, HexTerrain, Stack } from '../types/era3.js';
 import { hexKey, neighbors } from './hex.js';
+import { MAX_STACK_SIZE } from './constants.js';
 
 /**
  * Movement cost to ENTER a hex of the given terrain.
@@ -26,18 +27,35 @@ export function getTerrainMoveCost(terrain: HexTerrain, hex?: Hex): number {
 }
 
 /**
- * Can the given player's stack enter `hex`? Checks impassability including
- * whether a river hex has a bridge.
+ * Can the given stack enter `hex`?
+ * - Impassable terrain always blocks.
+ * - Empty hex: always allowed.
+ * - Own stack: allowed (self-move or merge).
+ * - Friendly stack with room: allowed as a terminal destination (merge).
+ * - Any other stack: blocked.
+ *
+ * Pass `movingStack` to enable friendly-merge detection; omit (or pass undefined)
+ * to keep legacy behaviour (any foreign stack blocks).
  */
 export function canEnterHex(
   hex: Hex,
   stacks: Record<string, Stack>,
   movingStackId: string,
   flying = false,
+  movingStack?: Stack,
 ): boolean {
   if (!flying && getTerrainMoveCost(hex.terrain, hex) === Infinity) return false;
   if (!hex.stackId) return true;
-  return hex.stackId === movingStackId;
+  if (hex.stackId === movingStackId) return true;
+  if (movingStack) {
+    const occupant = stacks[hex.stackId];
+    if (
+      occupant &&
+      occupant.ownerId === movingStack.ownerId &&
+      occupant.units.length + movingStack.units.length <= MAX_STACK_SIZE
+    ) return true;
+  }
+  return false;
 }
 
 /**
@@ -57,6 +75,7 @@ export function reachableHexes(
   budget: number,
   flying = false,
 ): Map<string, number> {
+  const movingStack = stacks[movingStackId];
   const costs = new Map<string, number>();
   const fromKey = hexKey(from);
   costs.set(fromKey, 0);
@@ -72,7 +91,7 @@ export function reachableHexes(
   for (const nb of neighbors(from)) {
     const nbKey = hexKey(nb);
     const hex = map.hexes[nbKey];
-    if (!hex || !canEnterHex(hex, stacks, movingStackId, flying)) continue;
+    if (!hex || !canEnterHex(hex, stacks, movingStackId, flying, movingStack)) continue;
     const realCost = flying ? 3 : (hex.hasRoadOverlay ? 1 : getTerrainMoveCost(hex.terrain, hex));
     if (realCost > budget) {
       // Only pre-seed over-budget neighbors — they won't be reached by normal Dijkstra.
@@ -91,11 +110,15 @@ export function reachableHexes(
 
     if (current.cost > (costs.get(current.key) ?? Infinity)) continue;
 
+    // Don't expand from a friendly-occupied hex — it's a merge terminal.
+    const currentHex = map.hexes[current.key];
+    if (currentHex?.stackId && currentHex.stackId !== movingStackId) continue;
+
     for (const nb of neighbors(current.coord)) {
       const nbKey = hexKey(nb);
       const hex = map.hexes[nbKey];
       if (!hex) continue;
-      if (!canEnterHex(hex, stacks, movingStackId, flying)) continue;
+      if (!canEnterHex(hex, stacks, movingStackId, flying, movingStack)) continue;
       const stepCost = flying ? 3 : (hex.hasRoadOverlay ? 1 : getTerrainMoveCost(hex.terrain, hex));
       const nextCost = current.cost + stepCost;
       if (nextCost > budget) continue;
@@ -124,6 +147,7 @@ export function findPath(
   budget: number,
   flying = false,
 ): HexCoord[] | null {
+  const movingStack = stacks[movingStackId];
   const fromKey = hexKey(from);
   const toKey = hexKey(to);
   if (fromKey === toKey) return [];
@@ -141,7 +165,7 @@ export function findPath(
   for (const nb of neighbors(from)) {
     const nbKey = hexKey(nb);
     const hex = map.hexes[nbKey];
-    if (!hex || !canEnterHex(hex, stacks, movingStackId, flying)) continue;
+    if (!hex || !canEnterHex(hex, stacks, movingStackId, flying, movingStack)) continue;
     const realCost = flying ? 3 : (hex.hasRoadOverlay ? 1 : getTerrainMoveCost(hex.terrain, hex));
     if (realCost > budget && !costs.has(nbKey)) {
       costs.set(nbKey, realCost);
@@ -160,6 +184,10 @@ export function findPath(
     if (current.cost > (costs.get(current.key) ?? Infinity)) continue;
     if (current.key === toKey) break;
 
+    // Don't expand from a friendly-occupied hex — it's a merge terminal.
+    const currentHex = map.hexes[current.key];
+    if (currentHex?.stackId && currentHex.stackId !== movingStackId) continue;
+
     const nbs = neighbors(current.coord).sort((a, b) => {
       const ak = hexKey(a), bk = hexKey(b);
       return ak < bk ? -1 : ak > bk ? 1 : 0;
@@ -168,7 +196,7 @@ export function findPath(
       const nbKey = hexKey(nb);
       const hex = map.hexes[nbKey];
       if (!hex) continue;
-      if (!canEnterHex(hex, stacks, movingStackId, flying)) continue;
+      if (!canEnterHex(hex, stacks, movingStackId, flying, movingStack)) continue;
       const stepCost = flying ? 3 : (hex.hasRoadOverlay ? 1 : getTerrainMoveCost(hex.terrain, hex));
       const nextCost = current.cost + stepCost;
       if (nextCost > budget) continue;

@@ -1,8 +1,8 @@
 import type { EraCard } from './cards.js';
 
-export type TechType = 'war' | 'science' | 'resources' | 'economy';
+export type TechType = 'war' | 'science' | 'resources' | 'economy' | 'religion';
 
-export const TECH_TYPES: readonly TechType[] = ['war', 'science', 'resources', 'economy'];
+export const TECH_TYPES: readonly TechType[] = ['war', 'science', 'resources', 'economy', 'religion'];
 
 export type UnitType = 'infantry' | 'ranged' | 'mounted' | 'siege' | 'flying';
 

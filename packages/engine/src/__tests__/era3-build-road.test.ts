@@ -22,7 +22,7 @@ function mkPlayer(id: string, raceId: RaceId): Player {
   return { ...base, era2State: initPlayerEra2State(base) };
 }
 
-function mkState(seed = 9999): GameState {
+function mkState(seed = 777): GameState {
   const players = RACES.map((r, i) => mkPlayer(`p${i}`, r));
   const base: GameState = {
     id: 'g', mode: 'solo_bots', soloVariant: null,

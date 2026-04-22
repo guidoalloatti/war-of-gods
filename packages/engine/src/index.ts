@@ -25,7 +25,7 @@ export type { ScoreBreakdown } from './era1/index.js';
 
 // Era II engine (constants, cost calculators, init helpers, scoring, transition)
 export {
-  TECH_COSTS, TECH_BENEFITS, SCIENCE_UNLOCK_ORDER, RACIAL_BONUSES, UNIT_DEFINITIONS,
+  TECH_COSTS, TECH_BENEFITS, SCIENCE_UNLOCK_ORDER, RACIAL_BONUSES, RACE_TECH_MAX, UNIT_DEFINITIONS,
   DEFAULT_DOOM_CLOCK, MIN_CONSTRUCTION_POINTS,
   getIncrementalCost,
   calculateTechCost, calculateTotalSpent, convertSurplusToGold, computeTransferDelta,
@@ -57,8 +57,10 @@ export {
   DHAKHAN_OWNER_ID, WROUGHT_PER_SPAWN_PER_CYCLE,
   BOSS_STACK_ID, CITADEL_COORD,
   ERA3_BASE_INCOME, ERA3_RECRUIT_COSTS, ERA3_RECRUITS_PER_TURN,
-  ERA3_WAR_RECRUITS_PER_LEVEL, ERA3_RESOURCES_STACK_SIZE_PER_LEVEL,
+  ERA3_WAR_RECRUITS_PER_LEVEL, ERA3_RESOURCES_STACK_SIZE_PER_LEVEL, ERA3_FOOD_CAPACITY_PER_LEVEL,
+  ERA3_FOOD_PRODUCTION_PER_LEVEL, ERA3_FOOD_RESERVES_INITIAL,
   ERA3_SCIENCE_UNIT_REQS, ERA3_WAR_ATTACK_PER_LEVEL,
+  ERA3_RELIGION_DEFENSE_REDUCTION, ERA3_RELIGION_MORALE_HEAL, ERA3_RELIGION_ROUT_THRESHOLD,
   ERA3_BUILD_ROAD_COST, ERA3_ROADS_PER_TURN,
   validateBuildRoad, buildRoad,
   VETERAN_WIN_THRESHOLD, VETERAN_ATK_BONUS, VETERAN_DEF_BONUS, VETERAN_HP_BONUS,
@@ -66,8 +68,11 @@ export {
   ERA3_WAR_ATTACK_BONUS, ERA3_WAR_ATTACK_BONUS_THRESHOLD,
   cycleIncome, applyCycleIncome, validateRecruit, recruitUnit, warAttackBonus, totalAttackBonus,
   recruitsPerTurn, maxStackSize, scienceAllowsUnit,
+  religionDefenseMultiplier, applyMoraleHeal,
+  spiritualityRestHealBonus, spiritualityFortifyDefBonus,
+  unitFoodCost, totalFoodConsumed, maxFoodCapacity, foodProduction, applyFoodCycle,
   ERA3_HAND_MAX_SIZE,
-  playEra3Card, drawEra3Card, clearTurnEffectsFor, totalEra3CardsInPlay,
+  playEra3Card, dealCardOffers, pickCardOffer, discardCardOffer, clearTurnEffectsFor, totalEra3CardsInPlay,
   rollRuinsReward, applyRuinsLoot, isLootableRuins,
   RUINS_GOLD_MIN, RUINS_GOLD_MAX,
   GENERAL_MIN_STACK_SIZE, GENERAL_ATTACK_BONUS, GENERAL_DEFENSE_BONUS,
@@ -75,6 +80,7 @@ export {
   REST_HEAL_FRACTION, DISBAND_REFUND_FRACTION, FORTIFY_DEFENSE_MULT, FORT_DEFENSE_MULT,
   TERRAFORM_COST, BUILD_ROAD_OVERLAY_COST, DRAIN_WATER_COST, BUILD_BRIDGE_COST,
   ERA3_TECH_UPGRADE_MULTIPLIER,
+  computeVisibleHexes, updateExploredHexes, updateAllExploredHexes,
 } from './era3/index.js';
 export type { Era3TurnEffects } from './types/game.js';
 export type {
